@@ -1,0 +1,10 @@
+version: 2
+
+sources:
+  - name: skycommand_trusted
+    description: Read-only trusted assets produced and governed by SkyCommand ingestion.
+    database: skydata_studio
+    schema: skycommand_contract
+    tables:
+      - name: ingestion_assets
+        description: Placeholder source contract for Phase 2 integration.

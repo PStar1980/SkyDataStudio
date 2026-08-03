@@ -1,0 +1,12 @@
+skydata_studio:
+  target: dev
+  outputs:
+    dev:
+      type: postgres
+      host: localhost
+      port: 5440
+      user: skydata
+      password: skydata
+      dbname: skydata_studio
+      schema: analytics
+      threads: 4

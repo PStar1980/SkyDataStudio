@@ -1,0 +1,40 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+.coverage
+htmlcov/
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+
+# JavaScript
+node_modules/
+dist/
+coverage/
+
+# Data-engineering runtime
+.airflow/
+airflow/logs/
+airflow/airflow.db
+airflow/standalone_admin_password.txt
+target/
+dbt_packages/
+logs/
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Generated handoff assets
+zip/
+*.zip
+*.patch

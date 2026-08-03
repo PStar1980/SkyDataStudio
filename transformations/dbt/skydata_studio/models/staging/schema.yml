@@ -1,0 +1,11 @@
+version: 2
+
+models:
+  - name: stg_skycommand__ingestion_assets
+    description: Typed staging seam for SkyCommand trusted assets.
+    columns:
+      - name: asset_code
+        description: Portable asset identifier.
+        tests:
+          - not_null
+          - unique
