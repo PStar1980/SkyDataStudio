@@ -1,4 +1,4 @@
-from typing import Protocol
+from typing import Annotated, Protocol
 
 from fastapi import Depends
 from skydata_contracts.skycommand import (
@@ -56,10 +56,19 @@ class SkyCommandGateway(Protocol):
     ) -> IngestionRunList: ...
 
 
-def get_skycommand_gateway(settings: Settings = Depends(get_settings)) -> SkyCommandGateway:
+type SettingsDependency = Annotated[Settings, Depends(get_settings)]
+
+
+def get_skycommand_gateway(settings: SettingsDependency) -> SkyCommandGateway:
     return SkyCommandClient(
         base_url=settings.skycommand_api_base_url,
         token=settings.skycommand_api_token,
         auth_mode=settings.skycommand_api_auth_mode,
         timeout_seconds=settings.skycommand_api_timeout_seconds,
     )
+
+
+type SkyCommandGatewayDependency = Annotated[
+    SkyCommandGateway,
+    Depends(get_skycommand_gateway),
+]
