@@ -53,9 +53,9 @@ CAPABILITIES = [
 ]
 
 ROADMAP = [
-    RoadmapPhase(number=0, name="Repository Foundation", status="IN_PROGRESS"),
-    RoadmapPhase(number=1, name="Studio Shell and Platform Health", status="IN_PROGRESS"),
-    RoadmapPhase(number=2, name="SkyCommand Data-Contract Bridge", status="NEXT"),
+    RoadmapPhase(number=0, name="Repository Foundation", status="COMPLETE"),
+    RoadmapPhase(number=1, name="Studio Shell and Platform Health", status="COMPLETE"),
+    RoadmapPhase(number=2, name="SkyCommand Data-Contract Bridge", status="IN_PROGRESS"),
     RoadmapPhase(number=3, name="Data Catalogue and Engineering Metadata", status="PLANNED"),
     RoadmapPhase(number=4, name="ETL/ELT Pipeline Workbench", status="PLANNED"),
     RoadmapPhase(number=5, name="Apache Airflow Integration", status="PLANNED"),
@@ -73,7 +73,7 @@ def platform_summary() -> PlatformSummary:
         product="SkyData Studio",
         subtitle="Data Engineering Workbench",
         theme="Aurora Foundry",
-        current_phase="Phase 0/1 — Foundation and Studio Shell",
+        current_phase="Phase 2.1 — Live SkyCommand Contract Bridge",
         boundary=(
             "SkyData Studio starts after SkyCommand ingestion and publishes governed "
             "analytical products for SkyWeb Analytics, Power BI, and future consumers."

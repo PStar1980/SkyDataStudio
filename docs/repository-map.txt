@@ -2,13 +2,6 @@ SkyDataStudio
 ├── .github
 │   └── workflows
 │       └── ci.yml
-├── .pytest_cache
-│   ├── v
-│   │   └── cache
-│   │       └── nodeids
-│   ├── .gitignore
-│   ├── CACHEDIR.TAG
-│   └── README.md
 ├── apps
 │   ├── api
 │   │   └── skydata_studio
@@ -17,15 +10,26 @@ SkyDataStudio
 │   │       │   │   ├── __init__.py
 │   │       │   │   ├── contracts.py
 │   │       │   │   ├── health.py
-│   │       │   │   └── platform.py
+│   │       │   │   ├── platform.py
+│   │       │   │   └── skycommand.py
 │   │       │   ├── __init__.py
 │   │       │   └── router.py
 │   │       ├── core
 │   │       │   ├── __init__.py
 │   │       │   └── config.py
+│   │       ├── integrations
+│   │       │   └── skycommand
+│   │       │       ├── __init__.py
+│   │       │       ├── client.py
+│   │       │       ├── dependencies.py
+│   │       │       └── preview.py
 │   │       ├── schemas
 │   │       │   ├── __init__.py
+│   │       │   ├── assets.py
 │   │       │   └── platform.py
+│   │       ├── services
+│   │       │   ├── __init__.py
+│   │       │   └── asset_workspace.py
 │   │       ├── __init__.py
 │   │       └── main.py
 │   └── web
@@ -36,13 +40,17 @@ SkyDataStudio
 │       │   │   ├── StatusPill.jsx
 │       │   │   └── Topbar.jsx
 │       │   ├── pages
+│       │   │   ├── DataAssets.jsx
 │       │   │   ├── PlaceholderPage.jsx
 │       │   │   └── StudioOverview.jsx
+│       │   ├── services
+│       │   │   └── api.js
 │       │   ├── App.jsx
 │       │   ├── main.jsx
 │       │   └── styles.css
 │       ├── eslint.config.js
 │       ├── index.html
+│       ├── package-lock.json
 │       ├── package.json
 │       └── vite.config.js
 ├── contracts
@@ -52,7 +60,8 @@ SkyDataStudio
 │   ├── ARCHITECTURE.md
 │   ├── DESIGN_SYSTEM.md
 │   ├── repository-map.txt
-│   └── ROADMAP.md
+│   ├── ROADMAP.md
+│   └── SkyData_RepoMap.md
 ├── infra
 │   └── docker-compose.yml
 ├── orchestration
@@ -71,8 +80,13 @@ SkyDataStudio
 │   ├── publish_github.ps1
 │   └── validate.py
 ├── tests
+│   ├── __init__.py
+│   ├── conftest.py
+│   ├── test_asset_workspace.py
+│   ├── test_asset_workspace_api.py
 │   ├── test_health.py
 │   ├── test_platform.py
+│   ├── test_skycommand_client.py
 │   └── test_skycommand_contracts.py
 ├── transformations
 │   └── dbt
@@ -100,7 +114,7 @@ SkyDataStudio
 ├── .env.example
 ├── .gitignore
 ├── .python-version
-├── change.log
 ├── Makefile
 ├── pyproject.toml
-└── README.md
+├── README.md
+└── uv.lock

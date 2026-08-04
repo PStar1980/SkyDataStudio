@@ -118,7 +118,7 @@ function Sidebar({ mobileOpen, onClose }) {
         <span className="environment-dot" />
         <span>
           <strong>Development</strong>
-          <small>Phase 0 / 1 foundation</small>
+          <small>Phase 2.1 contract bridge</small>
         </span>
       </div>
     </aside>

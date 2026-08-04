@@ -13,7 +13,7 @@ CONTRACTS = [
         purpose="Resolve portable asset identity and source/storage bindings.",
     ),
     ConsumerContract(
-        code="data_freshness_status.v1",
+        code="asset_freshness.v1",
         purpose="Consume explainable freshness evidence before downstream processing.",
     ),
     ConsumerContract(

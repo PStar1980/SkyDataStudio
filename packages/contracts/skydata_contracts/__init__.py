@@ -1,13 +1,33 @@
 from skydata_contracts.skycommand import (
+    AssetFreshness,
+    AssetFreshnessList,
+    CatalogueAsset,
+    CatalogueAssetList,
+    CatalogueDomain,
+    CatalogueDomainList,
+    CatalogueSource,
+    CatalogueSourceList,
     ConsumerContract,
     IngestionRunItem,
+    IngestionRunList,
+    IngestionRunRecord,
     IngestionRunSummary,
     IngestionRunTotals,
 )
 
 __all__ = [
+    "AssetFreshness",
+    "AssetFreshnessList",
+    "CatalogueAsset",
+    "CatalogueAssetList",
+    "CatalogueDomain",
+    "CatalogueDomainList",
+    "CatalogueSource",
+    "CatalogueSourceList",
     "ConsumerContract",
     "IngestionRunItem",
+    "IngestionRunList",
+    "IngestionRunRecord",
     "IngestionRunSummary",
     "IngestionRunTotals",
 ]

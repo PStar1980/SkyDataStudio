@@ -4,7 +4,27 @@
 
 SkyData Studio is the post-ingestion data engineering application in the Sky ecosystem. It begins where SkyCommand's ingestion responsibility ends and prepares trusted data for analytical consumption by SkyWeb Analytics, Power BI, and future client-facing applications.
 
-**Current status:** Phase 0/1 foundation is implemented. Phase 1.2 validation hardening is in progress before the Phase 2 contract bridge.
+**Current status:** Phase 0/1 and the green validation baseline are complete. Phase 2.1 implements the live SkyCommand contract bridge and first Data Assets workspace.
+
+---
+
+## Phase 2.1 quick start
+
+SkyData Studio consumes SkyCommand through a read-only internal service token. Configure the same local secret in both applications:
+
+```env
+# SkyCommand .env
+SKYCOMMAND_INTERNAL_API_AUTH_ENABLED=true
+SKYCOMMAND_INTERNAL_API_TOKEN=replace_with_a_local_secret
+
+# SkyData Studio .env
+SKYCOMMAND_API_BASE_URL=http://localhost:7171/api
+SKYCOMMAND_API_AUTH_MODE=internal
+SKYCOMMAND_API_TOKEN=replace_with_the_same_local_secret
+SKYCOMMAND_OFFLINE_PREVIEW_ENABLED=true
+```
+
+The first live workspace is available at `/workspace/assets`. When SkyCommand is unavailable or the token has not been configured, the API returns an explicitly labelled offline preview rather than silently presenting fixture data as live.
 
 ---
 

@@ -4,7 +4,18 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 OUTPUT = ROOT / "docs" / "repository-map.txt"
-IGNORED = {".git", ".venv", "node_modules", "dist", "target", "zip", "__pycache__"}
+IGNORED = {
+    ".git",
+    ".mypy_cache",
+    ".pytest_cache",
+    ".ruff_cache",
+    ".venv",
+    "__pycache__",
+    "dist",
+    "node_modules",
+    "target",
+    "zip",
+}
 
 
 def walk(path: Path, prefix: str = "") -> list[str]:
