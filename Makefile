@@ -16,13 +16,14 @@ test:
 lint:
 	uv run ruff check .
 	uv run mypy apps/api packages/contracts
+	cd apps/web && npm run lint
 
 format:
 	uv run ruff format .
 	uv run ruff check --fix .
 
 validate:
-	uv run python scripts/validate.py
+	python scripts/validate.py
 
 repo-map:
 	uv run python scripts/generate_repo_map.py

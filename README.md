@@ -4,7 +4,19 @@
 
 SkyData Studio is the post-ingestion data engineering application in the Sky ecosystem. It begins where SkyCommand's ingestion responsibility ends and prepares trusted data for analytical consumption by SkyWeb Analytics, Power BI, and future client-facing applications.
 
-**Current status:** Phase 0 foundation and Phase 1 application shell are underway.
+**Current status:** Phase 0/1 foundation is implemented. Phase 1.2 validation hardening is in progress before the Phase 2 contract bridge.
+
+---
+
+## Validation contract
+
+Run the complete local validation suite before every SkyCommand development promotion:
+
+```powershell
+python .\scripts\validate.py
+```
+
+The first run creates `uv.lock` and `apps/web/package-lock.json`. Commit both lockfiles. Later runs use locked Python synchronization and `npm ci`, matching GitHub Actions as closely as possible. The suite performs Python compilation, Ruff, mypy, pytest, ESLint, and a Vite production build.
 
 ---
 

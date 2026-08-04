@@ -35,7 +35,6 @@ function App() {
   );
 
   useEffect(() => {
-    setMobileOpen(false);
     window.scrollTo({ top: 0, behavior: 'auto' });
   }, [location.pathname]);
 

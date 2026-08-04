@@ -5,7 +5,18 @@ import zipfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-IGNORED_DIRS = {".git", ".venv", "node_modules", "dist", "target", "zip", "__pycache__", ".pytest_cache", ".ruff_cache", ".mypy_cache"}
+IGNORED_DIRS = {
+    ".git",
+    ".mypy_cache",
+    ".pytest_cache",
+    ".ruff_cache",
+    ".venv",
+    "__pycache__",
+    "dist",
+    "node_modules",
+    "target",
+    "zip",
+}
 IGNORED_SUFFIXES = {".zip", ".patch", ".pyc", ".log", ".png"}
 SENSITIVE_NAMES = {".env", ".env.local", ".env.development", ".env.production", ".env.test"}
 

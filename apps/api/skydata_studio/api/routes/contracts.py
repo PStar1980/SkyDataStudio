@@ -1,5 +1,4 @@
 from fastapi import APIRouter
-
 from skydata_contracts.skycommand import ConsumerContract
 
 router = APIRouter()
