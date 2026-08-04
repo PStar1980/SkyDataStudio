@@ -225,3 +225,58 @@ a { color: inherit; }
   .hero-panel h1 { font-size: 2.35rem; }
   .panel { padding: 1rem; }
 }
+
+/* Phase 2.1 — SkyCommand contract bridge and Data Assets workspace */
+.status-blocked { color: var(--coral); background: rgba(255,111,130,0.08); }
+.asset-page-intro { display: grid; grid-template-columns: minmax(0,1fr) minmax(20rem,0.42fr); gap: 1.2rem; align-items: end; }
+.connection-card { border: 1px solid rgba(102,190,184,0.19); border-radius: 0.9rem; padding: 1rem; background: rgba(8,22,31,0.76); }
+.connection-card p { margin: 0.65rem 0 0.5rem; color: var(--muted); font-size: 0.78rem; line-height: 1.5; }
+.connection-card small { color: var(--subtle); font-size: 0.65rem; }
+.connection-heading { display: flex; align-items: center; gap: 0.55rem; }
+.connection-heading strong { margin-right: auto; font-size: 0.82rem; letter-spacing: 0.08em; }
+.connection-dot { width: 0.62rem; height: 0.62rem; border-radius: 50%; background: var(--subtle); box-shadow: 0 0 0 0.22rem rgba(99,128,135,0.1); }
+.connection-connected { background: var(--teal); box-shadow: 0 0 0 0.22rem rgba(66,217,198,0.12), 0 0 1rem rgba(66,217,198,0.34); }
+.connection-preview { background: var(--amber); box-shadow: 0 0 0 0.22rem rgba(243,189,85,0.1), 0 0 1rem rgba(243,189,85,0.2); }
+.connection-unavailable { background: var(--coral); }
+.asset-metric-grid { display: grid; grid-template-columns: repeat(5,minmax(0,1fr)); gap: 0.85rem; }
+.metric-alert { color: var(--coral) !important; }
+.filter-actions { display: flex; gap: 0.55rem; }
+.asset-filter-grid { display: grid; grid-template-columns: minmax(15rem,2fr) repeat(3,minmax(10rem,1fr)); gap: 0.8rem; }
+.asset-filter-grid label { display: grid; gap: 0.38rem; }
+.asset-filter-grid label > span { color: var(--muted); font-size: 0.65rem; font-weight: 820; letter-spacing: 0.08em; text-transform: uppercase; }
+.asset-filter-grid input, .asset-filter-grid select { width: 100%; min-height: 2.7rem; border: 1px solid rgba(113,184,184,0.2); border-radius: 0.62rem; padding: 0 0.75rem; outline: none; color: var(--text); background: rgba(4,13,20,0.76); }
+.asset-filter-grid input:focus, .asset-filter-grid select:focus { border-color: var(--border-strong); box-shadow: 0 0 0 0.18rem rgba(66,217,198,0.08); }
+.asset-filter-grid select option { color: var(--text); background: #08131c; }
+.asset-table-panel { min-width: 0; }
+.asset-table-scroll { overflow-x: auto; border: 1px solid rgba(103,182,178,0.12); border-radius: 0.78rem; }
+.asset-table { width: 100%; min-width: 1180px; border-collapse: collapse; font-size: 0.75rem; }
+.asset-table th { padding: 0.78rem 0.85rem; color: var(--subtle); background: rgba(4,13,20,0.86); font-size: 0.61rem; letter-spacing: 0.09em; text-align: left; text-transform: uppercase; }
+.asset-table td { border-top: 1px solid rgba(102,179,177,0.09); padding: 0.85rem; vertical-align: top; }
+.asset-table tbody tr { background: rgba(7,18,26,0.46); transition: background 150ms ease; }
+.asset-table tbody tr:hover { background: rgba(16,42,54,0.72); }
+.asset-table td > strong, .asset-table td > small, .asset-table td > code { display: block; }
+.asset-table td > small, .asset-primary + small { margin-top: 0.34rem; color: var(--subtle); line-height: 1.4; }
+.asset-table code { color: #b9aae9; font-family: "Cascadia Code", "SFMono-Regular", Consolas, monospace; font-size: 0.69rem; }
+.asset-primary { display: flex; align-items: baseline; gap: 0.55rem; }
+.asset-primary strong { max-width: 18rem; }
+.asset-primary code { color: var(--mint); }
+.asset-table .status-pill { margin-bottom: 0.35rem; }
+.table-empty { padding: 2.5rem; color: var(--muted); text-align: center; }
+.request-error { display: flex; gap: 0.6rem; margin-bottom: 1rem; border: 1px solid rgba(255,111,130,0.25); border-radius: 0.72rem; padding: 0.8rem; color: #ffd9de; background: rgba(255,111,130,0.07); }
+.request-error span { color: #c99da4; }
+
+@media (max-width: 1280px) {
+  .asset-metric-grid { grid-template-columns: repeat(3,minmax(0,1fr)); }
+  .asset-filter-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
+}
+
+@media (max-width: 900px) {
+  .asset-page-intro { grid-template-columns: 1fr; }
+  .asset-metric-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
+}
+
+@media (max-width: 620px) {
+  .asset-metric-grid, .asset-filter-grid { grid-template-columns: 1fr; }
+  .filter-actions { width: 100%; }
+  .filter-actions button { flex: 1; }
+}

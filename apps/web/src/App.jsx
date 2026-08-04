@@ -3,6 +3,7 @@ import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import Sidebar from './components/Sidebar.jsx';
 import Topbar from './components/Topbar.jsx';
 import StudioOverview from './pages/StudioOverview.jsx';
+import DataAssets from './pages/DataAssets.jsx';
 import PlaceholderPage from './pages/PlaceholderPage.jsx';
 
 const PAGE_META = {
@@ -50,8 +51,9 @@ function App() {
         <Routes>
           <Route path="/" element={<Navigate replace to="/dashboard" />} />
           <Route path="/dashboard" element={<StudioOverview />} />
+          <Route path="/workspace/assets" element={<DataAssets />} />
           {Object.entries(PAGE_META)
-            .filter(([path]) => path !== '/dashboard')
+            .filter(([path]) => !['/dashboard', '/workspace/assets'].includes(path))
             .map(([path, [title, subtitle]]) => (
               <Route
                 key={path}
