@@ -1,5 +1,4 @@
 from fastapi.testclient import TestClient
-
 from skydata_studio.main import app
 
 client = TestClient(app)

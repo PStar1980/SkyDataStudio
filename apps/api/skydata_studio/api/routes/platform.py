@@ -15,7 +15,10 @@ CAPABILITIES = [
     Capability(
         code="PIPELINE_WORKBENCH",
         name="ETL/ELT Pipeline Workbench",
-        description="Defines versioned, parameterized, replayable post-ingestion processing pipelines.",
+        description=(
+            "Defines versioned, parameterized, replayable post-ingestion "
+            "processing pipelines."
+        ),
         status="PLANNED",
         phase=4,
     ),
