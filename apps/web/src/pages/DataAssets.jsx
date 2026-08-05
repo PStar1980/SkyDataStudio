@@ -12,9 +12,10 @@ const EMPTY_WORKSPACE = {
   totals: {
     assets: 0,
     sources: 0,
-    fresh: 0,
-    watch: 0,
-    stale: 0,
+    current: 0,
+    warning: 0,
+    error: 0,
+    inactive: 0,
     unknown: 0,
     quality_issues: 0,
   },
@@ -33,9 +34,9 @@ function formatDate(value) {
 
 function statusTone(status) {
   const normalized = String(status || 'UNKNOWN').toUpperCase();
-  if (normalized === 'FRESH' || normalized === 'SUCCESS') return 'READY';
-  if (normalized === 'WATCH' || normalized === 'WARNING') return 'SCAFFOLDED';
-  if (normalized === 'STALE' || normalized === 'FAILED') return 'BLOCKED';
+  if (['CURRENT', 'SUCCESS', 'COMPLETED', 'UPDATED', 'UNCHANGED', 'PASS'].includes(normalized)) return 'READY';
+  if (['WARNING', 'PARTIAL', 'WARN'].includes(normalized)) return 'WARNING';
+  if (['ERROR', 'FAILED', 'FAIL', 'REJECTED', 'BLOCKED'].includes(normalized)) return 'BLOCKED';
   return 'PLANNED';
 }
 
@@ -95,7 +96,7 @@ function DataAssets() {
     <div className="page-stack">
       <section className="page-intro asset-page-intro">
         <div>
-          <span className="eyebrow">PHASE 2.1 · SKYCOMMAND CONTRACT BRIDGE</span>
+          <span className="eyebrow">PHASE 2.1.5 · FRESHNESS CONTRACT ALIGNMENT</span>
           <h1>Data Assets</h1>
           <p>
             Discover trusted post-ingestion assets, freshness evidence, storage bindings,
@@ -118,8 +119,9 @@ function DataAssets() {
       <section className="asset-metric-grid">
         <article className="metric-card"><span>Discoverable Assets</span><strong>{workspace.totals.assets}</strong><small>Portable catalogue records</small></article>
         <article className="metric-card"><span>Connected Sources</span><strong>{workspace.totals.sources}</strong><small>Observable ingestion providers</small></article>
-        <article className="metric-card"><span>Fresh / Watch</span><strong>{workspace.totals.fresh} / {workspace.totals.watch}</strong><small>Explainable freshness status</small></article>
-        <article className="metric-card"><span>Stale / Unknown</span><strong className={workspace.totals.stale ? 'metric-alert' : ''}>{workspace.totals.stale} / {workspace.totals.unknown}</strong><small>Assets requiring attention</small></article>
+        <article className="metric-card"><span>Current</span><strong>{workspace.totals.current}</strong><small>Assets meeting freshness policy</small></article>
+        <article className="metric-card"><span>Warning / Error</span><strong className={workspace.totals.error ? 'metric-alert' : ''}>{workspace.totals.warning} / {workspace.totals.error}</strong><small>Assets requiring attention</small></article>
+        <article className="metric-card"><span>Inactive / Unknown</span><strong>{workspace.totals.inactive} / {workspace.totals.unknown}</strong><small>Non-current classification</small></article>
         <article className="metric-card"><span>Quality Findings</span><strong>{workspace.totals.quality_issues}</strong><small>Latest source-run evidence</small></article>
       </section>
 
@@ -191,10 +193,10 @@ function DataAssets() {
                   </td>
                   <td><strong>{item.domain_code}</strong><small>{item.source_code || 'UNBOUND'} · {item.provider_name || 'No provider'}</small></td>
                   <td><strong>{item.frequency_code || '—'}</strong><small>{item.unit_code || 'No unit'}</small></td>
-                  <td><StatusPill status={statusTone(item.freshness_status)} /><small>{item.freshness_status} · {item.freshness_reason}</small></td>
+                  <td><StatusPill status={item.freshness_status} tone={statusTone(item.freshness_status)} /><small>{item.freshness_reason}</small></td>
                   <td><strong>{formatDate(item.target_latest_date)}</strong><small>Source {formatDate(item.source_latest_date)}</small></td>
                   <td><strong>{item.target_row_count?.toLocaleString() || '—'}</strong><small>Quality {item.quality_issue_count}</small></td>
-                  <td><StatusPill status={statusTone(item.last_run_status)} /><small>{item.last_run_status || item.last_attempt_status || 'No run evidence'}</small></td>
+                  <td><StatusPill status={item.last_run_status || item.last_attempt_status || 'UNKNOWN'} tone={statusTone(item.last_run_status || item.last_attempt_status)} /><small>{item.last_run_status || item.last_attempt_status || 'No run evidence'}</small></td>
                   <td><code>{item.storage_relation || 'Unmapped'}</code><small>{item.criticality_code}</small></td>
                 </tr>
               ))}

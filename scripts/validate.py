@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import compileall
+import os
 import shutil
 import subprocess
 import sys
@@ -24,10 +25,22 @@ def command_path(name: str) -> str:
     return executable
 
 
+def validation_environment() -> dict[str, str]:
+    environment = os.environ.copy()
+    if sys.platform == "win32":
+        environment.setdefault("UV_LINK_MODE", "copy")
+    return environment
+
+
 def run(command: list[str], *, cwd: Path = ROOT) -> None:
     display = " ".join(command)
     print(f"\n> {display}", flush=True)
-    subprocess.run(command, cwd=cwd, check=True)
+    subprocess.run(
+        command,
+        cwd=cwd,
+        check=True,
+        env=validation_environment(),
+    )
 
 
 def compile_python() -> None:
@@ -72,6 +85,9 @@ def main() -> int:
     try:
         uv = command_path("uv")
         npm = command_path("npm")
+
+        if sys.platform == "win32" and "UV_LINK_MODE" not in os.environ:
+            print("Windows detected; uv subprocesses will use copy mode.")
 
         sync_python_dependencies(uv)
         compile_python()

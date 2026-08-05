@@ -18,5 +18,19 @@ def test_asset_workspace_endpoint_exposes_joined_contract_view() -> None:
     payload = response.json()
     assert payload["mode"] == "LIVE"
     assert payload["connection"]["status"] == "CONNECTED"
-    assert payload["totals"]["assets"] == 6
+    assert payload["totals"] == {
+        "assets": 6,
+        "sources": 3,
+        "current": 3,
+        "warning": 2,
+        "error": 1,
+        "inactive": 0,
+        "unknown": 0,
+        "quality_issues": 0,
+    }
     assert payload["items"][0]["asset_code"]
+    assert {item["freshness_status"] for item in payload["items"]} == {
+        "CURRENT",
+        "ERROR",
+        "WARNING",
+    }

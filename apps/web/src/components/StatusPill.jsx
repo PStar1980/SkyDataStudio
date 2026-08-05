@@ -1,5 +1,5 @@
-function StatusPill({ status }) {
-  const normalized = String(status || 'PLANNED').toLowerCase();
+function StatusPill({ status, tone }) {
+  const normalized = String(tone || status || 'PLANNED').toLowerCase();
   return <span className={`status-pill status-${normalized}`}>{status}</span>;
 }
 

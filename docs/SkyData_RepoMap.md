@@ -92,7 +92,8 @@ SkyDataStudio/
 │   ├── test_health.py
 │   ├── test_platform.py
 │   ├── test_skycommand_client.py
-│   └── test_skycommand_contracts.py
+│   ├── test_skycommand_contracts.py
+│   └── test_validation_environment.py
 └── transformations/
     └── dbt/
         └── skydata_studio/

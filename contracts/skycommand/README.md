@@ -35,3 +35,15 @@ SkyCommand grants this identity only the read permissions required by internal s
 ## Contract rule
 
 The Python models in `packages/contracts/skydata_contracts/skycommand.py` represent stable consumer fields needed by Studio. They are not copies of SkyCommand database tables, and unknown additive fields are tolerated for forward compatibility.
+
+## Freshness vocabulary
+
+SkyData Studio preserves the canonical `asset_freshness.v1` status codes emitted by SkyCommand:
+
+- `CURRENT` — the asset meets its resolved cadence and publication policy;
+- `WARNING` — evidence requires attention, but failure is not proven;
+- `ERROR` — ingestion, storage, or configuration evidence requires action;
+- `INACTIVE` — publication is intentionally inactive or discontinued;
+- `UNKNOWN` — available evidence is insufficient for a confident classification.
+
+Preview fixtures, filters, aggregate totals, and row-level UI indicators use this same vocabulary. Unknown legacy or future values are normalized to `UNKNOWN` at the SkyData Studio façade boundary.
