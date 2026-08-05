@@ -262,11 +262,13 @@ def preview_asset_detail(domain_code: str, asset_code: str) -> CatalogueAssetRes
         for item in preview_assets().items
         if item.domain_code == normalized_domain and item.asset_code == normalized_asset
     )
-    return CatalogueAssetResponse(
-        ok=True,
-        contract_version="data_catalogue.v1",
-        generated_at=datetime.now(UTC),
-        asset=asset,
+    return CatalogueAssetResponse.model_validate(
+        {
+            "ok": True,
+            "contractVersion": "data_catalogue.v1",
+            "generatedAt": datetime.now(UTC),
+            "asset": asset,
+        }
     )
 
 
@@ -282,11 +284,13 @@ def preview_freshness_detail(
         if freshness.domain_code == normalized_domain
         and freshness.asset_code == normalized_asset
     )
-    return AssetFreshnessResponse(
-        ok=True,
-        contract_version="asset_freshness.v1",
-        generated_at=datetime.now(UTC),
-        item=item,
+    return AssetFreshnessResponse.model_validate(
+        {
+            "ok": True,
+            "contractVersion": "asset_freshness.v1",
+            "generatedAt": datetime.now(UTC),
+            "item": item,
+        }
     )
 
 
