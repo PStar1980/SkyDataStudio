@@ -33,7 +33,6 @@ from skydata_studio.schemas.assets import (
     SkyCommandIntegrationHealth,
 )
 
-
 _FRESHNESS_STATUSES: frozenset[str] = frozenset(
     {"CURRENT", "WARNING", "ERROR", "INACTIVE", "UNKNOWN"}
 )
