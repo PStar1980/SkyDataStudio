@@ -14,7 +14,9 @@ from skydata_studio.integrations.skycommand.client import SkyCommandClient
 
 class SkyCommandGateway(Protocol):
     base_url: str
-    authenticated: bool
+
+    @property
+    def authenticated(self) -> bool: ...
 
     async def list_domains(self, *, active: bool = True) -> CatalogueDomainList: ...
 

@@ -1,8 +1,8 @@
 from fastapi.testclient import TestClient
 from skydata_studio.integrations.skycommand.dependencies import get_skycommand_gateway
 from skydata_studio.main import app
-from tests.test_asset_workspace import PreviewGateway
 
+from tests.test_asset_workspace import PreviewGateway
 
 client = TestClient(app)
 
