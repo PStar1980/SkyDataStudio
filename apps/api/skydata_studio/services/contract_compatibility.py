@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+from collections.abc import Mapping
 from datetime import UTC, datetime
 from typing import Literal
 
@@ -29,7 +30,7 @@ EXPECTED_CONTRACTS: tuple[str, ...] = (
 
 
 def compatibility_items(
-    observed_versions: dict[str, str | None],
+    observed_versions: Mapping[str, str | None],
 ) -> list[ContractCompatibilityItem]:
     items: list[ContractCompatibilityItem] = []
     for expected_version in EXPECTED_CONTRACTS:
@@ -60,7 +61,7 @@ def build_compatibility_response(
     gateway: SkyCommandGateway,
     mode: Literal["LIVE", "PREVIEW"],
     message: str,
-    observed_versions: dict[str, str | None],
+    observed_versions: Mapping[str, str | None],
 ) -> ContractCompatibilityResponse:
     items = compatibility_items(observed_versions)
     compatible = sum(item.status == "COMPATIBLE" for item in items)
