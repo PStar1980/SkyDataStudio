@@ -2,6 +2,14 @@ from datetime import date, datetime
 from typing import Literal
 
 from pydantic import BaseModel, Field
+from skydata_contracts.skycommand import (
+    AssetFreshness,
+    CatalogueAsset,
+    IngestionRunRecord,
+    QualityEvent,
+    RejectionEvent,
+    RevisionEvent,
+)
 
 type FreshnessStatus = Literal["CURRENT", "WARNING", "ERROR", "INACTIVE", "UNKNOWN"]
 
@@ -73,3 +81,45 @@ class SkyCommandIntegrationHealth(BaseModel):
     connection: SkyCommandConnection
     domain_count: int = 0
     asset_count: int = 0
+
+
+class ContractCompatibilityItem(BaseModel):
+    code: str
+    expected_version: str
+    observed_version: str | None = None
+    status: Literal["COMPATIBLE", "MISSING", "INCOMPATIBLE"]
+    message: str
+
+
+class ContractCompatibilityResponse(BaseModel):
+    checked_at: datetime
+    mode: Literal["LIVE", "PREVIEW"]
+    status: Literal["COMPATIBLE", "DEGRADED"]
+    connection: SkyCommandConnection
+    compatible: int = 0
+    incompatible: int = 0
+    missing: int = 0
+    items: list[ContractCompatibilityItem] = Field(default_factory=list)
+
+
+class AssetEvidenceTotals(BaseModel):
+    quality_events: int = 0
+    blocking_quality_events: int = 0
+    revisions: int = 0
+    rejections: int = 0
+    recent_runs: int = 0
+
+
+class AssetDetailResponse(BaseModel):
+    generated_at: datetime
+    mode: Literal["LIVE", "PREVIEW"]
+    source_system: Literal["SKYCOMMAND"] = "SKYCOMMAND"
+    connection: SkyCommandConnection
+    compatibility: ContractCompatibilityResponse
+    asset: CatalogueAsset
+    freshness: AssetFreshness
+    totals: AssetEvidenceTotals
+    quality_events: list[QualityEvent] = Field(default_factory=list)
+    revisions: list[RevisionEvent] = Field(default_factory=list)
+    rejections: list[RejectionEvent] = Field(default_factory=list)
+    recent_runs: list[IngestionRunRecord] = Field(default_factory=list)

@@ -59,3 +59,48 @@ async def test_skycommand_client_surfaces_remote_permission_error() -> None:
 
     assert error.value.status_code == 403
     assert error.value.category == "HTTP"
+
+
+@pytest.mark.anyio
+async def test_skycommand_client_reads_quality_evidence_filters() -> None:
+    def handler(request: httpx.Request) -> httpx.Response:
+        assert request.url.path == "/api/ingestion/quality/events"
+        assert request.url.params["assetCode"] == "DFF"
+        assert request.url.params["blocking"] == "true"
+        return httpx.Response(
+            200,
+            json={
+                "ok": True,
+                "contractVersion": "ingestion_quality_evidence.v1",
+                "generatedAt": "2026-08-05T12:00:00Z",
+                "total": 1,
+                "limit": 50,
+                "offset": 0,
+                "items": [
+                    {
+                        "eventType": "QUALITY",
+                        "qualityEventId": "quality-1",
+                        "domainCode": "MACRO",
+                        "sourceCode": "FRED",
+                        "assetCode": "DFF",
+                        "checkCode": "UNEXPECTED_GAP",
+                        "severityCode": "ERROR",
+                        "blocking": True,
+                        "message": "Unexpected gap detected.",
+                        "createdAt": "2026-08-05T12:00:00Z",
+                    }
+                ],
+            },
+        )
+
+    client = SkyCommandClient(
+        base_url="http://skycommand.local/api",
+        token="bridge-secret",
+        auth_mode="internal",
+        transport=httpx.MockTransport(handler),
+    )
+
+    result = await client.list_quality_events(asset_code="DFF", blocking=True)
+
+    assert result.total == 1
+    assert result.items[0].blocking is True

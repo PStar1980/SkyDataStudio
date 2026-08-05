@@ -55,7 +55,7 @@ Proven evidence:
 
 ## Phase 2.1.5 — Freshness Contract Alignment and Bridge Closure
 
-**Status:** Implemented locally; pending normal SkyCommand promotion and final UI proof.
+**Status:** Complete. Canonical freshness totals and pills are proven live, validation is green, and the repository promotion completed.
 
 Changes:
 
@@ -65,7 +65,7 @@ Changes:
 - Windows validation automatically uses uv copy mode, avoiding Dropbox-incompatible hard-link behavior;
 - Phase 2.1 closure evidence records authenticated live access, 69 discovered assets, explicit preview fallback, green local validation, and green GitHub checks.
 
-Acceptance evidence required for closure:
+Closure evidence:
 
 - live Data Assets totals classify the 69 assets without treating `CURRENT` as `UNKNOWN`;
 - row-level pills display canonical freshness status codes;
@@ -74,3 +74,26 @@ Acceptance evidence required for closure:
 - GitHub backend and frontend checks pass;
 - local and remote `main`/`dev` references synchronize after promotion.
 
+
+
+## Phase 2.2 — Contract Compatibility and Quality Evidence
+
+**Status:** Implemented locally; pending normal validation, promotion, and live evidence proof.
+
+Changes:
+
+- typed `ingestion_quality_evidence.v1` consumers for quality, revision, and rejection events;
+- explicit compatibility diagnostics for all five SkyCommand-to-SkyData boundary contracts;
+- asset-level evidence endpoint joining catalogue, freshness, recent runs, quality events, revisions, and rejected rows;
+- Data Assets compatibility strip and evidence drawer;
+- live and preview evidence modes use the same response contracts;
+- validation blocks early when FastAPI or Vite is running, preventing dependency synchronization from damaging live local environments.
+
+Acceptance evidence required for closure:
+
+- compatibility diagnostics report all five boundary contracts as `COMPATIBLE`;
+- asset inspection opens from the Data Assets table and displays live evidence;
+- quality/revision/rejection endpoints validate against `ingestion_quality_evidence.v1`;
+- preview mode exposes the same evidence shapes when SkyCommand is offline;
+- validation stops with a clear message when FastAPI or Vite is running;
+- Ruff, mypy, pytest, ESLint, Vite build, GitHub checks, and normal promotion are green.
