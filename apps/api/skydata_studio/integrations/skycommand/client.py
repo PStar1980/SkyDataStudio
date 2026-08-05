@@ -7,10 +7,15 @@ import httpx
 from pydantic import BaseModel, ValidationError
 from skydata_contracts.skycommand import (
     AssetFreshnessList,
+    AssetFreshnessResponse,
     CatalogueAssetList,
+    CatalogueAssetResponse,
     CatalogueDomainList,
     CatalogueSourceList,
     IngestionRunList,
+    QualityEventList,
+    RejectionEventList,
+    RevisionEventList,
 )
 
 AuthMode = Literal["internal", "bearer", "none"]
@@ -228,3 +233,105 @@ class SkyCommandClient:
             },
         )
         return self._validate(IngestionRunList, payload)
+
+    async def get_asset(
+        self,
+        *,
+        domain_code: str,
+        asset_code: str,
+    ) -> CatalogueAssetResponse:
+        payload = await self._get(
+            f"/ingestion/catalogue/assets/{domain_code}/{asset_code}"
+        )
+        return self._validate(CatalogueAssetResponse, payload)
+
+    async def get_freshness(
+        self,
+        *,
+        domain_code: str,
+        asset_code: str,
+    ) -> AssetFreshnessResponse:
+        payload = await self._get(
+            f"/ingestion/catalogue/freshness/{domain_code}/{asset_code}"
+        )
+        return self._validate(AssetFreshnessResponse, payload)
+
+    async def list_quality_events(
+        self,
+        *,
+        domain_code: str | None = None,
+        source_code: str | None = None,
+        asset_code: str | None = None,
+        ingestion_run_id: str | int | None = None,
+        check_code: str | None = None,
+        severity_code: str | None = None,
+        blocking: bool | None = None,
+        limit: int = 50,
+        offset: int = 0,
+    ) -> QualityEventList:
+        payload = await self._get(
+            "/ingestion/quality/events",
+            params={
+                "domainCode": domain_code,
+                "sourceCode": source_code,
+                "assetCode": asset_code,
+                "ingestionRunId": ingestion_run_id,
+                "checkCode": check_code,
+                "severityCode": severity_code,
+                "blocking": blocking,
+                "limit": limit,
+                "offset": offset,
+            },
+        )
+        return self._validate(QualityEventList, payload)
+
+    async def list_revision_events(
+        self,
+        *,
+        domain_code: str | None = None,
+        source_code: str | None = None,
+        asset_code: str | None = None,
+        ingestion_run_id: str | int | None = None,
+        limit: int = 50,
+        offset: int = 0,
+    ) -> RevisionEventList:
+        payload = await self._get(
+            "/ingestion/quality/revisions",
+            params={
+                "domainCode": domain_code,
+                "sourceCode": source_code,
+                "assetCode": asset_code,
+                "ingestionRunId": ingestion_run_id,
+                "limit": limit,
+                "offset": offset,
+            },
+        )
+        return self._validate(RevisionEventList, payload)
+
+    async def list_rejection_events(
+        self,
+        *,
+        domain_code: str | None = None,
+        source_code: str | None = None,
+        asset_code: str | None = None,
+        ingestion_run_id: str | int | None = None,
+        check_code: str | None = None,
+        severity_code: str | None = None,
+        limit: int = 50,
+        offset: int = 0,
+    ) -> RejectionEventList:
+        payload = await self._get(
+            "/ingestion/quality/rejections",
+            params={
+                "domainCode": domain_code,
+                "sourceCode": source_code,
+                "assetCode": asset_code,
+                "ingestionRunId": ingestion_run_id,
+                "checkCode": check_code,
+                "severityCode": severity_code,
+                "limit": limit,
+                "offset": offset,
+            },
+        )
+        return self._validate(RejectionEventList, payload)
+

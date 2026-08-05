@@ -1,16 +1,26 @@
 import pytest
 from skydata_contracts.skycommand import (
     AssetFreshnessList,
+    AssetFreshnessResponse,
     CatalogueAssetList,
+    CatalogueAssetResponse,
     CatalogueDomainList,
     CatalogueSourceList,
     IngestionRunList,
+    QualityEventList,
+    RejectionEventList,
+    RevisionEventList,
 )
 from skydata_studio.integrations.skycommand.client import SkyCommandClientError
 from skydata_studio.integrations.skycommand.preview import (
+    preview_asset_detail,
     preview_assets,
     preview_domains,
     preview_freshness,
+    preview_freshness_detail,
+    preview_quality_events,
+    preview_rejection_events,
+    preview_revision_events,
     preview_runs,
     preview_sources,
 )
@@ -66,6 +76,75 @@ class PreviewGateway:
         offset: int = 0,
     ) -> IngestionRunList:
         return preview_runs()
+
+    async def get_asset(
+        self,
+        *,
+        domain_code: str,
+        asset_code: str,
+    ) -> CatalogueAssetResponse:
+        return preview_asset_detail(domain_code, asset_code)
+
+    async def get_freshness(
+        self,
+        *,
+        domain_code: str,
+        asset_code: str,
+    ) -> AssetFreshnessResponse:
+        return preview_freshness_detail(domain_code, asset_code)
+
+    async def list_quality_events(
+        self,
+        *,
+        domain_code: str | None = None,
+        source_code: str | None = None,
+        asset_code: str | None = None,
+        ingestion_run_id: str | int | None = None,
+        check_code: str | None = None,
+        severity_code: str | None = None,
+        blocking: bool | None = None,
+        limit: int = 50,
+        offset: int = 0,
+    ) -> QualityEventList:
+        events = preview_quality_events()
+        if asset_code:
+            events.items = [item for item in events.items if item.asset_code == asset_code]
+            events.total = len(events.items)
+        return events
+
+    async def list_revision_events(
+        self,
+        *,
+        domain_code: str | None = None,
+        source_code: str | None = None,
+        asset_code: str | None = None,
+        ingestion_run_id: str | int | None = None,
+        limit: int = 50,
+        offset: int = 0,
+    ) -> RevisionEventList:
+        events = preview_revision_events()
+        if asset_code:
+            events.items = [item for item in events.items if item.asset_code == asset_code]
+            events.total = len(events.items)
+        return events
+
+    async def list_rejection_events(
+        self,
+        *,
+        domain_code: str | None = None,
+        source_code: str | None = None,
+        asset_code: str | None = None,
+        ingestion_run_id: str | int | None = None,
+        check_code: str | None = None,
+        severity_code: str | None = None,
+        limit: int = 50,
+        offset: int = 0,
+    ) -> RejectionEventList:
+        events = preview_rejection_events()
+        if asset_code:
+            events.items = [item for item in events.items if item.asset_code == asset_code]
+            events.total = len(events.items)
+        return events
 
 
 class FailingGateway(PreviewGateway):

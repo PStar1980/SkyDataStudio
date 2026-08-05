@@ -281,3 +281,56 @@ a { color: inherit; }
   .filter-actions { width: 100%; }
   .filter-actions button { flex: 1; }
 }
+
+/* Phase 2.2 — contract compatibility and quality-evidence inspection */
+.contract-strip { display: grid; gap: 1rem; }
+.contract-strip-summary { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+.contract-strip-summary h2 { margin: 0.35rem 0 0; font-size: 1.15rem; }
+.contract-chip-row { display: grid; grid-template-columns: repeat(5,minmax(0,1fr)); gap: 0.7rem; }
+.contract-chip { min-width: 0; display: grid; gap: 0.45rem; border: 1px solid rgba(111,190,187,0.13); border-radius: 0.72rem; padding: 0.78rem; background: rgba(5,16,23,0.58); }
+.contract-chip strong { overflow: hidden; color: #dff7f2; font-size: 0.72rem; text-overflow: ellipsis; white-space: nowrap; }
+.contract-chip small { overflow: hidden; color: var(--subtle); font-size: 0.62rem; text-overflow: ellipsis; white-space: nowrap; }
+.table-action { border: 1px solid rgba(66,217,198,0.28); border-radius: 0.55rem; padding: 0.48rem 0.62rem; color: var(--mint); background: rgba(66,217,198,0.08); cursor: pointer; font-size: 0.67rem; font-weight: 850; letter-spacing: 0.06em; text-transform: uppercase; }
+.table-action:hover { border-color: rgba(66,217,198,0.52); background: rgba(66,217,198,0.14); }
+.detail-scrim { position: fixed; z-index: 80; inset: 0; display: flex; justify-content: flex-end; background: rgba(0,0,0,0.62); backdrop-filter: blur(4px); }
+.asset-detail-drawer { width: min(48rem,94vw); height: 100%; overflow-y: auto; border-left: 1px solid rgba(66,217,198,0.26); background: linear-gradient(180deg,#091722,#040a10); box-shadow: -32px 0 90px rgba(0,0,0,0.5); }
+.drawer-header { position: sticky; z-index: 2; top: 0; display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; border-bottom: 1px solid rgba(111,190,187,0.16); padding: 1.35rem 1.45rem; background: rgba(5,14,21,0.94); backdrop-filter: blur(18px); }
+.drawer-header h2 { margin: 0.35rem 0 0.2rem; font-size: 1.55rem; letter-spacing: -0.04em; }
+.drawer-header p { margin: 0; color: var(--muted); }
+.drawer-header button { width: 2.4rem; height: 2.4rem; border: 1px solid rgba(126,183,182,0.18); border-radius: 0.62rem; color: var(--text); background: rgba(255,255,255,0.03); cursor: pointer; font-size: 1.4rem; }
+.drawer-body { display: grid; gap: 1rem; padding: 1.25rem 1.45rem 2rem; }
+.drawer-loading { padding: 2rem 1.45rem; color: var(--muted); }
+.drawer-status-grid { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 0.7rem; }
+.drawer-status-grid article { display: grid; gap: 0.45rem; border: 1px solid rgba(111,190,187,0.13); border-radius: 0.72rem; padding: 0.85rem; background: rgba(8,22,31,0.68); }
+.drawer-status-grid span:first-child { color: var(--subtle); font-size: 0.61rem; font-weight: 850; letter-spacing: 0.08em; text-transform: uppercase; }
+.drawer-status-grid strong { color: var(--mint); font-size: 1.1rem; }
+.drawer-section { border: 1px solid rgba(111,190,187,0.13); border-radius: 0.82rem; padding: 1rem; background: rgba(8,22,31,0.58); }
+.drawer-section-heading { display: flex; align-items: center; justify-content: space-between; gap: 0.7rem; margin-bottom: 0.85rem; }
+.drawer-section-heading h3 { margin: 0; font-size: 0.94rem; }
+.drawer-section-heading > span { min-width: 1.55rem; display: grid; place-items: center; border-radius: 999px; padding: 0.18rem 0.42rem; color: var(--mint); background: rgba(66,217,198,0.09); font-size: 0.65rem; font-weight: 850; }
+.detail-definition-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 0.7rem; margin: 0; }
+.detail-definition-grid > div { min-width: 0; border: 1px solid rgba(111,190,187,0.09); border-radius: 0.6rem; padding: 0.7rem; background: rgba(3,11,17,0.45); }
+.detail-definition-grid dt { color: var(--subtle); font-size: 0.59rem; font-weight: 850; letter-spacing: 0.08em; text-transform: uppercase; }
+.detail-definition-grid dd { overflow-wrap: anywhere; margin: 0.32rem 0 0; color: #dcefed; font-size: 0.76rem; }
+.detail-message { margin: 0.9rem 0 0; color: var(--muted); font-size: 0.78rem; line-height: 1.6; }
+.drawer-contract-list { display: grid; gap: 0.55rem; }
+.drawer-contract-list > div { display: grid; grid-template-columns: auto 1fr; align-items: start; gap: 0.7rem; border-bottom: 1px solid rgba(111,190,187,0.08); padding-bottom: 0.55rem; }
+.drawer-contract-list > div:last-child { border-bottom: 0; padding-bottom: 0; }
+.drawer-contract-list span:last-child { display: grid; gap: 0.2rem; }
+.drawer-contract-list strong { font-size: 0.75rem; }
+.drawer-contract-list small { color: var(--subtle); font-size: 0.66rem; line-height: 1.45; }
+.evidence-list { display: grid; gap: 0.6rem; }
+.evidence-card { border: 1px solid rgba(111,190,187,0.1); border-radius: 0.65rem; padding: 0.75rem; background: rgba(3,11,17,0.48); }
+.evidence-card > div { display: flex; align-items: center; gap: 0.55rem; }
+.evidence-card p { margin: 0.55rem 0 0.35rem; color: #c1d5d6; font-size: 0.75rem; line-height: 1.5; }
+.evidence-card small { color: var(--subtle); font-size: 0.63rem; }
+.evidence-empty { border: 1px dashed rgba(111,190,187,0.16); border-radius: 0.65rem; padding: 0.9rem; color: var(--subtle); font-size: 0.72rem; text-align: center; }
+
+@media (max-width: 1180px) {
+  .contract-chip-row { grid-template-columns: repeat(3,minmax(0,1fr)); }
+}
+
+@media (max-width: 760px) {
+  .contract-chip-row, .drawer-status-grid, .detail-definition-grid { grid-template-columns: 1fr; }
+  .asset-detail-drawer { width: 100%; }
+}

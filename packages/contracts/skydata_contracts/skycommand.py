@@ -292,3 +292,118 @@ class IngestionRunList(SkyCommandContractModel):
     limit: int = 50
     offset: int = 0
     items: list[IngestionRunRecord] = Field(default_factory=list)
+
+
+class CatalogueAssetResponse(SkyCommandContractModel):
+    ok: bool = True
+    contract_version: str = Field(alias="contractVersion")
+    generated_at: datetime = Field(alias="generatedAt")
+    asset: CatalogueAsset
+
+
+class AssetFreshnessResponse(SkyCommandContractModel):
+    ok: bool = True
+    contract_version: str = Field(alias="contractVersion")
+    generated_at: datetime = Field(alias="generatedAt")
+    item: AssetFreshness
+
+
+class QualityEvent(SkyCommandContractModel):
+    event_type: Literal["QUALITY"] = Field(default="QUALITY", alias="eventType")
+    quality_event_id: int | str | None = Field(default=None, alias="qualityEventId")
+    ingestion_run_id: int | str | None = Field(default=None, alias="ingestionRunId")
+    ingestion_run_item_id: int | str | None = Field(
+        default=None,
+        alias="ingestionRunItemId",
+    )
+    domain_code: str = Field(alias="domainCode")
+    source_code: str = Field(alias="sourceCode")
+    asset_code: str = Field(alias="assetCode")
+    asset_name: str | None = Field(default=None, alias="assetName")
+    check_code: str = Field(alias="checkCode")
+    check_name: str | None = Field(default=None, alias="checkName")
+    severity_code: str = Field(alias="severityCode")
+    blocking: bool = False
+    observation_key: str | None = Field(default=None, alias="observationKey")
+    source_row_number: int | None = Field(default=None, alias="sourceRowNumber")
+    message: str
+    evidence: dict[str, Any] = Field(default_factory=dict)
+    created_at: datetime = Field(alias="createdAt")
+
+
+class RevisionEvent(SkyCommandContractModel):
+    event_type: Literal["REVISION"] = Field(default="REVISION", alias="eventType")
+    revision_event_id: int | str | None = Field(default=None, alias="revisionEventId")
+    ingestion_run_id: int | str | None = Field(default=None, alias="ingestionRunId")
+    ingestion_run_item_id: int | str | None = Field(
+        default=None,
+        alias="ingestionRunItemId",
+    )
+    domain_code: str = Field(alias="domainCode")
+    source_code: str = Field(alias="sourceCode")
+    asset_code: str = Field(alias="assetCode")
+    asset_name: str | None = Field(default=None, alias="assetName")
+    observation_key: str = Field(alias="observationKey")
+    observation_date: date | None = Field(default=None, alias="observationDate")
+    old_value: Any = Field(default=None, alias="oldValue")
+    new_value: Any = Field(default=None, alias="newValue")
+    detected_at: datetime = Field(alias="detectedAt")
+    metadata: dict[str, Any] = Field(default_factory=dict)
+    created_at: datetime = Field(alias="createdAt")
+
+
+class RejectionEvent(SkyCommandContractModel):
+    event_type: Literal["REJECTION"] = Field(default="REJECTION", alias="eventType")
+    rejection_event_id: int | str | None = Field(default=None, alias="rejectionEventId")
+    ingestion_run_id: int | str | None = Field(default=None, alias="ingestionRunId")
+    ingestion_run_item_id: int | str | None = Field(
+        default=None,
+        alias="ingestionRunItemId",
+    )
+    domain_code: str = Field(alias="domainCode")
+    source_code: str = Field(alias="sourceCode")
+    asset_code: str = Field(alias="assetCode")
+    asset_name: str | None = Field(default=None, alias="assetName")
+    check_code: str = Field(alias="checkCode")
+    check_name: str | None = Field(default=None, alias="checkName")
+    severity_code: str = Field(alias="severityCode")
+    source_row_number: int | None = Field(default=None, alias="sourceRowNumber")
+    observation_key: str | None = Field(default=None, alias="observationKey")
+    raw_payload: dict[str, Any] = Field(default_factory=dict, alias="rawPayload")
+    normalized_payload: dict[str, Any] = Field(
+        default_factory=dict,
+        alias="normalizedPayload",
+    )
+    message: str
+    metadata: dict[str, Any] = Field(default_factory=dict)
+    created_at: datetime = Field(alias="createdAt")
+
+
+class QualityEventList(SkyCommandContractModel):
+    ok: bool = True
+    contract_version: str = Field(alias="contractVersion")
+    generated_at: datetime = Field(alias="generatedAt")
+    total: int = 0
+    limit: int = 50
+    offset: int = 0
+    items: list[QualityEvent] = Field(default_factory=list)
+
+
+class RevisionEventList(SkyCommandContractModel):
+    ok: bool = True
+    contract_version: str = Field(alias="contractVersion")
+    generated_at: datetime = Field(alias="generatedAt")
+    total: int = 0
+    limit: int = 50
+    offset: int = 0
+    items: list[RevisionEvent] = Field(default_factory=list)
+
+
+class RejectionEventList(SkyCommandContractModel):
+    ok: bool = True
+    contract_version: str = Field(alias="contractVersion")
+    generated_at: datetime = Field(alias="generatedAt")
+    total: int = 0
+    limit: int = 50
+    offset: int = 0
+    items: list[RejectionEvent] = Field(default_factory=list)

@@ -47,3 +47,18 @@ SkyData Studio preserves the canonical `asset_freshness.v1` status codes emitted
 - `UNKNOWN` — available evidence is insufficient for a confident classification.
 
 Preview fixtures, filters, aggregate totals, and row-level UI indicators use this same vocabulary. Unknown legacy or future values are normalized to `UNKNOWN` at the SkyData Studio façade boundary.
+
+## Phase 2.2 quality-evidence boundary
+
+SkyData Studio consumes these additional read-only SkyCommand endpoints:
+
+- `GET /api/ingestion/quality/events`
+- `GET /api/ingestion/quality/revisions`
+- `GET /api/ingestion/quality/rejections`
+- `GET /api/ingestion/catalogue/assets/:domainCode/:assetCode`
+- `GET /api/ingestion/catalogue/freshness/:domainCode/:assetCode`
+
+The quality, revision, and rejection collections share
+`ingestion_quality_evidence.v1`. SkyData Studio verifies this version alongside
+`data_catalogue.v1`, `data_asset.v1`, `asset_freshness.v1`, and
+`ingestion_run_summary.v1` before presenting the boundary as compatible.

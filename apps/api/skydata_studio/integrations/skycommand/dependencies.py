@@ -3,10 +3,15 @@ from typing import Annotated, Protocol
 from fastapi import Depends
 from skydata_contracts.skycommand import (
     AssetFreshnessList,
+    AssetFreshnessResponse,
     CatalogueAssetList,
+    CatalogueAssetResponse,
     CatalogueDomainList,
     CatalogueSourceList,
     IngestionRunList,
+    QualityEventList,
+    RejectionEventList,
+    RevisionEventList,
 )
 from skydata_studio.core.config import Settings, get_settings
 from skydata_studio.integrations.skycommand.client import SkyCommandClient
@@ -55,6 +60,58 @@ class SkyCommandGateway(Protocol):
         limit: int = 25,
         offset: int = 0,
     ) -> IngestionRunList: ...
+
+    async def get_asset(
+        self,
+        *,
+        domain_code: str,
+        asset_code: str,
+    ) -> CatalogueAssetResponse: ...
+
+    async def get_freshness(
+        self,
+        *,
+        domain_code: str,
+        asset_code: str,
+    ) -> AssetFreshnessResponse: ...
+
+    async def list_quality_events(
+        self,
+        *,
+        domain_code: str | None = None,
+        source_code: str | None = None,
+        asset_code: str | None = None,
+        ingestion_run_id: str | int | None = None,
+        check_code: str | None = None,
+        severity_code: str | None = None,
+        blocking: bool | None = None,
+        limit: int = 50,
+        offset: int = 0,
+    ) -> QualityEventList: ...
+
+    async def list_revision_events(
+        self,
+        *,
+        domain_code: str | None = None,
+        source_code: str | None = None,
+        asset_code: str | None = None,
+        ingestion_run_id: str | int | None = None,
+        limit: int = 50,
+        offset: int = 0,
+    ) -> RevisionEventList: ...
+
+    async def list_rejection_events(
+        self,
+        *,
+        domain_code: str | None = None,
+        source_code: str | None = None,
+        asset_code: str | None = None,
+        ingestion_run_id: str | int | None = None,
+        check_code: str | None = None,
+        severity_code: str | None = None,
+        limit: int = 50,
+        offset: int = 0,
+    ) -> RejectionEventList: ...
 
 
 type SettingsDependency = Annotated[Settings, Depends(get_settings)]

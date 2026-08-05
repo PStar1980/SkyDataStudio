@@ -2,10 +2,15 @@ from datetime import UTC, datetime
 
 from skydata_contracts.skycommand import (
     AssetFreshnessList,
+    AssetFreshnessResponse,
     CatalogueAssetList,
+    CatalogueAssetResponse,
     CatalogueDomainList,
     CatalogueSourceList,
     IngestionRunList,
+    QualityEventList,
+    RejectionEventList,
+    RevisionEventList,
 )
 
 _NOW = datetime.now(UTC).isoformat()
@@ -247,3 +252,152 @@ def preview_runs() -> IngestionRunList:
             ],
         }
     )
+
+
+def preview_asset_detail(domain_code: str, asset_code: str) -> CatalogueAssetResponse:
+    normalized_domain = domain_code.upper()
+    normalized_asset = asset_code.upper()
+    asset = next(
+        item
+        for item in preview_assets().items
+        if item.domain_code == normalized_domain and item.asset_code == normalized_asset
+    )
+    return CatalogueAssetResponse(
+        ok=True,
+        contract_version="data_catalogue.v1",
+        generated_at=datetime.now(UTC),
+        asset=asset,
+    )
+
+
+def preview_freshness_detail(
+    domain_code: str,
+    asset_code: str,
+) -> AssetFreshnessResponse:
+    normalized_domain = domain_code.upper()
+    normalized_asset = asset_code.upper()
+    item = next(
+        freshness
+        for freshness in preview_freshness().items
+        if freshness.domain_code == normalized_domain
+        and freshness.asset_code == normalized_asset
+    )
+    return AssetFreshnessResponse(
+        ok=True,
+        contract_version="asset_freshness.v1",
+        generated_at=datetime.now(UTC),
+        item=item,
+    )
+
+
+def preview_quality_events() -> QualityEventList:
+    return QualityEventList.model_validate(
+        {
+            "ok": True,
+            "contractVersion": "ingestion_quality_evidence.v1",
+            "generatedAt": _NOW,
+            "total": 2,
+            "limit": 50,
+            "offset": 0,
+            "items": [
+                {
+                    "eventType": "QUALITY",
+                    "qualityEventId": "preview-quality-1",
+                    "ingestionRunId": "preview-1003",
+                    "domainCode": "MACRO",
+                    "sourceCode": "STATCAN",
+                    "assetCode": "CA_CPI",
+                    "assetName": "Canada Consumer Price Index",
+                    "checkCode": "SOURCE_DATE_REGRESSION",
+                    "checkName": "Source Date Regression",
+                    "severityCode": "WARNING",
+                    "blocking": False,
+                    "message": "Preview evidence detected a source-date regression.",
+                    "evidence": {"previousDate": "2026-06-01", "incomingDate": "2026-05-01"},
+                    "createdAt": _NOW,
+                },
+                {
+                    "eventType": "QUALITY",
+                    "qualityEventId": "preview-quality-2",
+                    "ingestionRunId": "preview-1001",
+                    "domainCode": "MACRO",
+                    "sourceCode": "FRED",
+                    "assetCode": "CPIAUCSL",
+                    "assetName": "US Consumer Price Index",
+                    "checkCode": "UNEXPECTED_GAP",
+                    "checkName": "Unexpected Gap",
+                    "severityCode": "ERROR",
+                    "blocking": True,
+                    "message": "Preview evidence found an unexpected observation gap.",
+                    "evidence": {"gapDays": 61},
+                    "createdAt": _NOW,
+                },
+            ],
+        }
+    )
+
+
+def preview_revision_events() -> RevisionEventList:
+    return RevisionEventList.model_validate(
+        {
+            "ok": True,
+            "contractVersion": "ingestion_quality_evidence.v1",
+            "generatedAt": _NOW,
+            "total": 1,
+            "limit": 50,
+            "offset": 0,
+            "items": [
+                {
+                    "eventType": "REVISION",
+                    "revisionEventId": "preview-revision-1",
+                    "ingestionRunId": "preview-1001",
+                    "domainCode": "MACRO",
+                    "sourceCode": "FRED",
+                    "assetCode": "DFF",
+                    "assetName": "Effective Federal Funds Rate",
+                    "observationKey": "2026-07-31",
+                    "observationDate": "2026-07-31",
+                    "oldValue": "4.32",
+                    "newValue": "4.33",
+                    "detectedAt": _NOW,
+                    "metadata": {"preview": True},
+                    "createdAt": _NOW,
+                }
+            ],
+        }
+    )
+
+
+def preview_rejection_events() -> RejectionEventList:
+    return RejectionEventList.model_validate(
+        {
+            "ok": True,
+            "contractVersion": "ingestion_quality_evidence.v1",
+            "generatedAt": _NOW,
+            "total": 1,
+            "limit": 50,
+            "offset": 0,
+            "items": [
+                {
+                    "eventType": "REJECTION",
+                    "rejectionEventId": "preview-rejection-1",
+                    "ingestionRunId": "preview-1003",
+                    "domainCode": "MACRO",
+                    "sourceCode": "STATCAN",
+                    "assetCode": "CA_CPI",
+                    "assetName": "Canada Consumer Price Index",
+                    "checkCode": "INVALID_NUMERIC",
+                    "checkName": "Invalid Numeric Value",
+                    "severityCode": "ERROR",
+                    "sourceRowNumber": 42,
+                    "observationKey": "2026-06-01",
+                    "rawPayload": {"value": "not-available"},
+                    "normalizedPayload": {},
+                    "message": "Preview row was rejected because its value was not numeric.",
+                    "metadata": {"preview": True},
+                    "createdAt": _NOW,
+                }
+            ],
+        }
+    )
+

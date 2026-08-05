@@ -73,7 +73,7 @@ def platform_summary() -> PlatformSummary:
         product="SkyData Studio",
         subtitle="Data Engineering Workbench",
         theme="Aurora Foundry",
-        current_phase="Phase 2.1 — Live SkyCommand Contract Bridge",
+        current_phase="Phase 2.2 — Contract Compatibility and Quality Evidence",
         boundary=(
             "SkyData Studio starts after SkyCommand ingestion and publishes governed "
             "analytical products for SkyWeb Analytics, Power BI, and future consumers."

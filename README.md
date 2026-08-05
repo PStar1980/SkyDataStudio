@@ -4,7 +4,7 @@
 
 SkyData Studio is the post-ingestion data engineering application in the Sky ecosystem. It begins where SkyCommand's ingestion responsibility ends and prepares trusted data for analytical consumption by SkyWeb Analytics, Power BI, and future client-facing applications.
 
-**Current status:** Phase 0/1 and the green validation baseline are complete. The Phase 2.1 live SkyCommand bridge is proven, and Phase 2.1.5 aligns freshness contracts before Phase 2.2 quality evidence.
+**Current status:** Phase 0/1 and the green validation baseline are complete. Phase 2.1 is closed with a proven live SkyCommand bridge. Phase 2.2 adds contract compatibility diagnostics and asset-level quality evidence.
 
 ---
 
@@ -24,7 +24,7 @@ SKYCOMMAND_API_TOKEN=replace_with_the_same_local_secret
 SKYCOMMAND_OFFLINE_PREVIEW_ENABLED=true
 ```
 
-The first live workspace is available at `/workspace/assets`. When SkyCommand is unavailable or the token has not been configured, the API returns an explicitly labelled offline preview rather than silently presenting fixture data as live.
+The first live workspace is available at `/workspace/assets`. It now includes contract compatibility diagnostics and an asset evidence drawer for quality, revision, rejection, freshness, and run evidence. When SkyCommand is unavailable or the token has not been configured, the API returns an explicitly labelled offline preview rather than silently presenting fixture data as live.
 
 ---
 
@@ -36,7 +36,7 @@ Run the complete local validation suite before every SkyCommand development prom
 python .\scripts\validate.py
 ```
 
-The first run creates `uv.lock` and `apps/web/package-lock.json`. Commit both lockfiles. Later runs use locked Python synchronization and `npm ci`, matching GitHub Actions as closely as possible. On Windows, the runner automatically uses uv copy mode to avoid Dropbox-incompatible hard links. The suite performs Python compilation, Ruff, mypy, pytest, ESLint, and a Vite production build.
+The first run creates `uv.lock` and `apps/web/package-lock.json`. Commit both lockfiles. Later runs use locked Python synchronization and `npm ci`, matching GitHub Actions as closely as possible. On Windows, the runner automatically uses uv copy mode to avoid Dropbox-incompatible hard links. It also refuses to run while Vite is listening on port 5174 because `npm ci` rebuilds `node_modules`. The suite performs Python compilation, Ruff, mypy, pytest, ESLint, and a Vite production build.
 
 ---
 

@@ -23,25 +23,245 @@ const EMPTY_WORKSPACE = {
   items: [],
 };
 
+const EMPTY_COMPATIBILITY = {
+  status: 'DEGRADED',
+  compatible: 0,
+  incompatible: 0,
+  missing: 5,
+  items: [],
+};
+
 function formatDate(value) {
   if (!value) return '—';
+  const normalized = String(value).includes('T') ? value : `${value}T00:00:00`;
   return new Intl.DateTimeFormat('en-CA', {
     year: 'numeric',
     month: 'short',
     day: '2-digit',
-  }).format(new Date(`${value}T00:00:00`));
+  }).format(new Date(normalized));
+}
+
+function formatValue(value) {
+  if (value === null || value === undefined || value === '') return '—';
+  if (typeof value === 'object') return JSON.stringify(value);
+  return String(value);
+}
+
+function formatStorage(storage) {
+  if (!storage?.schema_name || !storage?.relation_name) return 'Unmapped';
+  return `${storage.schema_name}.${storage.relation_name}`;
 }
 
 function statusTone(status) {
   const normalized = String(status || 'UNKNOWN').toUpperCase();
-  if (['CURRENT', 'SUCCESS', 'COMPLETED', 'UPDATED', 'UNCHANGED', 'PASS'].includes(normalized)) return 'READY';
-  if (['WARNING', 'PARTIAL', 'WARN'].includes(normalized)) return 'WARNING';
-  if (['ERROR', 'FAILED', 'FAIL', 'REJECTED', 'BLOCKED'].includes(normalized)) return 'BLOCKED';
+  if (
+    [
+      'CURRENT',
+      'SUCCESS',
+      'COMPLETED',
+      'UPDATED',
+      'UNCHANGED',
+      'PASS',
+      'COMPATIBLE',
+    ].includes(normalized)
+  ) return 'READY';
+  if (['WARNING', 'PARTIAL', 'WARN', 'DEGRADED'].includes(normalized)) return 'WARNING';
+  if (
+    ['ERROR', 'FAILED', 'FAIL', 'REJECTED', 'BLOCKED', 'INCOMPATIBLE'].includes(normalized)
+  ) return 'BLOCKED';
   return 'PLANNED';
+}
+
+function CompatibilityStrip({ compatibility }) {
+  return (
+    <section className="panel contract-strip">
+      <div className="contract-strip-summary">
+        <div>
+          <span className="eyebrow">CONTRACT COMPATIBILITY</span>
+          <h2>SkyCommand boundary diagnostics</h2>
+        </div>
+        <StatusPill status={compatibility.status} tone={statusTone(compatibility.status)} />
+      </div>
+      <div className="contract-chip-row">
+        {compatibility.items.map((item) => (
+          <div className="contract-chip" key={item.expected_version}>
+            <StatusPill status={item.status} tone={statusTone(item.status)} />
+            <strong>{item.expected_version}</strong>
+            <small>{item.observed_version || 'Not observed'}</small>
+          </div>
+        ))}
+        {!compatibility.items.length ? (
+          <span className="panel-meta">Contract diagnostics are loading…</span>
+        ) : null}
+      </div>
+    </section>
+  );
+}
+
+function EvidenceList({ title, items, emptyMessage, renderItem }) {
+  return (
+    <section className="drawer-section">
+      <div className="drawer-section-heading">
+        <h3>{title}</h3>
+        <span>{items.length}</span>
+      </div>
+      <div className="evidence-list">
+        {items.map(renderItem)}
+        {!items.length ? <div className="evidence-empty">{emptyMessage}</div> : null}
+      </div>
+    </section>
+  );
+}
+
+function AssetDetailDrawer({ detail, state, error, onClose }) {
+  if (state === 'IDLE') return null;
+  const asset = detail?.asset;
+  const freshness = detail?.freshness;
+
+  return (
+    <div className="detail-scrim" role="presentation" onMouseDown={onClose}>
+      <aside
+        aria-label="Asset evidence detail"
+        className="asset-detail-drawer"
+        onMouseDown={(event) => event.stopPropagation()}
+      >
+        <div className="drawer-header">
+          <div>
+            <span className="eyebrow">PHASE 2.2 · QUALITY EVIDENCE</span>
+            <h2>{asset?.asset_name || 'Loading asset evidence…'}</h2>
+            <p>{asset?.asset_code || 'Contract evidence is being assembled.'}</p>
+          </div>
+          <button aria-label="Close asset details" type="button" onClick={onClose}>×</button>
+        </div>
+
+        {state === 'LOADING' ? <div className="drawer-loading">Loading live evidence…</div> : null}
+        {state === 'ERROR' ? (
+          <div className="request-error"><strong>Asset evidence unavailable</strong><span>{error}</span></div>
+        ) : null}
+
+        {state === 'READY' && detail ? (
+          <div className="drawer-body">
+            <section className="drawer-status-grid">
+              <article>
+                <span>Mode</span>
+                <StatusPill status={detail.mode} tone={detail.mode === 'LIVE' ? 'READY' : 'WARNING'} />
+              </article>
+              <article>
+                <span>Freshness</span>
+                <StatusPill
+                  status={freshness.freshness.status_code}
+                  tone={statusTone(freshness.freshness.status_code)}
+                />
+              </article>
+              <article>
+                <span>Quality Events</span>
+                <strong>{detail.totals.quality_events}</strong>
+              </article>
+              <article>
+                <span>Revisions / Rejections</span>
+                <strong>{detail.totals.revisions} / {detail.totals.rejections}</strong>
+              </article>
+            </section>
+
+            <section className="drawer-section">
+              <div className="drawer-section-heading"><h3>Asset contract</h3></div>
+              <dl className="detail-definition-grid">
+                <div><dt>Domain</dt><dd>{asset.domain_code}</dd></div>
+                <div><dt>Source</dt><dd>{asset.source?.source_code || 'UNBOUND'}</dd></div>
+                <div><dt>Frequency</dt><dd>{asset.frequency_code || '—'}</dd></div>
+                <div><dt>Unit</dt><dd>{asset.unit_code || '—'}</dd></div>
+                <div><dt>Storage</dt><dd>{formatStorage(asset.storage)}</dd></div>
+                <div><dt>Criticality</dt><dd>{asset.criticality_code}</dd></div>
+              </dl>
+              <p className="detail-message">{asset.asset_description || 'No asset description supplied.'}</p>
+            </section>
+
+            <section className="drawer-section">
+              <div className="drawer-section-heading"><h3>Freshness evidence</h3></div>
+              <p className="detail-message">{freshness.freshness.message}</p>
+              <dl className="detail-definition-grid">
+                <div><dt>Reason</dt><dd>{freshness.freshness.reason_code}</dd></div>
+                <div><dt>Severity</dt><dd>{freshness.freshness.severity_code}</dd></div>
+                <div><dt>Source latest</dt><dd>{formatDate(freshness.evidence.source_latest_date)}</dd></div>
+                <div><dt>Target latest</dt><dd>{formatDate(freshness.evidence.target_latest_date)}</dd></div>
+                <div><dt>Rows</dt><dd>{freshness.evidence.target_row_count?.toLocaleString() || '—'}</dd></div>
+                <div><dt>Last attempt</dt><dd>{freshness.evidence.last_attempt_status || '—'}</dd></div>
+              </dl>
+            </section>
+
+            <section className="drawer-section">
+              <div className="drawer-section-heading"><h3>Contract compatibility</h3></div>
+              <div className="drawer-contract-list">
+                {detail.compatibility.items.map((item) => (
+                  <div key={item.expected_version}>
+                    <StatusPill status={item.status} tone={statusTone(item.status)} />
+                    <span><strong>{item.expected_version}</strong><small>{item.message}</small></span>
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            <EvidenceList
+              title="Quality events"
+              items={detail.quality_events}
+              emptyMessage="No quality events were returned for this asset."
+              renderItem={(item) => (
+                <article className="evidence-card" key={item.quality_event_id || item.created_at}>
+                  <div><StatusPill status={item.severity_code} tone={statusTone(item.severity_code)} /><strong>{item.check_code}</strong></div>
+                  <p>{item.message}</p>
+                  <small>{item.blocking ? 'Blocking' : 'Non-blocking'} · {formatDate(item.created_at)}</small>
+                </article>
+              )}
+            />
+
+            <EvidenceList
+              title="Revision evidence"
+              items={detail.revisions}
+              emptyMessage="No revisions were detected for this asset."
+              renderItem={(item) => (
+                <article className="evidence-card" key={item.revision_event_id || item.created_at}>
+                  <div><StatusPill status="REVISION" tone="WARNING" /><strong>{item.observation_key}</strong></div>
+                  <p>{formatValue(item.old_value)} → {formatValue(item.new_value)}</p>
+                  <small>Detected {formatDate(item.detected_at)}</small>
+                </article>
+              )}
+            />
+
+            <EvidenceList
+              title="Rejected rows"
+              items={detail.rejections}
+              emptyMessage="No rejected rows were returned for this asset."
+              renderItem={(item) => (
+                <article className="evidence-card" key={item.rejection_event_id || item.created_at}>
+                  <div><StatusPill status={item.severity_code} tone="BLOCKED" /><strong>{item.check_code}</strong></div>
+                  <p>{item.message}</p>
+                  <small>Row {item.source_row_number || '—'} · {formatDate(item.created_at)}</small>
+                </article>
+              )}
+            />
+
+            <EvidenceList
+              title="Recent source runs"
+              items={detail.recent_runs}
+              emptyMessage="No recent source runs were returned."
+              renderItem={(item) => (
+                <article className="evidence-card" key={item.ingestion_run_id || item.started_at}>
+                  <div><StatusPill status={item.status_code} tone={statusTone(item.status_code)} /><strong>{item.source_code}</strong></div>
+                  <p>{item.summary || `${item.mode_code} · ${item.trigger_code}`}</p>
+                  <small>{formatDate(item.started_at)} · Quality {item.totals.quality_issue_count}</small>
+                </article>
+              )}
+            />
+          </div>
+        ) : null}
+      </aside>
+    </div>
+  );
 }
 
 function DataAssets() {
   const [workspace, setWorkspace] = useState(EMPTY_WORKSPACE);
+  const [compatibility, setCompatibility] = useState(EMPTY_COMPATIBILITY);
   const [requestState, setRequestState] = useState('LOADING');
   const [error, setError] = useState('');
   const [filters, setFilters] = useState({
@@ -51,6 +271,9 @@ function DataAssets() {
     search: '',
   });
   const [refreshKey, setRefreshKey] = useState(0);
+  const [detail, setDetail] = useState(null);
+  const [detailState, setDetailState] = useState('IDLE');
+  const [detailError, setDetailError] = useState('');
 
   const query = useMemo(
     () => buildQuery({ ...filters, limit: 100 }),
@@ -62,11 +285,17 @@ function DataAssets() {
     const timer = window.setTimeout(() => {
       setRequestState('LOADING');
       setError('');
-      getJson(`/api/v1/integrations/skycommand/workspace/assets${query}`, {
-        signal: controller.signal,
-      })
-        .then((payload) => {
-          setWorkspace(payload);
+      Promise.all([
+        getJson(`/api/v1/integrations/skycommand/workspace/assets${query}`, {
+          signal: controller.signal,
+        }),
+        getJson('/api/v1/integrations/skycommand/contracts/compatibility', {
+          signal: controller.signal,
+        }),
+      ])
+        .then(([workspacePayload, compatibilityPayload]) => {
+          setWorkspace(workspacePayload);
+          setCompatibility(compatibilityPayload);
           setRequestState('READY');
         })
         .catch((requestError) => {
@@ -92,15 +321,38 @@ function DataAssets() {
     setFilters({ domainCode: '', sourceCode: '', freshnessStatus: '', search: '' });
   }
 
+  function inspectAsset(item) {
+    setDetail(null);
+    setDetailError('');
+    setDetailState('LOADING');
+    getJson(
+      `/api/v1/integrations/skycommand/workspace/assets/${item.domain_code}/${item.asset_code}`,
+    )
+      .then((payload) => {
+        setDetail(payload);
+        setDetailState('READY');
+      })
+      .catch((requestError) => {
+        setDetailError(requestError.message);
+        setDetailState('ERROR');
+      });
+  }
+
+  function closeDetail() {
+    setDetailState('IDLE');
+    setDetail(null);
+    setDetailError('');
+  }
+
   return (
     <div className="page-stack">
       <section className="page-intro asset-page-intro">
         <div>
-          <span className="eyebrow">PHASE 2.1.5 · FRESHNESS CONTRACT ALIGNMENT</span>
+          <span className="eyebrow">PHASE 2.2 · CONTRACT + QUALITY EVIDENCE</span>
           <h1>Data Assets</h1>
           <p>
-            Discover trusted post-ingestion assets, freshness evidence, storage bindings,
-            and the latest source-run outcomes through versioned read-only contracts.
+            Discover trusted post-ingestion assets, inspect contract compatibility,
+            and trace freshness, run, revision, rejection, and quality evidence.
           </p>
         </div>
         <div className="connection-card">
@@ -124,6 +376,8 @@ function DataAssets() {
         <article className="metric-card"><span>Inactive / Unknown</span><strong>{workspace.totals.inactive} / {workspace.totals.unknown}</strong><small>Non-current classification</small></article>
         <article className="metric-card"><span>Quality Findings</span><strong>{workspace.totals.quality_issues}</strong><small>Latest source-run evidence</small></article>
       </section>
+
+      <CompatibilityStrip compatibility={compatibility} />
 
       <section className="panel asset-filter-panel">
         <div className="panel-heading">
@@ -182,6 +436,7 @@ function DataAssets() {
                 <th>Rows</th>
                 <th>Last Run</th>
                 <th>Storage</th>
+                <th>Evidence</th>
               </tr>
             </thead>
             <tbody>
@@ -198,15 +453,23 @@ function DataAssets() {
                   <td><strong>{item.target_row_count?.toLocaleString() || '—'}</strong><small>Quality {item.quality_issue_count}</small></td>
                   <td><StatusPill status={item.last_run_status || item.last_attempt_status || 'UNKNOWN'} tone={statusTone(item.last_run_status || item.last_attempt_status)} /><small>{item.last_run_status || item.last_attempt_status || 'No run evidence'}</small></td>
                   <td><code>{item.storage_relation || 'Unmapped'}</code><small>{item.criticality_code}</small></td>
+                  <td><button className="table-action" type="button" onClick={() => inspectAsset(item)}>Inspect</button></td>
                 </tr>
               ))}
               {!workspace.items.length && requestState !== 'LOADING' ? (
-                <tr><td colSpan="8"><div className="table-empty">No assets match the current filters.</div></td></tr>
+                <tr><td colSpan="9"><div className="table-empty">No assets match the current filters.</div></td></tr>
               ) : null}
             </tbody>
           </table>
         </div>
       </section>
+
+      <AssetDetailDrawer
+        detail={detail}
+        state={detailState}
+        error={detailError}
+        onClose={closeDetail}
+      />
     </div>
   );
 }

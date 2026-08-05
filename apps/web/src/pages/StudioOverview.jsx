@@ -5,7 +5,7 @@ const FALLBACK = {
   product: 'SkyData Studio',
   subtitle: 'Data Engineering Workbench',
   theme: 'Aurora Foundry',
-  current_phase: 'Phase 2.1.5 — Freshness Contract Alignment',
+  current_phase: 'Phase 2.2 — Contract Compatibility and Quality Evidence',
   boundary: 'SkyData Studio starts after SkyCommand ingestion and publishes governed analytical products for downstream consumers.',
   capabilities: [],
 };
@@ -41,7 +41,7 @@ function StudioOverview() {
     <div className="page-stack">
       <section className="hero-panel">
         <div>
-          <span className="eyebrow">AURORA FOUNDRY · PHASE 2.1</span>
+          <span className="eyebrow">AURORA FOUNDRY · PHASE 2.2</span>
           <h1>Shape trusted data into analytical products.</h1>
           <p>{summary.boundary}</p>
           <div className="hero-actions">
@@ -61,8 +61,8 @@ function StudioOverview() {
 
       <section className="metric-grid">
         <article className="metric-card"><span>Platform API</span><strong>{apiState}</strong><small>FastAPI contract service</small></article>
-        <article className="metric-card"><span>Current Phase</span><strong>2.1.5</strong><small>Freshness alignment + bridge closure</small></article>
-        <article className="metric-card"><span>Next Boundary</span><strong>Assets</strong><small>Catalogue + freshness + run evidence</small></article>
+        <article className="metric-card"><span>Current Phase</span><strong>2.2</strong><small>Contracts + quality evidence</small></article>
+        <article className="metric-card"><span>Next Boundary</span><strong>Evidence</strong><small>Quality + revision + rejection proof</small></article>
         <article className="metric-card"><span>Orchestrator</span><strong>Airflow 3</strong><small>Batch and asset workflows</small></article>
       </section>
 
@@ -109,11 +109,11 @@ function StudioOverview() {
 
       <section className="two-column-grid">
         <article className="panel compact-panel">
-          <div className="panel-heading"><div><span className="eyebrow">NEXT IMPLEMENTATION</span><h2>SkyCommand contract bridge</h2></div><span className="phase-badge">PHASE 2.1</span></div>
+          <div className="panel-heading"><div><span className="eyebrow">NEXT IMPLEMENTATION</span><h2>Contract compatibility and evidence</h2></div><span className="phase-badge">PHASE 2.2</span></div>
           <ol className="implementation-list">
-            <li><span>01</span><div><strong>Catalogue client</strong><small>Discover portable assets and metrics.</small></div></li>
-            <li><span>02</span><div><strong>Run evidence client</strong><small>Read ingestion outcomes and quality evidence.</small></div></li>
-            <li><span>03</span><div><strong>Asset workspace</strong><small>Display downstream-ready source assets.</small></div></li>
+            <li><span>01</span><div><strong>Compatibility diagnostics</strong><small>Verify all supported boundary contracts.</small></div></li>
+            <li><span>02</span><div><strong>Quality evidence</strong><small>Read quality, revision, and rejection events.</small></div></li>
+            <li><span>03</span><div><strong>Asset inspection</strong><small>Trace evidence from a single asset drawer.</small></div></li>
           </ol>
         </article>
         <article className="panel compact-panel">

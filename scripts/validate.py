@@ -3,6 +3,7 @@ from __future__ import annotations
 import compileall
 import os
 import shutil
+import socket
 import subprocess
 import sys
 from pathlib import Path
@@ -66,6 +67,49 @@ def sync_python_dependencies(uv: str) -> None:
         raise RuntimeError("uv completed without producing uv.lock.")
 
 
+def development_service_running(
+    *,
+    host: str = "127.0.0.1",
+    port: int,
+) -> bool:
+    try:
+        with socket.create_connection((host, port), timeout=0.25):
+            return True
+    except OSError:
+        return False
+
+
+def api_dev_server_running() -> bool:
+    return development_service_running(port=8100)
+
+
+def frontend_dev_server_running() -> bool:
+    return development_service_running(port=5174)
+
+
+def ensure_development_servers_stopped() -> None:
+    running: list[str] = []
+    if api_dev_server_running():
+        running.append("FastAPI on port 8100")
+    if frontend_dev_server_running():
+        running.append("Vite on port 5174")
+    if running:
+        services = " and ".join(running)
+        raise RuntimeError(
+            f"SkyData Studio development services are running: {services}. "
+            "Stop the API and frontend before validation because uv sync and "
+            "npm ci rebuild local dependency environments."
+        )
+
+
+def ensure_frontend_server_stopped() -> None:
+    if frontend_dev_server_running():
+        raise RuntimeError(
+            "SkyData Studio frontend is running on port 5174. "
+            "Stop Vite before validation because npm ci rebuilds node_modules."
+        )
+
+
 def sync_frontend_dependencies(npm: str) -> None:
     lock_file = WEB_ROOT / "package-lock.json"
     if lock_file.exists():
@@ -89,6 +133,7 @@ def main() -> int:
         if sys.platform == "win32" and "UV_LINK_MODE" not in os.environ:
             print("Windows detected; uv subprocesses will use copy mode.")
 
+        ensure_development_servers_stopped()
         sync_python_dependencies(uv)
         compile_python()
         run([uv, "run", "ruff", "check", "."])
