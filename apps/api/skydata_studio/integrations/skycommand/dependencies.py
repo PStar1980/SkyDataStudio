@@ -8,7 +8,6 @@ from skydata_contracts.skycommand import (
     CatalogueSourceList,
     IngestionRunList,
 )
-
 from skydata_studio.core.config import Settings, get_settings
 from skydata_studio.integrations.skycommand.client import SkyCommandClient
 
