@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import asyncio
 from datetime import UTC, datetime
-from typing import Literal
+from typing import Literal, cast
 
 from skydata_contracts.skycommand import (
     AssetFreshnessList,
@@ -28,9 +28,22 @@ from skydata_studio.schemas.assets import (
     AssetWorkspaceItem,
     AssetWorkspaceResponse,
     AssetWorkspaceTotals,
+    FreshnessStatus,
     SkyCommandConnection,
     SkyCommandIntegrationHealth,
 )
+
+
+_FRESHNESS_STATUSES: frozenset[str] = frozenset(
+    {"CURRENT", "WARNING", "ERROR", "INACTIVE", "UNKNOWN"}
+)
+
+
+def _canonical_freshness_status(value: str | None) -> FreshnessStatus:
+    normalized = (value or "UNKNOWN").upper()
+    if normalized in _FRESHNESS_STATUSES:
+        return cast(FreshnessStatus, normalized)
+    return "UNKNOWN"
 
 
 def _storage_relation(asset: CatalogueAsset) -> str | None:
@@ -83,7 +96,9 @@ def _build_response(
                 source_name=asset.source.source_name if asset.source else None,
                 provider_name=asset.source.provider_name if asset.source else None,
                 storage_relation=_storage_relation(asset),
-                freshness_status=fresh.freshness.status_code if fresh else "UNKNOWN",
+                freshness_status=_canonical_freshness_status(
+                    fresh.freshness.status_code if fresh else None
+                ),
                 freshness_reason=fresh.freshness.reason_code if fresh else "UNKNOWN",
                 freshness_message=(
                     fresh.freshness.message
@@ -111,11 +126,15 @@ def _build_response(
             )
         )
 
-    freshness_counts = {"FRESH": 0, "WATCH": 0, "STALE": 0, "UNKNOWN": 0}
+    freshness_counts = {
+        "CURRENT": 0,
+        "WARNING": 0,
+        "ERROR": 0,
+        "INACTIVE": 0,
+        "UNKNOWN": 0,
+    }
     for item in workspace_items:
-        status = item.freshness_status.upper()
-        bucket = status if status in freshness_counts else "UNKNOWN"
-        freshness_counts[bucket] += 1
+        freshness_counts[item.freshness_status] += 1
 
     contract_versions = sorted(
         {
@@ -145,9 +164,10 @@ def _build_response(
         totals=AssetWorkspaceTotals(
             assets=len(workspace_items),
             sources=len(source_codes),
-            fresh=freshness_counts["FRESH"],
-            watch=freshness_counts["WATCH"],
-            stale=freshness_counts["STALE"],
+            current=freshness_counts["CURRENT"],
+            warning=freshness_counts["WARNING"],
+            error=freshness_counts["ERROR"],
+            inactive=freshness_counts["INACTIVE"],
             unknown=freshness_counts["UNKNOWN"],
             quality_issues=sum(
                 run.totals.quality_issue_count for run in latest_run_by_source.values()

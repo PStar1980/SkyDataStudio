@@ -75,6 +75,22 @@ class FailingGateway(PreviewGateway):
         raise SkyCommandClientError("No bridge token.", category="CONFIGURATION")
 
 
+class LegacyStatusGateway(PreviewGateway):
+    async def list_freshness(
+        self,
+        *,
+        domain_code: str | None = None,
+        source_code: str | None = None,
+        status_code: str | None = None,
+        search: str | None = None,
+        limit: int = 100,
+        offset: int = 0,
+    ) -> AssetFreshnessList:
+        freshness = preview_freshness()
+        freshness.items[0].freshness.status_code = "FRESH"
+        return freshness
+
+
 async def test_asset_workspace_joins_catalogue_freshness_and_run_evidence() -> None:
     workspace = await build_asset_workspace(PreviewGateway(), preview_enabled=True)
 
@@ -82,7 +98,11 @@ async def test_asset_workspace_joins_catalogue_freshness_and_run_evidence() -> N
     assert workspace.connection.status == "CONNECTED"
     assert workspace.totals.assets == 6
     assert workspace.totals.sources == 3
-    assert workspace.totals.stale == 1
+    assert workspace.totals.current == 3
+    assert workspace.totals.warning == 2
+    assert workspace.totals.error == 1
+    assert workspace.totals.inactive == 0
+    assert workspace.totals.unknown == 0
     assert workspace.items[0].last_run_status == "SUCCESS"
     assert workspace.items[0].storage_relation
 
@@ -100,11 +120,21 @@ async def test_preview_mode_applies_workspace_filters() -> None:
     workspace = await build_asset_workspace(
         FailingGateway(),
         source_code="FRED",
-        freshness_status="FRESH",
+        freshness_status="CURRENT",
         preview_enabled=True,
     )
 
     assert workspace.mode == "PREVIEW"
     assert workspace.totals.assets == 2
     assert {item.source_code for item in workspace.items} == {"FRED"}
-    assert {item.freshness_status for item in workspace.items} == {"FRESH"}
+    assert {item.freshness_status for item in workspace.items} == {"CURRENT"}
+
+
+async def test_unknown_freshness_vocabulary_is_normalized() -> None:
+    workspace = await build_asset_workspace(LegacyStatusGateway(), preview_enabled=True)
+
+    dff = next(item for item in workspace.items if item.asset_code == "DFF")
+    assert dff.freshness_status == "UNKNOWN"
+    assert workspace.totals.current == 2
+    assert workspace.totals.unknown == 1
+

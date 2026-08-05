@@ -141,12 +141,12 @@ def _preview_source_payload(asset_code: str) -> dict[str, object] | None:
 
 def preview_freshness() -> AssetFreshnessList:
     status_rows = [
-        ("DFF", "FRESH", "ON_SCHEDULE", "INFO", "2026-08-01", 18750),
-        ("UNRATE", "FRESH", "ON_SCHEDULE", "INFO", "2026-07-01", 933),
-        ("CPIAUCSL", "WATCH", "SOURCE_RELEASE_PENDING", "WARNING", "2026-06-01", 910),
-        ("CA_POLICY_RATE", "FRESH", "ON_SCHEDULE", "INFO", "2026-07-30", 4560),
-        ("CA_CPI", "STALE", "TARGET_BEHIND_SOURCE", "ERROR", "2026-06-01", 925),
-        ("CA_UNEMPLOYMENT", "WATCH", "SOURCE_RELEASE_PENDING", "WARNING", "2026-07-01", 889),
+        ("DFF", "CURRENT", "CURRENT", "OK", "2026-08-01", 18750),
+        ("UNRATE", "CURRENT", "CURRENT", "OK", "2026-07-01", 933),
+        ("CPIAUCSL", "WARNING", "SOURCE_NOT_UPDATED", "WARNING", "2026-06-01", 910),
+        ("CA_POLICY_RATE", "CURRENT", "CURRENT", "OK", "2026-07-30", 4560),
+        ("CA_CPI", "ERROR", "LOAD_BEHIND_SOURCE", "ERROR", "2026-06-01", 925),
+        ("CA_UNEMPLOYMENT", "WARNING", "SOURCE_NOT_UPDATED", "WARNING", "2026-07-01", 889),
     ]
     asset_names = {item.asset_code: item.asset_name for item in preview_assets().items}
     return AssetFreshnessList.model_validate(

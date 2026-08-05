@@ -3,6 +3,8 @@ from typing import Literal
 
 from pydantic import BaseModel, Field
 
+type FreshnessStatus = Literal["CURRENT", "WARNING", "ERROR", "INACTIVE", "UNKNOWN"]
+
 
 class SkyCommandConnection(BaseModel):
     status: Literal["CONNECTED", "PREVIEW", "UNAVAILABLE"]
@@ -15,9 +17,10 @@ class SkyCommandConnection(BaseModel):
 class AssetWorkspaceTotals(BaseModel):
     assets: int = 0
     sources: int = 0
-    fresh: int = 0
-    watch: int = 0
-    stale: int = 0
+    current: int = 0
+    warning: int = 0
+    error: int = 0
+    inactive: int = 0
     unknown: int = 0
     quality_issues: int = 0
 
@@ -25,7 +28,7 @@ class AssetWorkspaceTotals(BaseModel):
 class AssetWorkspaceFilters(BaseModel):
     domains: list[str] = Field(default_factory=list)
     sources: list[str] = Field(default_factory=list)
-    freshness_statuses: list[str] = Field(default_factory=list)
+    freshness_statuses: list[FreshnessStatus] = Field(default_factory=list)
 
 
 class AssetWorkspaceItem(BaseModel):
@@ -42,7 +45,7 @@ class AssetWorkspaceItem(BaseModel):
     source_name: str | None = None
     provider_name: str | None = None
     storage_relation: str | None = None
-    freshness_status: str = "UNKNOWN"
+    freshness_status: FreshnessStatus = "UNKNOWN"
     freshness_reason: str = "UNKNOWN"
     freshness_message: str = "Freshness evidence is unavailable."
     freshness_severity: str = "UNKNOWN"

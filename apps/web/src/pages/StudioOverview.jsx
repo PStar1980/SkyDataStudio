@@ -5,7 +5,7 @@ const FALLBACK = {
   product: 'SkyData Studio',
   subtitle: 'Data Engineering Workbench',
   theme: 'Aurora Foundry',
-  current_phase: 'Phase 2.1 — Live SkyCommand Contract Bridge',
+  current_phase: 'Phase 2.1.5 — Freshness Contract Alignment',
   boundary: 'SkyData Studio starts after SkyCommand ingestion and publishes governed analytical products for downstream consumers.',
   capabilities: [],
 };
@@ -61,7 +61,7 @@ function StudioOverview() {
 
       <section className="metric-grid">
         <article className="metric-card"><span>Platform API</span><strong>{apiState}</strong><small>FastAPI contract service</small></article>
-        <article className="metric-card"><span>Current Phase</span><strong>2.1</strong><small>Live contract bridge + asset workspace</small></article>
+        <article className="metric-card"><span>Current Phase</span><strong>2.1.5</strong><small>Freshness alignment + bridge closure</small></article>
         <article className="metric-card"><span>Next Boundary</span><strong>Assets</strong><small>Catalogue + freshness + run evidence</small></article>
         <article className="metric-card"><span>Orchestrator</span><strong>Airflow 3</strong><small>Batch and asset workflows</small></article>
       </section>
