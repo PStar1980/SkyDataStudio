@@ -54,8 +54,6 @@ function MetadataRegistry() {
 
   useEffect(() => {
     const controller = new AbortController();
-    setRequestState('LOADING');
-    setError('');
     Promise.all([
       getJson('/api/v1/metadata/summary', { signal: controller.signal }),
       getJson(`/api/v1/metadata/assets${query}`, { signal: controller.signal }),
@@ -80,6 +78,8 @@ function MetadataRegistry() {
 
   function updateFilter(event) {
     const { name, value } = event.target;
+    setRequestState('LOADING');
+    setError('');
     setFilters((current) => ({ ...current, [name]: value }));
   }
 
@@ -107,6 +107,7 @@ function MetadataRegistry() {
     event.preventDefault();
     setMessage('');
     setError('');
+    setRequestState('SYNCING');
     postJson('/api/v1/metadata/assets', {
       domain: { code: form.domainCode, name: form.domainName },
       system: { code: form.systemCode, name: form.systemName },
