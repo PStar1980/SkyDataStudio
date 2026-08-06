@@ -22,10 +22,38 @@ type MetadataSystemType = Literal[
     "BI",
 ]
 type MetadataClassification = Literal["PUBLIC", "INTERNAL", "CONFIDENTIAL", "RESTRICTED"]
+type MetadataMappingType = Literal[
+    "COPY",
+    "TRANSFORM",
+    "AGGREGATE",
+    "JOIN",
+    "FILTER",
+    "PUBLISH",
+]
+type MetadataLoadStrategy = Literal[
+    "FULL_REPLACE",
+    "APPEND",
+    "MERGE",
+    "INCREMENTAL",
+    "SNAPSHOT",
+]
+type MetadataMappingStatus = Literal["DRAFT", "READY", "ACTIVE", "RETIRED"]
+type MetadataTransformationType = Literal[
+    "DIRECT",
+    "RENAME",
+    "CAST",
+    "DERIVE",
+    "AGGREGATE",
+    "CONSTANT",
+]
 
 
 def _normalize_code(value: str) -> str:
     return value.strip().upper().replace(" ", "_")
+
+
+def _normalize_tags(value: list[str]) -> list[str]:
+    return sorted({item.strip().lower() for item in value if item.strip()})
 
 
 class MetadataReferenceInput(BaseModel):
@@ -83,7 +111,71 @@ class MetadataAssetCreate(BaseModel):
     @field_validator("tags")
     @classmethod
     def normalize_tags(cls, value: list[str]) -> list[str]:
-        return sorted({item.strip().lower() for item in value if item.strip()})
+        return _normalize_tags(value)
+
+
+class MetadataAssetGovernanceUpdate(BaseModel):
+    description: str | None = None
+    owner_name: str | None = Field(default=None, max_length=160)
+    owner_email: str | None = Field(default=None, max_length=255)
+    classification: MetadataClassification = "INTERNAL"
+    criticality: str = Field(default="STANDARD", max_length=40)
+    status: str = Field(default="ACTIVE", max_length=40)
+    tags: list[str] = Field(default_factory=list, max_length=25)
+
+    @field_validator("tags")
+    @classmethod
+    def normalize_tags(cls, value: list[str]) -> list[str]:
+        return _normalize_tags(value)
+
+
+class MetadataAssetFieldsReplace(BaseModel):
+    fields: list[MetadataFieldInput] = Field(default_factory=list, max_length=250)
+
+
+class MetadataFieldMappingInput(BaseModel):
+    source_field_code: str | None = Field(default=None, max_length=128)
+    target_field_code: str = Field(min_length=1, max_length=128)
+    target_data_type: str = Field(min_length=1, max_length=80)
+    transformation_type: MetadataTransformationType = "DIRECT"
+    expression: str | None = None
+    ordinal_position: int = Field(default=1, ge=1)
+    nullable: bool = True
+    key_field: bool = False
+    description: str | None = None
+
+    @field_validator("source_field_code", "target_field_code")
+    @classmethod
+    def normalize_optional_code(cls, value: str | None) -> str | None:
+        return _normalize_code(value) if value else None
+
+
+class MetadataMappingCreate(BaseModel):
+    code: str = Field(min_length=1, max_length=160)
+    name: str = Field(min_length=1, max_length=255)
+    source_asset_id: str
+    target_asset_id: str
+    mapping_type: MetadataMappingType = "TRANSFORM"
+    load_strategy: MetadataLoadStrategy = "FULL_REPLACE"
+    status: MetadataMappingStatus = "DRAFT"
+    grain: str | None = Field(default=None, max_length=255)
+    business_keys: list[str] = Field(default_factory=list, max_length=25)
+    transformation_expression: str | None = None
+    description: str | None = None
+    field_mappings: list[MetadataFieldMappingInput] = Field(
+        default_factory=list,
+        max_length=250,
+    )
+
+    @field_validator("code")
+    @classmethod
+    def normalize_code(cls, value: str) -> str:
+        return _normalize_code(value)
+
+    @field_validator("business_keys")
+    @classmethod
+    def normalize_business_keys(cls, value: list[str]) -> list[str]:
+        return sorted({_normalize_code(item) for item in value if item.strip()})
 
 
 class MetadataDomainRead(BaseModel):
@@ -141,6 +233,7 @@ class MetadataAssetListItem(BaseModel):
     namespace_code: str
     namespace_name: str
     owner_name: str | None
+    owner_email: str | None
     classification: str
     criticality: str
     status: str
@@ -165,16 +258,78 @@ class MetadataDependencyRead(BaseModel):
     description: str | None
 
 
+class MetadataMappingAssetRead(BaseModel):
+    id: str
+    code: str
+    name: str
+    layer: str
+    asset_type: str
+    domain_code: str
+    system_code: str
+    namespace_code: str
+
+
+class MetadataFieldMappingRead(BaseModel):
+    id: str
+    source_field_code: str | None
+    target_field_code: str
+    target_data_type: str
+    transformation_type: str
+    expression: str | None
+    ordinal_position: int
+    nullable: bool
+    key_field: bool
+    description: str | None
+
+
+class MetadataMappingListItem(BaseModel):
+    id: str
+    code: str
+    name: str
+    mapping_type: str
+    load_strategy: str
+    status: str
+    grain: str | None
+    business_keys: list[str]
+    description: str | None
+    source_asset: MetadataMappingAssetRead
+    target_asset: MetadataMappingAssetRead
+    field_mapping_count: int
+    created_at: datetime
+    updated_at: datetime
+
+
+class MetadataMappingDetail(MetadataMappingListItem):
+    transformation_expression: str | None
+    field_mappings: list[MetadataFieldMappingRead]
+    attributes: dict[str, object]
+
+
 class MetadataAssetDetail(MetadataAssetListItem):
     fields: list[MetadataFieldRead]
     upstream_dependencies: list[MetadataDependencyRead]
     downstream_dependencies: list[MetadataDependencyRead]
+    inbound_mappings: list[MetadataMappingListItem]
+    outbound_mappings: list[MetadataMappingListItem]
     attributes: dict[str, object]
 
 
 class MetadataAssetList(BaseModel):
     total: int
     items: list[MetadataAssetListItem]
+
+
+class MetadataMappingList(BaseModel):
+    total: int
+    items: list[MetadataMappingListItem]
+
+
+class MetadataMappingSummary(BaseModel):
+    mappings: int = 0
+    field_mappings: int = 0
+    dependencies: int = 0
+    statuses: dict[str, int] = Field(default_factory=dict)
+    load_strategies: dict[str, int] = Field(default_factory=dict)
 
 
 class MetadataSummary(BaseModel):
@@ -187,6 +342,8 @@ class MetadataSummary(BaseModel):
     assets: int = 0
     fields: int = 0
     dependencies: int = 0
+    mappings: int = 0
+    field_mappings: int = 0
     layers: dict[str, int] = Field(default_factory=dict)
 
 

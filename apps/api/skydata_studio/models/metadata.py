@@ -155,6 +155,16 @@ class MetadataAsset(TimestampMixin, Base):
         back_populates="upstream_asset",
         cascade="all, delete-orphan",
     )
+    outbound_mappings: Mapped[list[MetadataMapping]] = relationship(
+        foreign_keys="MetadataMapping.source_asset_id",
+        back_populates="source_asset",
+        cascade="all, delete-orphan",
+    )
+    inbound_mappings: Mapped[list[MetadataMapping]] = relationship(
+        foreign_keys="MetadataMapping.target_asset_id",
+        back_populates="target_asset",
+        cascade="all, delete-orphan",
+    )
 
 
 class MetadataField(TimestampMixin, Base):
@@ -206,3 +216,78 @@ class MetadataDependency(TimestampMixin, Base):
         foreign_keys=[downstream_asset_id],
         back_populates="upstream_dependencies",
     )
+
+
+class MetadataMapping(TimestampMixin, Base):
+    __tablename__ = "metadata_mapping"
+    __table_args__ = (
+        UniqueConstraint("code", name="uq_metadata_mapping_code"),
+        UniqueConstraint(
+            "source_asset_id",
+            "target_asset_id",
+            "mapping_type",
+            name="uq_metadata_mapping_edge",
+        ),
+    )
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
+    code: Mapped[str] = mapped_column(String(160), index=True)
+    name: Mapped[str] = mapped_column(String(255))
+    source_asset_id: Mapped[str] = mapped_column(
+        ForeignKey("metadata_asset.id"),
+        index=True,
+    )
+    target_asset_id: Mapped[str] = mapped_column(
+        ForeignKey("metadata_asset.id"),
+        index=True,
+    )
+    mapping_type: Mapped[str] = mapped_column(String(40), default="TRANSFORM")
+    load_strategy: Mapped[str] = mapped_column(String(40), default="FULL_REPLACE")
+    status: Mapped[str] = mapped_column(String(40), default="DRAFT", index=True)
+    grain: Mapped[str | None] = mapped_column(String(255))
+    business_keys: Mapped[list[str]] = mapped_column(JSON, default=list, nullable=False)
+    transformation_expression: Mapped[str | None] = mapped_column(Text)
+    description: Mapped[str | None] = mapped_column(Text)
+    attributes: Mapped[dict[str, Any]] = mapped_column(JSON, default=dict, nullable=False)
+
+    source_asset: Mapped[MetadataAsset] = relationship(
+        foreign_keys=[source_asset_id],
+        back_populates="outbound_mappings",
+    )
+    target_asset: Mapped[MetadataAsset] = relationship(
+        foreign_keys=[target_asset_id],
+        back_populates="inbound_mappings",
+    )
+    field_mappings: Mapped[list[MetadataFieldMapping]] = relationship(
+        back_populates="mapping",
+        cascade="all, delete-orphan",
+        order_by="MetadataFieldMapping.ordinal_position",
+    )
+
+
+class MetadataFieldMapping(TimestampMixin, Base):
+    __tablename__ = "metadata_field_mapping"
+    __table_args__ = (
+        UniqueConstraint(
+            "mapping_id",
+            "target_field_code",
+            name="uq_metadata_field_mapping_target",
+        ),
+    )
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
+    mapping_id: Mapped[str] = mapped_column(
+        ForeignKey("metadata_mapping.id", ondelete="CASCADE"),
+        index=True,
+    )
+    source_field_code: Mapped[str | None] = mapped_column(String(128))
+    target_field_code: Mapped[str] = mapped_column(String(128))
+    target_data_type: Mapped[str] = mapped_column(String(80))
+    transformation_type: Mapped[str] = mapped_column(String(40), default="DIRECT")
+    expression: Mapped[str | None] = mapped_column(Text)
+    ordinal_position: Mapped[int] = mapped_column(Integer, default=1)
+    nullable: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    key_field: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    description: Mapped[str | None] = mapped_column(Text)
+
+    mapping: Mapped[MetadataMapping] = relationship(back_populates="field_mappings")

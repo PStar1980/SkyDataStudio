@@ -69,6 +69,7 @@ SkyDataStudio/
 │           │   ├── DataAssets.jsx
 │           │   ├── MetadataRegistry.jsx
 │           │   ├── PlaceholderPage.jsx
+│           │   ├── SourceMappings.jsx
 │           │   └── StudioOverview.jsx
 │           └── services/
 │               └── api.js
@@ -85,7 +86,8 @@ SkyDataStudio/
 │   ├── docker-compose.yml
 │   └── db/
 │       └── migrations/
-│           └── 0001_metadata_registry.sql
+│           ├── 0001_metadata_registry.sql
+│           └── 0002_source_target_mapping.sql
 ├── orchestration/
 │   └── airflow/
 │       └── dags/

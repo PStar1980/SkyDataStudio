@@ -12,7 +12,7 @@ def test_platform_summary_exposes_product_boundary() -> None:
     assert payload["product"] == "SkyData Studio"
     assert payload["theme"] == "Aurora Foundry"
     assert "SkyCommand" in payload["boundary"]
-    assert payload["current_phase"] == "Phase 3.1 — Metadata Registry Foundation"
+    assert payload["current_phase"] == "Phase 3.2 — Source-to-Target Mapping and Product Blueprints"
     assert {item["code"] for item in payload["capabilities"]} >= {
         "AIRFLOW",
         "DBT",

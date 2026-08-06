@@ -57,3 +57,25 @@ metadata_domain ─ metadata_system ─ metadata_connection
 ```
 
 SkyCommand assets enter the registry as `RAW` assets. Studio-created products advance through `STAGING`, `INTERMEDIATE`, `MART`, `SEMANTIC`, and `REPORT` layers. The registry becomes the stable metadata boundary used by the pipeline workbench, dbt artifact ingestion, lineage, and analytics delivery.
+
+## Product blueprint and mapping boundary
+
+Phase 3.2 adds a design-time contract between registered source assets and intended targets. A mapping is metadata, not execution: it records how a pipeline *should* move and shape data before Phase 4 introduces a runnable pipeline engine.
+
+```text
+metadata_asset (source)
+        │
+        ├── metadata_mapping
+        │       mapping type
+        │       load strategy
+        │       grain + business keys
+        │       transformation sketch
+        │
+        ├── metadata_field_mapping ── target field contract
+        │
+        └── metadata_dependency ───── durable TRANSFORMS lineage edge
+                                      │
+                              metadata_asset (target)
+```
+
+Mapping registration may enrich the target asset schema, but it never executes SQL or mutates source data. This separation lets the Studio validate design intent, ownership, keys, and lineage before pipeline code or Airflow DAGs exist.

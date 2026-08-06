@@ -13,17 +13,28 @@ from skydata_studio.models.metadata import (
     MetadataDependency,
     MetadataDomain,
     MetadataField,
+    MetadataFieldMapping,
+    MetadataMapping,
     MetadataNamespace,
     MetadataSystem,
 )
 from skydata_studio.schemas.metadata import (
     MetadataAssetCreate,
     MetadataAssetDetail,
+    MetadataAssetFieldsReplace,
+    MetadataAssetGovernanceUpdate,
     MetadataAssetList,
     MetadataAssetListItem,
     MetadataDependencyRead,
     MetadataDomainRead,
+    MetadataFieldMappingRead,
     MetadataFieldRead,
+    MetadataMappingAssetRead,
+    MetadataMappingCreate,
+    MetadataMappingDetail,
+    MetadataMappingList,
+    MetadataMappingListItem,
+    MetadataMappingSummary,
     MetadataNamespaceRead,
     MetadataSummary,
     MetadataSyncResult,
@@ -40,18 +51,48 @@ class MetadataRegistryNotFoundError(LookupError):
     """Raised when a requested registry entity does not exist."""
 
 
-def _metadata_asset_options() -> tuple[Any, ...]:
+def _metadata_asset_list_options() -> tuple[Any, ...]:
     return (
         selectinload(MetadataAsset.domain),
         selectinload(MetadataAsset.system),
         selectinload(MetadataAsset.namespace),
         selectinload(MetadataAsset.fields),
+    )
+
+
+def _metadata_asset_detail_options() -> tuple[Any, ...]:
+    return (
+        *_metadata_asset_list_options(),
         selectinload(MetadataAsset.upstream_dependencies).selectinload(
             MetadataDependency.upstream_asset
         ),
         selectinload(MetadataAsset.downstream_dependencies).selectinload(
             MetadataDependency.downstream_asset
         ),
+        selectinload(MetadataAsset.inbound_mappings).selectinload(
+            MetadataMapping.source_asset
+        ),
+        selectinload(MetadataAsset.inbound_mappings).selectinload(
+            MetadataMapping.field_mappings
+        ),
+        selectinload(MetadataAsset.outbound_mappings).selectinload(
+            MetadataMapping.target_asset
+        ),
+        selectinload(MetadataAsset.outbound_mappings).selectinload(
+            MetadataMapping.field_mappings
+        ),
+    )
+
+
+def _metadata_mapping_options() -> tuple[Any, ...]:
+    return (
+        selectinload(MetadataMapping.source_asset).selectinload(MetadataAsset.domain),
+        selectinload(MetadataMapping.source_asset).selectinload(MetadataAsset.system),
+        selectinload(MetadataMapping.source_asset).selectinload(MetadataAsset.namespace),
+        selectinload(MetadataMapping.target_asset).selectinload(MetadataAsset.domain),
+        selectinload(MetadataMapping.target_asset).selectinload(MetadataAsset.system),
+        selectinload(MetadataMapping.target_asset).selectinload(MetadataAsset.namespace),
+        selectinload(MetadataMapping.field_mappings),
     )
 
 
@@ -71,6 +112,7 @@ def _asset_item(asset: MetadataAsset) -> MetadataAssetListItem:
         namespace_code=asset.namespace.code,
         namespace_name=asset.namespace.name,
         owner_name=asset.owner_name,
+        owner_email=asset.owner_email,
         classification=asset.classification,
         criticality=asset.criticality,
         status=asset.status,
@@ -98,6 +140,61 @@ def _dependency_read(dependency: MetadataDependency) -> MetadataDependencyRead:
     )
 
 
+def _mapping_asset_read(asset: MetadataAsset) -> MetadataMappingAssetRead:
+    return MetadataMappingAssetRead(
+        id=asset.id,
+        code=asset.code,
+        name=asset.name,
+        layer=asset.layer,
+        asset_type=asset.asset_type,
+        domain_code=asset.domain.code,
+        system_code=asset.system.code,
+        namespace_code=asset.namespace.code,
+    )
+
+
+def _mapping_item(mapping: MetadataMapping) -> MetadataMappingListItem:
+    return MetadataMappingListItem(
+        id=mapping.id,
+        code=mapping.code,
+        name=mapping.name,
+        mapping_type=mapping.mapping_type,
+        load_strategy=mapping.load_strategy,
+        status=mapping.status,
+        grain=mapping.grain,
+        business_keys=list(mapping.business_keys),
+        description=mapping.description,
+        source_asset=_mapping_asset_read(mapping.source_asset),
+        target_asset=_mapping_asset_read(mapping.target_asset),
+        field_mapping_count=len(mapping.field_mappings),
+        created_at=mapping.created_at,
+        updated_at=mapping.updated_at,
+    )
+
+
+def _mapping_detail(mapping: MetadataMapping) -> MetadataMappingDetail:
+    return MetadataMappingDetail(
+        **_mapping_item(mapping).model_dump(),
+        transformation_expression=mapping.transformation_expression,
+        field_mappings=[
+            MetadataFieldMappingRead(
+                id=field_mapping.id,
+                source_field_code=field_mapping.source_field_code,
+                target_field_code=field_mapping.target_field_code,
+                target_data_type=field_mapping.target_data_type,
+                transformation_type=field_mapping.transformation_type,
+                expression=field_mapping.expression,
+                ordinal_position=field_mapping.ordinal_position,
+                nullable=field_mapping.nullable,
+                key_field=field_mapping.key_field,
+                description=field_mapping.description,
+            )
+            for field_mapping in mapping.field_mappings
+        ],
+        attributes=dict(mapping.attributes),
+    )
+
+
 def _asset_detail(asset: MetadataAsset) -> MetadataAssetDetail:
     return MetadataAssetDetail(
         **_asset_item(asset).model_dump(),
@@ -121,6 +218,8 @@ def _asset_detail(asset: MetadataAsset) -> MetadataAssetDetail:
         downstream_dependencies=[
             _dependency_read(dependency) for dependency in asset.downstream_dependencies
         ],
+        inbound_mappings=[_mapping_item(mapping) for mapping in asset.inbound_mappings],
+        outbound_mappings=[_mapping_item(mapping) for mapping in asset.outbound_mappings],
         attributes=dict(asset.attributes),
     )
 
@@ -239,10 +338,19 @@ def _ensure_namespace(
     return namespace
 
 
-def metadata_summary(session: Session) -> MetadataSummary:
-    layers = Counter(
-        session.scalars(select(MetadataAsset.layer)).all()
+def _get_asset_model(session: Session, asset_id: str) -> MetadataAsset:
+    asset = session.scalar(
+        select(MetadataAsset)
+        .options(*_metadata_asset_detail_options())
+        .where(MetadataAsset.id == asset_id)
     )
+    if asset is None:
+        raise MetadataRegistryNotFoundError("Metadata asset was not found.")
+    return asset
+
+
+def metadata_summary(session: Session) -> MetadataSummary:
+    layers = Counter(session.scalars(select(MetadataAsset.layer)).all())
     return MetadataSummary(
         status="CONNECTED",
         message="SkyData Studio metadata registry is available.",
@@ -253,7 +361,25 @@ def metadata_summary(session: Session) -> MetadataSummary:
         assets=session.scalar(select(func.count()).select_from(MetadataAsset)) or 0,
         fields=session.scalar(select(func.count()).select_from(MetadataField)) or 0,
         dependencies=session.scalar(select(func.count()).select_from(MetadataDependency)) or 0,
+        mappings=session.scalar(select(func.count()).select_from(MetadataMapping)) or 0,
+        field_mappings=(
+            session.scalar(select(func.count()).select_from(MetadataFieldMapping)) or 0
+        ),
         layers=dict(sorted(layers.items())),
+    )
+
+
+def mapping_summary(session: Session) -> MetadataMappingSummary:
+    statuses = Counter(session.scalars(select(MetadataMapping.status)).all())
+    strategies = Counter(session.scalars(select(MetadataMapping.load_strategy)).all())
+    return MetadataMappingSummary(
+        mappings=session.scalar(select(func.count()).select_from(MetadataMapping)) or 0,
+        field_mappings=(
+            session.scalar(select(func.count()).select_from(MetadataFieldMapping)) or 0
+        ),
+        dependencies=session.scalar(select(func.count()).select_from(MetadataDependency)) or 0,
+        statuses=dict(sorted(statuses.items())),
+        load_strategies=dict(sorted(strategies.items())),
     )
 
 
@@ -346,7 +472,7 @@ def list_metadata_assets(
         select(MetadataAsset)
         .join(MetadataAsset.domain)
         .join(MetadataAsset.system)
-        .options(*_metadata_asset_options())
+        .options(*_metadata_asset_list_options())
         .where(*filters)
         .order_by(MetadataAsset.layer, MetadataAsset.name)
         .limit(limit)
@@ -358,14 +484,7 @@ def list_metadata_assets(
 
 
 def get_metadata_asset(session: Session, asset_id: str) -> MetadataAssetDetail:
-    asset = session.scalar(
-        select(MetadataAsset)
-        .options(*_metadata_asset_options())
-        .where(MetadataAsset.id == asset_id)
-    )
-    if asset is None:
-        raise MetadataRegistryNotFoundError("Metadata asset was not found.")
-    return _asset_detail(asset)
+    return _asset_detail(_get_asset_model(session, asset_id))
 
 
 def register_metadata_asset(
@@ -439,6 +558,212 @@ def register_metadata_asset(
     session.add(asset)
     session.commit()
     return get_metadata_asset(session, asset.id)
+
+
+def update_metadata_asset_governance(
+    session: Session,
+    asset_id: str,
+    payload: MetadataAssetGovernanceUpdate,
+) -> MetadataAssetDetail:
+    asset = _get_asset_model(session, asset_id)
+    asset.description = payload.description
+    asset.owner_name = payload.owner_name
+    asset.owner_email = payload.owner_email
+    asset.classification = payload.classification
+    asset.criticality = payload.criticality
+    asset.status = payload.status
+    asset.tags = payload.tags
+    session.commit()
+    return get_metadata_asset(session, asset.id)
+
+
+def replace_metadata_asset_fields(
+    session: Session,
+    asset_id: str,
+    payload: MetadataAssetFieldsReplace,
+) -> MetadataAssetDetail:
+    asset = _get_asset_model(session, asset_id)
+    field_codes = [field.code for field in payload.fields]
+    if len(field_codes) != len(set(field_codes)):
+        raise MetadataRegistryConflictError("Field codes must be unique within an asset.")
+    asset.fields.clear()
+    session.flush()
+    asset.fields = [
+        MetadataField(
+            code=field.code,
+            name=field.name or field.code.replace("_", " ").title(),
+            data_type=field.data_type,
+            ordinal_position=field.ordinal_position,
+            nullable=field.nullable,
+            key_field=field.key_field,
+            classification=field.classification,
+            description=field.description,
+        )
+        for field in payload.fields
+    ]
+    session.commit()
+    return get_metadata_asset(session, asset.id)
+
+
+def create_metadata_mapping(
+    session: Session,
+    payload: MetadataMappingCreate,
+) -> MetadataMappingDetail:
+    source_asset = _get_asset_model(session, payload.source_asset_id)
+    target_asset = _get_asset_model(session, payload.target_asset_id)
+    if source_asset.id == target_asset.id:
+        raise MetadataRegistryConflictError(
+            "A source-to-target mapping requires two different assets."
+        )
+    existing = session.scalar(
+        select(MetadataMapping).where(
+            or_(
+                MetadataMapping.code == payload.code,
+                (
+                    (MetadataMapping.source_asset_id == source_asset.id)
+                    & (MetadataMapping.target_asset_id == target_asset.id)
+                    & (MetadataMapping.mapping_type == payload.mapping_type)
+                ),
+            )
+        )
+    )
+    if existing is not None:
+        raise MetadataRegistryConflictError(
+            "This mapping code or source-to-target mapping is already registered."
+        )
+
+    target_codes = [field.target_field_code for field in payload.field_mappings]
+    if len(target_codes) != len(set(target_codes)):
+        raise MetadataRegistryConflictError(
+            "Target field codes must be unique within a mapping."
+        )
+
+    mapping = MetadataMapping(
+        code=payload.code,
+        name=payload.name,
+        source_asset=source_asset,
+        target_asset=target_asset,
+        mapping_type=payload.mapping_type,
+        load_strategy=payload.load_strategy,
+        status=payload.status,
+        grain=payload.grain,
+        business_keys=payload.business_keys,
+        transformation_expression=payload.transformation_expression,
+        description=payload.description,
+        attributes={"registration_mode": "MANUAL", "version": 1},
+    )
+    mapping.field_mappings = [
+        MetadataFieldMapping(
+            source_field_code=field.source_field_code,
+            target_field_code=field.target_field_code,
+            target_data_type=field.target_data_type,
+            transformation_type=field.transformation_type,
+            expression=field.expression,
+            ordinal_position=field.ordinal_position,
+            nullable=field.nullable,
+            key_field=field.key_field,
+            description=field.description,
+        )
+        for field in payload.field_mappings
+    ]
+
+    target_by_code = {field.code: field for field in target_asset.fields}
+    for field in payload.field_mappings:
+        target_field = target_by_code.get(field.target_field_code)
+        if target_field is None:
+            target_field = MetadataField(
+                code=field.target_field_code,
+                name=field.target_field_code.replace("_", " ").title(),
+                data_type=field.target_data_type,
+                ordinal_position=field.ordinal_position,
+                nullable=field.nullable,
+                key_field=field.key_field,
+                description=field.description,
+            )
+            target_asset.fields.append(target_field)
+            target_by_code[field.target_field_code] = target_field
+        else:
+            target_field.data_type = field.target_data_type
+            target_field.ordinal_position = field.ordinal_position
+            target_field.nullable = field.nullable
+            target_field.key_field = field.key_field
+            if field.description:
+                target_field.description = field.description
+
+    session.add(mapping)
+    session.flush()
+
+    dependency = session.scalar(
+        select(MetadataDependency).where(
+            MetadataDependency.upstream_asset_id == source_asset.id,
+            MetadataDependency.downstream_asset_id == target_asset.id,
+            MetadataDependency.dependency_type == "TRANSFORMS",
+        )
+    )
+    if dependency is None:
+        session.add(
+            MetadataDependency(
+                upstream_asset=source_asset,
+                downstream_asset=target_asset,
+                dependency_type="TRANSFORMS",
+                description=f"Created from mapping {payload.code}.",
+            )
+        )
+
+    session.commit()
+    return get_metadata_mapping(session, mapping.id)
+
+
+def list_metadata_mappings(
+    session: Session,
+    *,
+    source_asset_id: str | None = None,
+    target_asset_id: str | None = None,
+    status: str | None = None,
+    search: str | None = None,
+    limit: int = 100,
+    offset: int = 0,
+) -> MetadataMappingList:
+    filters: list[Any] = []
+    if source_asset_id:
+        filters.append(MetadataMapping.source_asset_id == source_asset_id)
+    if target_asset_id:
+        filters.append(MetadataMapping.target_asset_id == target_asset_id)
+    if status:
+        filters.append(MetadataMapping.status == status.upper())
+    if search:
+        pattern = f"%{search.strip()}%"
+        filters.append(
+            or_(
+                MetadataMapping.code.ilike(pattern),
+                MetadataMapping.name.ilike(pattern),
+                MetadataMapping.description.ilike(pattern),
+            )
+        )
+
+    total = session.scalar(
+        select(func.count()).select_from(MetadataMapping).where(*filters)
+    ) or 0
+    mappings = session.scalars(
+        select(MetadataMapping)
+        .options(*_metadata_mapping_options())
+        .where(*filters)
+        .order_by(MetadataMapping.updated_at.desc(), MetadataMapping.name)
+        .limit(limit)
+        .offset(offset)
+    ).unique().all()
+    return MetadataMappingList(total=total, items=[_mapping_item(item) for item in mappings])
+
+
+def get_metadata_mapping(session: Session, mapping_id: str) -> MetadataMappingDetail:
+    mapping = session.scalar(
+        select(MetadataMapping)
+        .options(*_metadata_mapping_options())
+        .where(MetadataMapping.id == mapping_id)
+    )
+    if mapping is None:
+        raise MetadataRegistryNotFoundError("Metadata mapping was not found.")
+    return _mapping_detail(mapping)
 
 
 def _storage_parts(storage_relation: str | None) -> tuple[str, str | None]:
@@ -532,7 +857,9 @@ async def synchronize_skycommand_assets(
                 code=item.asset_code,
                 name=item.asset_name,
                 description=item.asset_description,
-                asset_type=("TIME_SERIES" if item.asset_kind_code == "TIME_SERIES" else "TABLE"),
+                asset_type=(
+                    "TIME_SERIES" if item.asset_kind_code == "TIME_SERIES" else "TABLE"
+                ),
                 layer="RAW",
                 physical_name=relation_name,
                 classification="INTERNAL",

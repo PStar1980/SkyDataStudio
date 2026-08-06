@@ -14,6 +14,7 @@ const GROUPS = [
     items: [
       { label: 'Data Assets', to: '/workspace/assets', icon: '▱' },
       { label: 'Metadata Registry', to: '/workspace/registry', icon: '▤' },
+      { label: 'Source Mappings', to: '/workspace/mappings', icon: '⌁' },
       { label: 'Pipelines', to: '/workspace/pipelines', icon: '⇢' },
       { label: 'Transformations', to: '/workspace/transformations', icon: '⟲' },
       { label: 'Data Models', to: '/workspace/models', icon: '⬡' },
@@ -119,7 +120,7 @@ function Sidebar({ mobileOpen, onClose }) {
         <span className="environment-dot" />
         <span>
           <strong>Development</strong>
-          <small>Phase 3.1 metadata registry</small>
+          <small>Phase 3.2 mapping blueprints</small>
         </span>
       </div>
     </aside>
