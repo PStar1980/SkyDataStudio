@@ -78,7 +78,7 @@ Closure evidence:
 
 ## Phase 2.2 — Contract Compatibility and Quality Evidence
 
-**Status:** Implemented locally; pending normal validation, promotion, and live evidence proof.
+**Status:** Complete. Contract compatibility, quality evidence, asset inspection, local validation, GitHub checks, and normal promotion are green.
 
 Changes:
 
@@ -89,11 +89,32 @@ Changes:
 - live and preview evidence modes use the same response contracts;
 - validation blocks early when FastAPI or Vite is running, preventing dependency synchronization from damaging live local environments.
 
-Acceptance evidence required for closure:
+Closure evidence:
 
 - compatibility diagnostics report all five boundary contracts as `COMPATIBLE`;
 - asset inspection opens from the Data Assets table and displays live evidence;
 - quality/revision/rejection endpoints validate against `ingestion_quality_evidence.v1`;
 - preview mode exposes the same evidence shapes when SkyCommand is offline;
 - validation stops with a clear message when FastAPI or Vite is running;
+- Ruff, mypy, pytest, ESLint, Vite build, GitHub checks, and normal promotion are green.
+
+## Phase 3.1 — Metadata Registry Foundation
+
+**Status:** Implemented locally; pending PostgreSQL bootstrap, validation, promotion, and live synchronization proof.
+
+Changes:
+
+- Studio-owned SQLAlchemy metadata model for domains, systems, connections, namespaces, assets, fields, ownership, tags, classifications, and dependencies;
+- PostgreSQL migration SQL and a repeatable metadata bootstrap command;
+- registry APIs for summary, discovery, inspection, manual product registration, and SkyCommand synchronization;
+- idempotent SkyCommand import that maps trusted assets into the `RAW` engineering layer without storing source secrets;
+- Metadata Registry workspace with layer metrics, filters, manual portable-product registration, and synchronized inventory;
+- platform dashboard and navigation advanced to Phase 3.1.
+
+Acceptance evidence required for closure:
+
+- PostgreSQL `studio-postgres` is healthy and `python scripts/bootstrap_metadata.py` succeeds;
+- live SkyCommand synchronization imports all trusted assets and a second run updates rather than duplicates them;
+- Metadata Registry displays domains, systems, namespaces, engineering layers, ownership, classifications, and tags;
+- a non-macro product can be registered and inspected;
 - Ruff, mypy, pytest, ESLint, Vite build, GitHub checks, and normal promotion are green.

@@ -4,11 +4,13 @@ import Sidebar from './components/Sidebar.jsx';
 import Topbar from './components/Topbar.jsx';
 import StudioOverview from './pages/StudioOverview.jsx';
 import DataAssets from './pages/DataAssets.jsx';
+import MetadataRegistry from './pages/MetadataRegistry.jsx';
 import PlaceholderPage from './pages/PlaceholderPage.jsx';
 
 const PAGE_META = {
   '/dashboard': ['Studio Overview', 'Post-ingestion engineering command surface'],
   '/workspace/assets': ['Data Assets', 'Trusted source assets and downstream products'],
+  '/workspace/registry': ['Metadata Registry', 'Studio-owned engineering metadata and data products'],
   '/workspace/pipelines': ['Pipelines', 'Versioned ETL and ELT processing definitions'],
   '/workspace/transformations': ['Transformations', 'SQL and Python transformation workbench'],
   '/workspace/models': ['Data Models', 'Staging, intermediate, mart, and semantic models'],
@@ -52,8 +54,9 @@ function App() {
           <Route path="/" element={<Navigate replace to="/dashboard" />} />
           <Route path="/dashboard" element={<StudioOverview />} />
           <Route path="/workspace/assets" element={<DataAssets />} />
+          <Route path="/workspace/registry" element={<MetadataRegistry />} />
           {Object.entries(PAGE_META)
-            .filter(([path]) => !['/dashboard', '/workspace/assets'].includes(path))
+            .filter(([path]) => !['/dashboard', '/workspace/assets', '/workspace/registry'].includes(path))
             .map(([path, [title, subtitle]]) => (
               <Route
                 key={path}

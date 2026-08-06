@@ -1,0 +1,9 @@
+from sqlalchemy import Engine
+
+from skydata_studio.db.base import Base
+from skydata_studio.db.session import get_engine
+from skydata_studio.models import metadata as _metadata_models  # noqa: F401
+
+
+def create_metadata_schema(engine: Engine | None = None) -> None:
+    Base.metadata.create_all(bind=engine or get_engine())

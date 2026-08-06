@@ -1,4 +1,4 @@
-.PHONY: setup api web test lint format validate repo-map repo-zip
+.PHONY: setup api web metadata test lint format validate repo-map repo-zip
 
 setup:
 	uv sync --dev
@@ -9,6 +9,9 @@ api:
 
 web:
 	cd apps/web && npm run dev
+
+metadata:
+	uv run python scripts/bootstrap_metadata.py
 
 test:
 	uv run pytest

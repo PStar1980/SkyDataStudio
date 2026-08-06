@@ -13,6 +13,16 @@ CAPABILITIES = [
         phase=2,
     ),
     Capability(
+        code="METADATA_REGISTRY",
+        name="Metadata Registry",
+        description=(
+            "Persists domains, systems, namespaces, assets, fields, ownership, tags, "
+            "classifications, and dependencies."
+        ),
+        status="FOUNDATION",
+        phase=3,
+    ),
+    Capability(
         code="PIPELINE_WORKBENCH",
         name="ETL/ELT Pipeline Workbench",
         description=(
@@ -55,8 +65,8 @@ CAPABILITIES = [
 ROADMAP = [
     RoadmapPhase(number=0, name="Repository Foundation", status="COMPLETE"),
     RoadmapPhase(number=1, name="Studio Shell and Platform Health", status="COMPLETE"),
-    RoadmapPhase(number=2, name="SkyCommand Data-Contract Bridge", status="IN_PROGRESS"),
-    RoadmapPhase(number=3, name="Data Catalogue and Engineering Metadata", status="PLANNED"),
+    RoadmapPhase(number=2, name="SkyCommand Data-Contract Bridge", status="COMPLETE"),
+    RoadmapPhase(number=3, name="Data Catalogue and Engineering Metadata", status="IN_PROGRESS"),
     RoadmapPhase(number=4, name="ETL/ELT Pipeline Workbench", status="PLANNED"),
     RoadmapPhase(number=5, name="Apache Airflow Integration", status="PLANNED"),
     RoadmapPhase(number=6, name="dbt Transformation and Modelling", status="PLANNED"),
@@ -73,7 +83,7 @@ def platform_summary() -> PlatformSummary:
         product="SkyData Studio",
         subtitle="Data Engineering Workbench",
         theme="Aurora Foundry",
-        current_phase="Phase 2.2 — Contract Compatibility and Quality Evidence",
+        current_phase="Phase 3.1 — Metadata Registry Foundation",
         boundary=(
             "SkyData Studio starts after SkyCommand ingestion and publishes governed "
             "analytical products for SkyWeb Analytics, Power BI, and future consumers."
