@@ -12,7 +12,12 @@ def test_platform_summary_exposes_product_boundary() -> None:
     assert payload["product"] == "SkyData Studio"
     assert payload["theme"] == "Aurora Foundry"
     assert "SkyCommand" in payload["boundary"]
-    assert {item["code"] for item in payload["capabilities"]} >= {"AIRFLOW", "DBT"}
+    assert payload["current_phase"] == "Phase 3.1 — Metadata Registry Foundation"
+    assert {item["code"] for item in payload["capabilities"]} >= {
+        "AIRFLOW",
+        "DBT",
+        "METADATA_REGISTRY",
+    }
 
 
 def test_skycommand_contract_catalogue_is_read_only() -> None:

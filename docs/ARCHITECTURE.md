@@ -42,3 +42,18 @@ Temporal and Airflow coexist because they solve different problems:
 - **Airflow:** batch-oriented data dependencies, schedules, backfills, data assets, task observability, and analytical pipeline runs.
 
 A SkyCommand workflow may trigger or publish an Airflow asset event after successful ingestion. Airflow then coordinates downstream transformations. Operational remediation may call back into a SkyCommand workflow.
+
+
+## Studio metadata registry
+
+Phase 3 introduces a Studio-owned operational metadata database. It stores engineering representations of domains, systems, connection references, namespaces, assets, fields, ownership, classifications, tags, and dependencies. It does not copy source credentials or take ownership of SkyCommand ingestion state.
+
+```text
+SkyCommand data_asset.v1
+        ↓ idempotent synchronization
+metadata_domain ─ metadata_system ─ metadata_connection
+        └──────── metadata_namespace ─ metadata_asset ─ metadata_field
+                                           └────────── metadata_dependency
+```
+
+SkyCommand assets enter the registry as `RAW` assets. Studio-created products advance through `STAGING`, `INTERMEDIATE`, `MART`, `SEMANTIC`, and `REPORT` layers. The registry becomes the stable metadata boundary used by the pipeline workbench, dbt artifact ingestion, lineage, and analytics delivery.

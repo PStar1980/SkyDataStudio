@@ -334,3 +334,43 @@ a { color: inherit; }
   .contract-chip-row, .drawer-status-grid, .detail-definition-grid { grid-template-columns: 1fr; }
   .asset-detail-drawer { width: 100%; }
 }
+
+/* Phase 3.1 — Studio metadata registry foundation */
+.registry-intro { display: flex; align-items: end; justify-content: space-between; gap: 2rem; }
+.registry-actions { display: flex; gap: 0.65rem; flex-wrap: wrap; justify-content: flex-end; }
+.registry-message { border: 1px solid rgba(66,217,198,0.25); border-radius: 0.72rem; padding: 0.85rem 1rem; color: #d9fff7; background: rgba(66,217,198,0.07); }
+.registry-metric-grid { display: grid; grid-template-columns: repeat(6,minmax(0,1fr)); gap: 0.85rem; }
+.layer-panel { display: grid; gap: 1rem; }
+.layer-grid { display: grid; grid-template-columns: repeat(6,minmax(0,1fr)); gap: 0.7rem; }
+.layer-grid article { display: grid; gap: 0.35rem; border: 1px solid rgba(111,190,187,0.13); border-radius: 0.72rem; padding: 0.85rem; background: rgba(5,16,23,0.55); }
+.layer-grid span { color: var(--subtle); font-size: 0.62rem; font-weight: 850; letter-spacing: 0.08em; }
+.layer-grid strong { color: var(--mint); font-size: 1.35rem; }
+.registry-form { display: grid; gap: 1rem; }
+.registry-form-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 0.8rem; }
+.registry-form-grid label, .registry-filter-grid label { display: grid; gap: 0.38rem; }
+.registry-form-grid label > span, .registry-filter-grid label > span { color: var(--muted); font-size: 0.63rem; font-weight: 820; letter-spacing: 0.08em; text-transform: uppercase; }
+.registry-form-grid input, .registry-form-grid select, .registry-filter-grid input, .registry-filter-grid select { width: 100%; min-height: 2.7rem; border: 1px solid rgba(113,184,184,0.2); border-radius: 0.62rem; padding: 0 0.75rem; outline: none; color: var(--text); background: rgba(4,13,20,0.76); }
+.registry-form-grid input:focus, .registry-form-grid select:focus, .registry-filter-grid input:focus, .registry-filter-grid select:focus { border-color: var(--border-strong); box-shadow: 0 0 0 0.18rem rgba(66,217,198,0.08); }
+.registry-form-grid option, .registry-filter-grid option { color: var(--text); background: #08131c; }
+.form-footer { display: flex; justify-content: flex-end; }
+.registry-inventory { min-width: 0; }
+.registry-filter-grid { display: grid; grid-template-columns: minmax(15rem,2fr) repeat(3,minmax(10rem,1fr)); gap: 0.8rem; margin-bottom: 1rem; }
+.registry-table { min-width: 1100px; }
+.tag-row { display: flex; flex-wrap: wrap; gap: 0.3rem; }
+.tag-row span { border: 1px solid rgba(111,190,187,0.14); border-radius: 999px; padding: 0.2rem 0.42rem; color: #acd7d2; background: rgba(66,217,198,0.05); font-size: 0.58rem; }
+
+@media (max-width: 1280px) {
+  .registry-metric-grid, .layer-grid { grid-template-columns: repeat(3,minmax(0,1fr)); }
+  .registry-form-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
+}
+
+@media (max-width: 900px) {
+  .registry-intro { align-items: stretch; flex-direction: column; }
+  .registry-actions { justify-content: flex-start; }
+  .registry-filter-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
+}
+
+@media (max-width: 620px) {
+  .registry-metric-grid, .layer-grid, .registry-form-grid, .registry-filter-grid { grid-template-columns: 1fr; }
+  .registry-actions button { flex: 1; }
+}

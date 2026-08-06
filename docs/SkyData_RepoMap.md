@@ -19,26 +19,37 @@ SkyDataStudio/
 │   │       │       ├── __init__.py
 │   │       │       ├── contracts.py
 │   │       │       ├── health.py
+│   │       │       ├── metadata.py
 │   │       │       ├── platform.py
 │   │       │       └── skycommand.py
 │   │       ├── core/
 │   │       │   ├── __init__.py
 │   │       │   └── config.py
+│   │       ├── db/
+│   │       │   ├── __init__.py
+│   │       │   ├── base.py
+│   │       │   ├── bootstrap.py
+│   │       │   └── session.py
 │   │       ├── integrations/
 │   │       │   └── skycommand/
 │   │       │       ├── __init__.py
 │   │       │       ├── client.py
 │   │       │       ├── dependencies.py
 │   │       │       └── preview.py
+│   │       ├── models/
+│   │       │   ├── __init__.py
+│   │       │   └── metadata.py
 │   │       ├── schemas/
 │   │       │   ├── __init__.py
 │   │       │   ├── assets.py
+│   │       │   ├── metadata.py
 │   │       │   └── platform.py
 │   │       └── services/
 │   │           ├── __init__.py
 │   │           ├── asset_detail.py
 │   │           ├── asset_workspace.py
-│   │           └── contract_compatibility.py
+│   │           ├── contract_compatibility.py
+│   │           └── metadata_registry.py
 │   └── web/
 │       ├── eslint.config.js
 │       ├── index.html
@@ -56,6 +67,7 @@ SkyDataStudio/
 │           │   └── Topbar.jsx
 │           ├── pages/
 │           │   ├── DataAssets.jsx
+│           │   ├── MetadataRegistry.jsx
 │           │   ├── PlaceholderPage.jsx
 │           │   └── StudioOverview.jsx
 │           └── services/
@@ -70,7 +82,10 @@ SkyDataStudio/
 │   ├── ROADMAP.md
 │   └── SkyData_RepoMap.md
 ├── infra/
-│   └── docker-compose.yml
+│   ├── docker-compose.yml
+│   └── db/
+│       └── migrations/
+│           └── 0001_metadata_registry.sql
 ├── orchestration/
 │   └── airflow/
 │       └── dags/
@@ -81,6 +96,7 @@ SkyDataStudio/
 │           ├── __init__.py
 │           └── skycommand.py
 ├── scripts/
+│   ├── bootstrap_metadata.py
 │   ├── generate_repo_map.py
 │   ├── generate_repo_zip.py
 │   ├── initialize_repo.ps1
@@ -94,6 +110,7 @@ SkyDataStudio/
 │   ├── test_asset_workspace.py
 │   ├── test_contract_compatibility.py
 │   ├── test_health.py
+│   ├── test_metadata_registry.py
 │   ├── test_platform.py
 │   ├── test_quality_contracts.py
 │   ├── test_skycommand_client.py

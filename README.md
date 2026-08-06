@@ -4,7 +4,7 @@
 
 SkyData Studio is the post-ingestion data engineering application in the Sky ecosystem. It begins where SkyCommand's ingestion responsibility ends and prepares trusted data for analytical consumption by SkyWeb Analytics, Power BI, and future client-facing applications.
 
-**Current status:** Phase 0/1 and the green validation baseline are complete. Phase 2.1 is closed with a proven live SkyCommand bridge. Phase 2.2 adds contract compatibility diagnostics and asset-level quality evidence.
+**Current status:** Phase 0/1 and the green validation baseline are complete. Phase 2 is closed with a proven live SkyCommand bridge, compatible boundary contracts, and asset-level quality evidence. Phase 3.1 introduces the Studio-owned metadata registry.
 
 ---
 
@@ -25,6 +25,29 @@ SKYCOMMAND_OFFLINE_PREVIEW_ENABLED=true
 ```
 
 The first live workspace is available at `/workspace/assets`. It now includes contract compatibility diagnostics and an asset evidence drawer for quality, revision, rejection, freshness, and run evidence. When SkyCommand is unavailable or the token has not been configured, the API returns an explicitly labelled offline preview rather than silently presenting fixture data as live.
+
+---
+
+## Phase 3.1 quick start
+
+Phase 3.1 adds a Studio-owned PostgreSQL metadata registry. Start and bootstrap it before opening `/workspace/registry`:
+
+```powershell
+docker compose -f .\infra\docker-compose.yml up -d studio-postgres
+python .\scripts\bootstrap_metadata.py
+```
+
+Then start the API and frontend normally. The registry can synchronize the 69 trusted SkyCommand assets into the `RAW` layer and can register portable non-macro products manually. It stores metadata only—connection secrets remain environment references rather than database values.
+
+Core endpoints:
+
+```text
+GET  /api/v1/metadata/summary
+GET  /api/v1/metadata/assets
+GET  /api/v1/metadata/assets/{assetId}
+POST /api/v1/metadata/assets
+POST /api/v1/metadata/sync/skycommand
+```
 
 ---
 
@@ -125,6 +148,7 @@ Dashboards
 
 Data Workspace
   ├─ Data Assets
+  ├─ Metadata Registry
   ├─ Pipelines
   ├─ Transformations
   └─ Data Models

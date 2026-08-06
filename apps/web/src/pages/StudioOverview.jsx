@@ -5,7 +5,7 @@ const FALLBACK = {
   product: 'SkyData Studio',
   subtitle: 'Data Engineering Workbench',
   theme: 'Aurora Foundry',
-  current_phase: 'Phase 2.2 — Contract Compatibility and Quality Evidence',
+  current_phase: 'Phase 3.1 — Metadata Registry Foundation',
   boundary: 'SkyData Studio starts after SkyCommand ingestion and publishes governed analytical products for downstream consumers.',
   capabilities: [],
 };
@@ -41,7 +41,7 @@ function StudioOverview() {
     <div className="page-stack">
       <section className="hero-panel">
         <div>
-          <span className="eyebrow">AURORA FOUNDRY · PHASE 2.2</span>
+          <span className="eyebrow">AURORA FOUNDRY · PHASE 3.1</span>
           <h1>Shape trusted data into analytical products.</h1>
           <p>{summary.boundary}</p>
           <div className="hero-actions">
@@ -61,8 +61,8 @@ function StudioOverview() {
 
       <section className="metric-grid">
         <article className="metric-card"><span>Platform API</span><strong>{apiState}</strong><small>FastAPI contract service</small></article>
-        <article className="metric-card"><span>Current Phase</span><strong>2.2</strong><small>Contracts + quality evidence</small></article>
-        <article className="metric-card"><span>Next Boundary</span><strong>Evidence</strong><small>Quality + revision + rejection proof</small></article>
+        <article className="metric-card"><span>Current Phase</span><strong>3.1</strong><small>Metadata registry foundation</small></article>
+        <article className="metric-card"><span>Next Boundary</span><strong>Registry</strong><small>Domains + systems + data products</small></article>
         <article className="metric-card"><span>Orchestrator</span><strong>Airflow 3</strong><small>Batch and asset workflows</small></article>
       </section>
 
@@ -91,6 +91,7 @@ function StudioOverview() {
         <div className="capability-grid">
           {(summary.capabilities.length ? summary.capabilities : [
             { code: 'CONTRACT_BRIDGE', name: 'SkyCommand Contract Bridge', description: 'Typed read-only integration with trusted ingestion contracts.', status: 'FOUNDATION', phase: 2 },
+            { code: 'METADATA_REGISTRY', name: 'Metadata Registry', description: 'Studio-owned domains, systems, namespaces, assets, fields, ownership, tags, and dependencies.', status: 'FOUNDATION', phase: 3 },
             { code: 'PIPELINE_WORKBENCH', name: 'ETL/ELT Pipeline Workbench', description: 'Versioned post-ingestion pipelines and structured run evidence.', status: 'PLANNED', phase: 4 },
             { code: 'AIRFLOW', name: 'Apache Airflow Orchestration', description: 'DAGs, assets, schedules, retries, and backfills.', status: 'SCAFFOLDED', phase: 5 },
             { code: 'DBT', name: 'dbt Transformation Layer', description: 'Tested staging, intermediate, mart, and semantic models.', status: 'SCAFFOLDED', phase: 6 },
@@ -109,11 +110,11 @@ function StudioOverview() {
 
       <section className="two-column-grid">
         <article className="panel compact-panel">
-          <div className="panel-heading"><div><span className="eyebrow">NEXT IMPLEMENTATION</span><h2>Contract compatibility and evidence</h2></div><span className="phase-badge">PHASE 2.2</span></div>
+          <div className="panel-heading"><div><span className="eyebrow">NEXT IMPLEMENTATION</span><h2>Studio-owned engineering metadata</h2></div><span className="phase-badge">PHASE 3.1</span></div>
           <ol className="implementation-list">
-            <li><span>01</span><div><strong>Compatibility diagnostics</strong><small>Verify all supported boundary contracts.</small></div></li>
-            <li><span>02</span><div><strong>Quality evidence</strong><small>Read quality, revision, and rejection events.</small></div></li>
-            <li><span>03</span><div><strong>Asset inspection</strong><small>Trace evidence from a single asset drawer.</small></div></li>
+            <li><span>01</span><div><strong>Metadata persistence</strong><small>Store domains, systems, namespaces, and assets.</small></div></li>
+            <li><span>02</span><div><strong>SkyCommand synchronization</strong><small>Import trusted assets into the internal registry.</small></div></li>
+            <li><span>03</span><div><strong>Portable registration</strong><small>Register a non-macro data product with ownership and tags.</small></div></li>
           </ol>
         </article>
         <article className="panel compact-panel">
