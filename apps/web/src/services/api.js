@@ -53,3 +53,53 @@ export async function postJson(path, payload, { signal } = {}) {
 
   return response.json();
 }
+
+export async function patchJson(path, payload, { signal } = {}) {
+  const response = await fetch(path, {
+    method: 'PATCH',
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(payload),
+    signal,
+  });
+
+  if (!response.ok) {
+    let message = `Request failed with HTTP ${response.status}.`;
+    try {
+      const responsePayload = await response.json();
+      message = responsePayload.detail || responsePayload.error || message;
+    } catch {
+      // Keep the status-based message when the response is not JSON.
+    }
+    throw new Error(message);
+  }
+
+  return response.json();
+}
+
+export async function putJson(path, payload, { signal } = {}) {
+  const response = await fetch(path, {
+    method: 'PUT',
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(payload),
+    signal,
+  });
+
+  if (!response.ok) {
+    let message = `Request failed with HTTP ${response.status}.`;
+    try {
+      const responsePayload = await response.json();
+      message = responsePayload.detail || responsePayload.error || message;
+    } catch {
+      // Keep the status-based message when the response is not JSON.
+    }
+    throw new Error(message);
+  }
+
+  return response.json();
+}

@@ -16,8 +16,8 @@ CAPABILITIES = [
         code="METADATA_REGISTRY",
         name="Metadata Registry",
         description=(
-            "Persists domains, systems, namespaces, assets, fields, ownership, tags, "
-            "classifications, and dependencies."
+            "Persists domains, systems, namespaces, assets, target schemas, ownership, "
+            "source-to-target mappings, and lineage dependencies."
         ),
         status="FOUNDATION",
         phase=3,
@@ -83,7 +83,7 @@ def platform_summary() -> PlatformSummary:
         product="SkyData Studio",
         subtitle="Data Engineering Workbench",
         theme="Aurora Foundry",
-        current_phase="Phase 3.1 — Metadata Registry Foundation",
+        current_phase="Phase 3.2 — Source-to-Target Mapping and Product Blueprints",
         boundary=(
             "SkyData Studio starts after SkyCommand ingestion and publishes governed "
             "analytical products for SkyWeb Analytics, Power BI, and future consumers."

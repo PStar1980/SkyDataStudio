@@ -4,7 +4,7 @@
 
 SkyData Studio is the post-ingestion data engineering application in the Sky ecosystem. It begins where SkyCommand's ingestion responsibility ends and prepares trusted data for analytical consumption by SkyWeb Analytics, Power BI, and future client-facing applications.
 
-**Current status:** Phase 0/1 and the green validation baseline are complete. Phase 2 is closed with a proven live SkyCommand bridge, compatible boundary contracts, and asset-level quality evidence. Phase 3.1 introduces the Studio-owned metadata registry.
+**Current status:** Phase 0/1 and Phase 2 are complete. Phase 3.1 proved the Studio-owned PostgreSQL metadata registry, 69-asset SkyCommand synchronization, and portable non-macro registration. Phase 3.2 introduces source-to-target mapping, target schema contracts, and durable lineage.
 
 ---
 
@@ -34,7 +34,7 @@ Phase 3.1 adds a Studio-owned PostgreSQL metadata registry. Start and bootstrap 
 
 ```powershell
 docker compose -f .\infra\docker-compose.yml up -d studio-postgres
-python .\scripts\bootstrap_metadata.py
+uv run python .\scripts\bootstrap_metadata.py
 ```
 
 Then start the API and frontend normally. The registry can synchronize the 69 trusted SkyCommand assets into the `RAW` layer and can register portable non-macro products manually. It stores metadata only—connection secrets remain environment references rather than database values.
@@ -42,12 +42,28 @@ Then start the API and frontend normally. The registry can synchronize the 69 tr
 Core endpoints:
 
 ```text
-GET  /api/v1/metadata/summary
-GET  /api/v1/metadata/assets
-GET  /api/v1/metadata/assets/{assetId}
-POST /api/v1/metadata/assets
-POST /api/v1/metadata/sync/skycommand
+GET   /api/v1/metadata/summary
+GET   /api/v1/metadata/assets
+GET   /api/v1/metadata/assets/{assetId}
+POST  /api/v1/metadata/assets
+PATCH /api/v1/metadata/assets/{assetId}/governance
+PUT   /api/v1/metadata/assets/{assetId}/fields
+GET   /api/v1/metadata/mappings/summary
+GET   /api/v1/metadata/mappings
+GET   /api/v1/metadata/mappings/{mappingId}
+POST  /api/v1/metadata/mappings
+POST  /api/v1/metadata/sync/skycommand
 ```
+
+## Phase 3.2 quick start
+
+After applying Phase 3.2, re-run the idempotent bootstrap so the existing PostgreSQL volume receives the two additive mapping tables:
+
+```powershell
+uv run python .\scripts\bootstrap_metadata.py
+```
+
+Open `/workspace/mappings` to register a source-to-target product blueprint. Creating a mapping also creates a durable `TRANSFORMS` dependency and can populate the target asset schema from its field-level mapping contract. The Metadata Registry `Inspect` drawer can update ownership, classification, criticality, tags, and target fields for any registered asset.
 
 ---
 

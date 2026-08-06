@@ -100,7 +100,7 @@ Closure evidence:
 
 ## Phase 3.1 — Metadata Registry Foundation
 
-**Status:** Implemented locally; pending PostgreSQL bootstrap, validation, promotion, and live synchronization proof.
+**Status:** Complete. PostgreSQL, live synchronization, portable registration, validation, GitHub checks, and normal promotion are green.
 
 Changes:
 
@@ -111,10 +111,35 @@ Changes:
 - Metadata Registry workspace with layer metrics, filters, manual portable-product registration, and synchronized inventory;
 - platform dashboard and navigation advanced to Phase 3.1.
 
+Closure evidence:
+
+- Docker Desktop uses the WSL 2 backend and `studio-postgres` reports healthy;
+- `uv run python scripts/bootstrap_metadata.py` creates the seven registry tables;
+- live SkyCommand synchronization imports all 69 trusted assets and a second run updates 69 without duplicates;
+- Metadata Registry displays domains, systems, namespaces, engineering layers, ownership, classifications, and tags;
+- the non-macro `CUSTOMER_ACCOUNT` MART product is registered under Operations / CRM;
+- Ruff, mypy, pytest, ESLint, Vite build, GitHub checks, and normal promotion are green.
+
+## Phase 3.2 — Source-to-Target Mapping and Product Blueprints
+
+**Status:** Implemented; pending local PostgreSQL bootstrap, live blueprint proof, validation, and promotion.
+
+Changes:
+
+- durable source-to-target mapping and field-mapping persistence;
+- mapping type, load strategy, lifecycle status, target grain, business keys, transformation expression, and description contracts;
+- target-schema enrichment and automatic `TRANSFORMS` dependency creation when a mapping is registered;
+- governance and schema administration APIs for existing metadata assets;
+- Source Mappings workbench with mapping composer, field-transformation rows, inventory, filters, and blueprint drawer;
+- Metadata Registry asset blueprint drawer for ownership, classifications, target fields, and inbound/outbound lineage;
+- additive PostgreSQL migration `0002_source_target_mapping.sql`;
+- platform dashboard and navigation advanced to Phase 3.2.
+
 Acceptance evidence required for closure:
 
-- PostgreSQL `studio-postgres` is healthy and `python scripts/bootstrap_metadata.py` succeeds;
-- live SkyCommand synchronization imports all trusted assets and a second run updates rather than duplicates them;
-- Metadata Registry displays domains, systems, namespaces, engineering layers, ownership, classifications, and tags;
-- a non-macro product can be registered and inspected;
+- re-running the metadata bootstrap creates `metadata_mapping` and `metadata_field_mapping` in the existing database;
+- one trusted RAW asset is mapped to a STAGING or MART product;
+- target fields and a durable dependency are created from the mapping specification;
+- asset detail shows inbound/outbound mappings and editable governance/schema metadata;
+- mapping list/detail APIs and UI display the same blueprint evidence;
 - Ruff, mypy, pytest, ESLint, Vite build, GitHub checks, and normal promotion are green.
