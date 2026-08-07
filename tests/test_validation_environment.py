@@ -69,3 +69,7 @@ def test_development_server_preflight_blocks_running_vite(monkeypatch) -> None:
         assert "Stop the API and frontend" in str(error)
     else:
         raise AssertionError("Expected the Vite preflight to block validation.")
+
+
+def test_pytest_uses_python_module_entrypoint() -> None:
+    assert validate.pytest_command("uv") == ["uv", "run", "python", "-m", "pytest"]

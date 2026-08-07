@@ -4,7 +4,7 @@
 
 SkyData Studio is the post-ingestion data engineering application in the Sky ecosystem. It begins where SkyCommand's ingestion responsibility ends and prepares trusted data for analytical consumption by SkyWeb Analytics, Power BI, and future client-facing applications.
 
-**Current status:** Phase 0/1 and Phase 2 are complete. Phase 3.1 proved the Studio-owned PostgreSQL metadata registry, 69-asset SkyCommand synchronization, and portable non-macro registration. Phase 3.2 introduces source-to-target mapping, target schema contracts, and durable lineage.
+**Current status:** Phase 0/1 and Phase 2 are complete. Phase 3.1 proved the Studio-owned PostgreSQL metadata registry, 69-asset SkyCommand synchronization, and portable non-macro registration. Phase 3.2 source-to-target mapping, target schema contracts, and durable lineage are implemented and ready for live blueprint acceptance proof.
 
 ---
 
@@ -75,7 +75,7 @@ Run the complete local validation suite before every SkyCommand development prom
 python .\scripts\validate.py
 ```
 
-The first run creates `uv.lock` and `apps/web/package-lock.json`. Commit both lockfiles. Later runs use locked Python synchronization and `npm ci`, matching GitHub Actions as closely as possible. On Windows, the runner automatically uses uv copy mode to avoid Dropbox-incompatible hard links. It also refuses to run while Vite is listening on port 5174 because `npm ci` rebuilds `node_modules`. The suite performs Python compilation, Ruff, mypy, pytest, ESLint, and a Vite production build.
+The first run creates `uv.lock` and `apps/web/package-lock.json`. Commit both lockfiles. Later runs use locked Python synchronization and `npm ci`, matching GitHub Actions as closely as possible. On Windows, the runner automatically uses uv copy mode to avoid Dropbox-incompatible hard links. Pytest is launched with `python -m pytest` so Windows App Control policies that block generated console launchers such as `pytest.exe` do not prevent validation. The runner also refuses to run while the API or Vite development server is active because dependency synchronization rebuilds local environments. The suite performs Python compilation, Ruff, mypy, pytest, ESLint, and a Vite production build.
 
 ---
 
