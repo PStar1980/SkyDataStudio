@@ -143,3 +143,20 @@ Acceptance evidence required for closure:
 - asset detail shows inbound/outbound mappings and editable governance/schema metadata;
 - mapping list/detail APIs and UI display the same blueprint evidence;
 - Ruff, mypy, pytest, ESLint, Vite build, GitHub checks, and normal promotion are green.
+
+## Phase 3.2.2 — Windows Validation Runner and Mapping Workbench Polish
+
+**Status:** Implemented; pending local full-suite proof and live mapping acceptance.
+
+Changes:
+
+- local and GitHub backend validation invoke pytest through `python -m pytest`, avoiding Windows App Control blocks on the generated `pytest.exe` console launcher while preserving one consistent test entry point;
+- validation runner behavior is covered by a focused unit test;
+- Phase 3.2 remains open until one live RAW-to-target blueprint proves field mappings, dependency creation, and registry lineage end to end.
+
+Acceptance evidence required:
+
+- `python scripts/validate.py` reaches and passes pytest locally under the current Windows policy;
+- GitHub backend/frontend validation remains green;
+- one live mapping is registered and visible in both Source Mappings and Metadata Registry blueprint detail;
+- normal SkyCommand development promotion synchronizes `dev` and `main`.

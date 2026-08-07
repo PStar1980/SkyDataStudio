@@ -54,6 +54,16 @@ def compile_python() -> None:
             raise RuntimeError(f"{label} compilation failed.")
 
 
+def pytest_command(uv: str) -> list[str]:
+    """Run pytest through Python instead of the Windows console launcher.
+
+    Some Windows App Control policies allow the project Python interpreter while
+    blocking generated console entry points such as ``pytest.exe``. Executing
+    pytest as a module preserves the same test suite while avoiding that launcher.
+    """
+    return [uv, "run", "python", "-m", "pytest"]
+
+
 def sync_python_dependencies(uv: str) -> None:
     lock_file = ROOT / "uv.lock"
     command = [uv, "sync", "--dev"]
@@ -138,7 +148,7 @@ def main() -> int:
         compile_python()
         run([uv, "run", "ruff", "check", "."])
         run([uv, "run", "mypy", "apps/api", "packages/contracts"])
-        run([uv, "run", "pytest"])
+        run(pytest_command(uv))
 
         sync_frontend_dependencies(npm)
         run([npm, "run", "lint"], cwd=WEB_ROOT)
