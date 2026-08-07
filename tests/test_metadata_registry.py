@@ -2,10 +2,6 @@ from collections.abc import Generator
 
 import pytest
 from fastapi.testclient import TestClient
-from sqlalchemy import create_engine
-from sqlalchemy.orm import Session
-from sqlalchemy.pool import StaticPool
-
 from skydata_studio.db.base import Base
 from skydata_studio.db.session import get_session
 from skydata_studio.integrations.skycommand.dependencies import get_skycommand_gateway
@@ -29,6 +25,10 @@ from skydata_studio.services.metadata_registry import (
     synchronize_skycommand_assets,
     update_metadata_asset_governance,
 )
+from sqlalchemy import create_engine
+from sqlalchemy.orm import Session
+from sqlalchemy.pool import StaticPool
+
 from tests.test_asset_workspace import PreviewGateway
 
 pytestmark = pytest.mark.anyio
