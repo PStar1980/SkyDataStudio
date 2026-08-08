@@ -6,6 +6,7 @@ import StudioOverview from './pages/StudioOverview.jsx';
 import DataAssets from './pages/DataAssets.jsx';
 import MetadataRegistry from './pages/MetadataRegistry.jsx';
 import SourceMappings from './pages/SourceMappings.jsx';
+import Pipelines from './pages/Pipelines.jsx';
 import PlaceholderPage from './pages/PlaceholderPage.jsx';
 
 const PAGE_META = {
@@ -58,8 +59,15 @@ function App() {
           <Route path="/workspace/assets" element={<DataAssets />} />
           <Route path="/workspace/registry" element={<MetadataRegistry />} />
           <Route path="/workspace/mappings" element={<SourceMappings />} />
+          <Route path="/workspace/pipelines" element={<Pipelines />} />
           {Object.entries(PAGE_META)
-            .filter(([path]) => !['/dashboard', '/workspace/assets', '/workspace/registry', '/workspace/mappings'].includes(path))
+            .filter(([path]) => ![
+              '/dashboard',
+              '/workspace/assets',
+              '/workspace/registry',
+              '/workspace/mappings',
+              '/workspace/pipelines',
+            ].includes(path))
             .map(([path, [title, subtitle]]) => (
               <Route
                 key={path}

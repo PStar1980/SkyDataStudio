@@ -20,6 +20,7 @@ SkyDataStudio/
 │   │       │       ├── contracts.py
 │   │       │       ├── health.py
 │   │       │       ├── metadata.py
+│   │       │       ├── pipelines.py
 │   │       │       ├── platform.py
 │   │       │       └── skycommand.py
 │   │       ├── core/
@@ -38,18 +39,21 @@ SkyDataStudio/
 │   │       │       └── preview.py
 │   │       ├── models/
 │   │       │   ├── __init__.py
-│   │       │   └── metadata.py
+│   │       │   ├── metadata.py
+│   │       │   └── pipeline.py
 │   │       ├── schemas/
 │   │       │   ├── __init__.py
 │   │       │   ├── assets.py
 │   │       │   ├── metadata.py
+│   │       │   ├── pipelines.py
 │   │       │   └── platform.py
 │   │       └── services/
 │   │           ├── __init__.py
 │   │           ├── asset_detail.py
 │   │           ├── asset_workspace.py
 │   │           ├── contract_compatibility.py
-│   │           └── metadata_registry.py
+│   │           ├── metadata_registry.py
+│   │           └── pipeline_registry.py
 │   └── web/
 │       ├── eslint.config.js
 │       ├── index.html
@@ -68,6 +72,7 @@ SkyDataStudio/
 │           ├── pages/
 │           │   ├── DataAssets.jsx
 │           │   ├── MetadataRegistry.jsx
+│           │   ├── Pipelines.jsx
 │           │   ├── PlaceholderPage.jsx
 │           │   ├── SourceMappings.jsx
 │           │   └── StudioOverview.jsx
@@ -87,7 +92,8 @@ SkyDataStudio/
 │   └── db/
 │       └── migrations/
 │           ├── 0001_metadata_registry.sql
-│           └── 0002_source_target_mapping.sql
+│           ├── 0002_source_target_mapping.sql
+│           └── 0003_pipeline_definition.sql
 ├── orchestration/
 │   └── airflow/
 │       └── dags/
@@ -113,6 +119,7 @@ SkyDataStudio/
 │   ├── test_contract_compatibility.py
 │   ├── test_health.py
 │   ├── test_metadata_registry.py
+│   ├── test_pipeline_registry.py
 │   ├── test_platform.py
 │   ├── test_quality_contracts.py
 │   ├── test_skycommand_client.py

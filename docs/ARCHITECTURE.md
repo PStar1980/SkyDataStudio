@@ -79,3 +79,18 @@ metadata_asset (source)
 ```
 
 Mapping registration may enrich the target asset schema, but it never executes SQL or mutates source data. This separation lets the Studio validate design intent, ownership, keys, and lineage before pipeline code or Airflow DAGs exist.
+
+## Pipeline definition boundary
+
+Phase 4.1 converts an accepted mapping blueprint into a versioned processing definition without running it. The pipeline catalogue owns design-time execution metadata while source/target authority remains in the metadata registry.
+
+```text
+pipeline_definition
+        │ mapping_id → metadata_mapping
+        └── pipeline_version (v1...vn)
+                ├── pipeline_parameter
+                └── pipeline_step
+                        └── pipeline_step_dependency
+```
+
+The first execution contract is deliberately local-only. Steps can be typed as `SQL`, `PYTHON`, `VALIDATION`, `DBT`, or `PUBLISH` and carry retry, timeout, dependency, source/target, and optional SQL/script metadata. Persisting this graph before execution keeps Phase 4.2 free to focus on replay-safe runtime behavior and structured run evidence instead of mixing execution semantics with authoring concerns.

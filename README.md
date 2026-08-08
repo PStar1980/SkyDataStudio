@@ -4,7 +4,7 @@
 
 SkyData Studio is the post-ingestion data engineering application in the Sky ecosystem. It begins where SkyCommand's ingestion responsibility ends and prepares trusted data for analytical consumption by SkyWeb Analytics, Power BI, and future client-facing applications.
 
-**Current status:** Phase 0/1 and Phase 2 are complete. Phase 3.1 proved the Studio-owned PostgreSQL metadata registry, 69-asset SkyCommand synchronization, and portable non-macro registration. Phase 3.2 source-to-target mapping, target schema contracts, and durable lineage are implemented and ready for live blueprint acceptance proof.
+**Current status:** Phase 0/1, Phase 2, and Phase 3 are complete. Phase 3.2 proved a live DFF → Federal Funds Rate Mart blueprint with two field mappings, durable lineage, target schema enrichment, and PostgreSQL evidence. Phase 4.1 now introduces versioned pipeline definitions, parameters, typed steps, dependency graphs, and a local execution contract without executing data mutations yet.
 
 ---
 
@@ -64,6 +64,16 @@ uv run python .\scripts\bootstrap_metadata.py
 ```
 
 Open `/workspace/mappings` to register a source-to-target product blueprint. Creating a mapping also creates a durable `TRANSFORMS` dependency and can populate the target asset schema from its field-level mapping contract. The Metadata Registry `Inspect` drawer can update ownership, classification, criticality, tags, and target fields for any registered asset.
+
+## Phase 4.1 quick start
+
+Re-run the idempotent bootstrap so the existing PostgreSQL volume receives the additive pipeline-definition tables:
+
+```powershell
+uv run python .\scripts\bootstrap_metadata.py
+```
+
+Open `/workspace/pipelines`. A READY/ACTIVE source mapping can generate a version-1 local pipeline definition with a `RUN_DATE` parameter and a four-step dependency chain: `READ_SOURCE → TRANSFORM_TARGET → VALIDATE_TARGET → PUBLISH_TARGET`. Phase 4.1 persists design intent only; Phase 4.2 will introduce the replay-safe local execution engine and structured run evidence.
 
 ---
 
