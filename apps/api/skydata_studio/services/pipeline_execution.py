@@ -9,9 +9,6 @@ from time import perf_counter
 from typing import Any
 from uuid import uuid4
 
-from sqlalchemy import func, or_, select
-from sqlalchemy.orm import Session, selectinload
-
 from skydata_studio.models.metadata import MetadataAsset, MetadataMapping
 from skydata_studio.models.pipeline import (
     PipelineDefinition,
@@ -28,6 +25,8 @@ from skydata_studio.schemas.execution import (
     PipelineRunSummary,
     PipelineStepRunRead,
 )
+from sqlalchemy import func, or_, select
+from sqlalchemy.orm import Session, selectinload
 
 
 class PipelineExecutionError(RuntimeError):
@@ -48,7 +47,9 @@ def _utc_now() -> datetime:
 
 def _pipeline_options() -> tuple[Any, ...]:
     return (
-        selectinload(PipelineDefinition.versions).selectinload(PipelineVersion.parameters),
+        selectinload(PipelineDefinition.versions).selectinload(
+            PipelineVersion.parameters
+        ),
         selectinload(PipelineDefinition.versions)
         .selectinload(PipelineVersion.steps)
         .selectinload(PipelineStep.dependencies),
@@ -80,21 +81,32 @@ def _select_version(
 ) -> PipelineVersion:
     if not pipeline.versions:
         raise PipelineExecutionConflictError("Pipeline has no executable version.")
+
     if version_number is None:
-        version = max(pipeline.versions, key=lambda item: item.version_number)
+        version = max(
+            pipeline.versions,
+            key=lambda item: item.version_number,
+        )
     else:
-        version = next(
-            (item for item in pipeline.versions if item.version_number == version_number),
+        matched_version = next(
+            (
+                item
+                for item in pipeline.versions
+                if item.version_number == version_number
+            ),
             None,
         )
-        if version is None:
+        if matched_version is None:
             raise PipelineExecutionNotFoundError(
                 f"Pipeline version {version_number} was not found."
             )
+        version = matched_version
+
     if version.status not in {"READY", "PUBLISHED"}:
         raise PipelineExecutionConflictError(
             "Only READY or PUBLISHED pipeline versions can execute locally."
         )
+
     return version
 
 
@@ -145,7 +157,9 @@ def _resolve_parameters(
     supplied: dict[str, object],
 ) -> dict[str, object]:
     definitions = {parameter.code: parameter for parameter in version.parameters}
-    normalized_supplied = {str(code).strip().upper(): value for code, value in supplied.items()}
+    normalized_supplied = {
+        str(code).strip().upper(): value for code, value in supplied.items()
+    }
     unknown = sorted(set(normalized_supplied) - set(definitions))
     if unknown:
         raise PipelineExecutionConflictError(
@@ -207,7 +221,9 @@ def _get_mapping(session: Session, mapping_id: str | None) -> MetadataMapping | 
         select(MetadataMapping)
         .options(
             selectinload(MetadataMapping.source_asset),
-            selectinload(MetadataMapping.target_asset).selectinload(MetadataAsset.fields),
+            selectinload(MetadataMapping.target_asset).selectinload(
+                MetadataAsset.fields
+            ),
             selectinload(MetadataMapping.field_mappings),
         )
         .where(MetadataMapping.id == mapping_id)
@@ -221,8 +237,16 @@ def _step_result(
     parameters: dict[str, object],
 ) -> dict[str, object]:
     mapping = _get_mapping(session, step.mapping_id or pipeline.mapping_id)
-    source = session.get(MetadataAsset, step.source_asset_id) if step.source_asset_id else None
-    target = session.get(MetadataAsset, step.target_asset_id) if step.target_asset_id else None
+    source = (
+        session.get(MetadataAsset, step.source_asset_id)
+        if step.source_asset_id
+        else None
+    )
+    target = (
+        session.get(MetadataAsset, step.target_asset_id)
+        if step.target_asset_id
+        else None
+    )
     common: dict[str, object] = {
         "result_version": "pipeline_step_result.v1",
         "step_code": step.code,
@@ -234,7 +258,9 @@ def _step_result(
 
     if step.code == "READ_SOURCE":
         if source is None:
-            raise PipelineExecutionConflictError("READ_SOURCE requires a registered source asset.")
+            raise PipelineExecutionConflictError(
+                "READ_SOURCE requires a registered source asset."
+            )
         return {
             **common,
             "operation": "READ_CONTRACT_PROBE",
@@ -269,7 +295,9 @@ def _step_result(
 
     if step.step_type == "VALIDATION":
         if mapping is None:
-            raise PipelineExecutionConflictError("VALIDATION requires a governed mapping.")
+            raise PipelineExecutionConflictError(
+                "VALIDATION requires a governed mapping."
+            )
         target_fields = list(mapping.target_asset.fields)
         if not mapping.field_mappings:
             raise PipelineExecutionConflictError(
@@ -289,7 +317,8 @@ def _step_result(
         )
         if missing_targets:
             raise PipelineExecutionConflictError(
-                "Target schema is missing mapped field(s): " + ", ".join(missing_targets)
+                "Target schema is missing mapped field(s): "
+                + ", ".join(missing_targets)
             )
         return {
             **common,
@@ -307,7 +336,9 @@ def _step_result(
         if target is None and mapping is not None:
             target = mapping.target_asset
         if target is None:
-            raise PipelineExecutionConflictError("PUBLISH requires a registered target asset.")
+            raise PipelineExecutionConflictError(
+                "PUBLISH requires a registered target asset."
+            )
         return {
             **common,
             "operation": "PUBLICATION_ELIGIBILITY_GATE",
@@ -515,10 +546,13 @@ def pipeline_run_summary(session: Session) -> PipelineRunSummary:
     environments = Counter(session.scalars(select(PipelineRun.environment)).all())
     return PipelineRunSummary(
         runs=session.scalar(select(func.count()).select_from(PipelineRun)) or 0,
-        step_runs=session.scalar(select(func.count()).select_from(PipelineStepRun)) or 0,
+        step_runs=session.scalar(select(func.count()).select_from(PipelineStepRun))
+        or 0,
         replayed_runs=(
             session.scalar(
-                select(func.count()).select_from(PipelineRun).where(PipelineRun.replay_count > 0)
+                select(func.count())
+                .select_from(PipelineRun)
+                .where(PipelineRun.replay_count > 0)
             )
             or 0
         ),
@@ -561,17 +595,22 @@ def list_pipeline_runs(
             PipelineDefinition,
             PipelineDefinition.id == PipelineRun.pipeline_id,
         )
-        query = query.join(PipelineDefinition, PipelineDefinition.id == PipelineRun.pipeline_id)
+        query = query.join(
+            PipelineDefinition, PipelineDefinition.id == PipelineRun.pipeline_id
+        )
     total = session.scalar(count_query.where(*filters)) or 0
-    runs = session.scalars(
-        query.where(*filters)
-        .order_by(PipelineRun.created_at.desc())
-        .limit(limit)
-        .offset(offset)
-    ).unique().all()
+    runs = (
+        session.scalars(
+            query.where(*filters)
+            .order_by(PipelineRun.created_at.desc())
+            .limit(limit)
+            .offset(offset)
+        )
+        .unique()
+        .all()
+    )
     return PipelineRunList(total=total, items=[_run_read(run) for run in runs])
 
 
 def get_pipeline_run(session: Session, run_id: str) -> PipelineRunRead:
     return _run_read(_get_run_model(session, run_id))
-
