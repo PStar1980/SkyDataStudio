@@ -2,7 +2,6 @@ from collections.abc import Generator
 
 import pytest
 from fastapi.testclient import TestClient
-
 from skydata_studio.db.base import Base
 from skydata_studio.db.session import get_session
 from skydata_studio.main import app

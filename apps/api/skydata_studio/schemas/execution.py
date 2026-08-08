@@ -3,7 +3,6 @@ from typing import Literal
 
 from pydantic import BaseModel, Field, field_validator
 
-
 type PipelineRunStatus = Literal["PENDING", "RUNNING", "SUCCEEDED", "FAILED"]
 type PipelineStepRunStatus = Literal["PENDING", "RUNNING", "SUCCEEDED", "FAILED", "SKIPPED"]
 type PipelineReplayMode = Literal["REUSE", "FORCE_NEW"]
