@@ -9,6 +9,9 @@ from time import perf_counter
 from typing import Any
 from uuid import uuid4
 
+from sqlalchemy import func, or_, select
+from sqlalchemy.orm import Session, selectinload
+
 from skydata_studio.models.metadata import MetadataAsset, MetadataMapping
 from skydata_studio.models.pipeline import (
     PipelineDefinition,
@@ -25,8 +28,6 @@ from skydata_studio.schemas.execution import (
     PipelineRunSummary,
     PipelineStepRunRead,
 )
-from sqlalchemy import func, or_, select
-from sqlalchemy.orm import Session, selectinload
 
 
 class PipelineExecutionError(RuntimeError):
