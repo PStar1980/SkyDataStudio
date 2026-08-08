@@ -12,8 +12,10 @@ from skydata_studio.models.metadata import (
 from skydata_studio.models.pipeline import (
     PipelineDefinition,
     PipelineParameter,
+    PipelineRun,
     PipelineStep,
     PipelineStepDependency,
+    PipelineStepRun,
     PipelineVersion,
 )
 
@@ -29,7 +31,9 @@ __all__ = [
     "MetadataSystem",
     "PipelineDefinition",
     "PipelineParameter",
+    "PipelineRun",
     "PipelineStep",
     "PipelineStepDependency",
+    "PipelineStepRun",
     "PipelineVersion",
 ]

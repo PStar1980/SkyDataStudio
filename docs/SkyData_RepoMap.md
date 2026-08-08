@@ -20,6 +20,7 @@ SkyDataStudio/
 │   │       │       ├── contracts.py
 │   │       │       ├── health.py
 │   │       │       ├── metadata.py
+│   │       │       ├── pipeline_runs.py
 │   │       │       ├── pipelines.py
 │   │       │       ├── platform.py
 │   │       │       └── skycommand.py
@@ -44,6 +45,7 @@ SkyDataStudio/
 │   │       ├── schemas/
 │   │       │   ├── __init__.py
 │   │       │   ├── assets.py
+│   │       │   ├── execution.py
 │   │       │   ├── metadata.py
 │   │       │   ├── pipelines.py
 │   │       │   └── platform.py
@@ -53,6 +55,7 @@ SkyDataStudio/
 │   │           ├── asset_workspace.py
 │   │           ├── contract_compatibility.py
 │   │           ├── metadata_registry.py
+│   │           ├── pipeline_execution.py
 │   │           └── pipeline_registry.py
 │   └── web/
 │       ├── eslint.config.js
@@ -72,6 +75,7 @@ SkyDataStudio/
 │           ├── pages/
 │           │   ├── DataAssets.jsx
 │           │   ├── MetadataRegistry.jsx
+│           │   ├── PipelineRuns.jsx
 │           │   ├── Pipelines.jsx
 │           │   ├── PlaceholderPage.jsx
 │           │   ├── SourceMappings.jsx
@@ -93,7 +97,8 @@ SkyDataStudio/
 │       └── migrations/
 │           ├── 0001_metadata_registry.sql
 │           ├── 0002_source_target_mapping.sql
-│           └── 0003_pipeline_definition.sql
+│           ├── 0003_pipeline_definition.sql
+│           └── 0004_pipeline_execution.sql
 ├── orchestration/
 │   └── airflow/
 │       └── dags/
