@@ -62,6 +62,11 @@ class PipelineDefinition(TimestampMixin, Base):
         cascade="all, delete-orphan",
         order_by="PipelineVersion.version_number",
     )
+    runs: Mapped[list[PipelineRun]] = relationship(
+        back_populates="pipeline",
+        cascade="all, delete-orphan",
+        order_by="PipelineRun.created_at.desc()",
+    )
 
 
 class PipelineVersion(TimestampMixin, Base):
@@ -90,6 +95,10 @@ class PipelineVersion(TimestampMixin, Base):
         back_populates="version",
         cascade="all, delete-orphan",
         order_by="PipelineStep.execution_order",
+    )
+    runs: Mapped[list[PipelineRun]] = relationship(
+        back_populates="version",
+        order_by="PipelineRun.created_at.desc()",
     )
 
 
@@ -158,6 +167,9 @@ class PipelineStep(TimestampMixin, Base):
         back_populates="depends_on_step",
         cascade="all, delete-orphan",
     )
+    run_records: Mapped[list[PipelineStepRun]] = relationship(
+        back_populates="step",
+    )
 
 
 class PipelineStepDependency(TimestampMixin, Base):
@@ -189,3 +201,72 @@ class PipelineStepDependency(TimestampMixin, Base):
         foreign_keys=[depends_on_step_id],
         back_populates="dependents",
     )
+
+
+class PipelineRun(TimestampMixin, Base):
+    __tablename__ = "pipeline_run"
+    __table_args__ = (
+        UniqueConstraint("pipeline_id", "run_key", name="uq_pipeline_run_key"),
+    )
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
+    pipeline_id: Mapped[str] = mapped_column(
+        ForeignKey("pipeline_definition.id", ondelete="CASCADE"),
+        index=True,
+    )
+    version_id: Mapped[str] = mapped_column(
+        ForeignKey("pipeline_version.id", ondelete="CASCADE"),
+        index=True,
+    )
+    run_key: Mapped[str] = mapped_column(String(255), index=True)
+    status: Mapped[str] = mapped_column(String(40), default="PENDING", index=True)
+    trigger_type: Mapped[str] = mapped_column(String(40), default="MANUAL")
+    execution_mode: Mapped[str] = mapped_column(String(40), default="LOCAL")
+    environment: Mapped[str] = mapped_column(String(40), default="development", index=True)
+    parameters: Mapped[dict[str, Any]] = mapped_column(JSON, default=dict, nullable=False)
+    execution_context: Mapped[dict[str, Any]] = mapped_column(JSON, default=dict, nullable=False)
+    result: Mapped[dict[str, Any]] = mapped_column(JSON, default=dict, nullable=False)
+    replay_count: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    last_replayed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    error_message: Mapped[str | None] = mapped_column(Text)
+
+    pipeline: Mapped[PipelineDefinition] = relationship(back_populates="runs")
+    version: Mapped[PipelineVersion] = relationship(back_populates="runs")
+    step_runs: Mapped[list[PipelineStepRun]] = relationship(
+        back_populates="run",
+        cascade="all, delete-orphan",
+        order_by="PipelineStepRun.execution_order",
+    )
+
+
+class PipelineStepRun(TimestampMixin, Base):
+    __tablename__ = "pipeline_step_run"
+    __table_args__ = (
+        UniqueConstraint("run_id", "step_id", name="uq_pipeline_step_run"),
+    )
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
+    run_id: Mapped[str] = mapped_column(
+        ForeignKey("pipeline_run.id", ondelete="CASCADE"),
+        index=True,
+    )
+    step_id: Mapped[str] = mapped_column(
+        ForeignKey("pipeline_step.id", ondelete="CASCADE"),
+        index=True,
+    )
+    step_code: Mapped[str] = mapped_column(String(128))
+    step_name: Mapped[str] = mapped_column(String(200))
+    step_type: Mapped[str] = mapped_column(String(40))
+    execution_order: Mapped[int] = mapped_column(Integer)
+    status: Mapped[str] = mapped_column(String(40), default="PENDING", index=True)
+    attempt_count: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    duration_ms: Mapped[int | None] = mapped_column(Integer)
+    result: Mapped[dict[str, Any]] = mapped_column(JSON, default=dict, nullable=False)
+    error_message: Mapped[str | None] = mapped_column(Text)
+
+    run: Mapped[PipelineRun] = relationship(back_populates="step_runs")
+    step: Mapped[PipelineStep] = relationship(back_populates="run_records")

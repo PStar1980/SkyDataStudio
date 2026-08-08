@@ -94,3 +94,22 @@ pipeline_definition
 ```
 
 The first execution contract is deliberately local-only. Steps can be typed as `SQL`, `PYTHON`, `VALIDATION`, `DBT`, or `PUBLISH` and carry retry, timeout, dependency, source/target, and optional SQL/script metadata. Persisting this graph before execution keeps Phase 4.2 free to focus on replay-safe runtime behavior and structured run evidence instead of mixing execution semantics with authoring concerns.
+
+
+## Local pipeline execution boundary
+
+Phase 4.2 executes the persisted graph without collapsing design metadata and runtime evidence into the same tables. Each logical execution owns one replay-safe `pipeline_run`, and each versioned step produces one `pipeline_step_run` result.
+
+```text
+pipeline_definition ── pipeline_version ── pipeline_step
+        │                     │                 │
+        └────────────── pipeline_run ───────────┘
+                              │
+                              └── pipeline_step_run
+                                  status + attempt + timing
+                                  structured result + error
+```
+
+The default replay key is deterministic across pipeline code, version, environment, and resolved parameters. Re-requesting the same logical work therefore returns the existing durable run instead of duplicating it; `FORCE_NEW` is the explicit escape hatch for diagnostic proof runs.
+
+The first engine mode is `LOCAL_PROOF`. It executes dependency semantics and contract-aware handlers, but deliberately leaves `data_mutation_applied=false`. `READ_SOURCE` proves the trusted source metadata boundary, transformation steps prove the governed mapping contract, `VALIDATION` proves target-schema compatibility, and `PUBLISH` records `ELIGIBLE_NOT_PUBLISHED`. Phase 4.3 will attach the governed data plane and make the same runtime contract carry real row-level materialization evidence.

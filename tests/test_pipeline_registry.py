@@ -2,14 +2,22 @@ from collections.abc import Generator
 
 import pytest
 from fastapi.testclient import TestClient
+
 from skydata_studio.db.base import Base
 from skydata_studio.db.session import get_session
 from skydata_studio.main import app
+from skydata_studio.schemas.execution import PipelineRunRequest
 from skydata_studio.schemas.metadata import MetadataAssetCreate, MetadataMappingCreate
 from skydata_studio.schemas.pipelines import PipelineDefinitionCreate
 from skydata_studio.services.metadata_registry import (
     create_metadata_mapping,
     register_metadata_asset,
+)
+from skydata_studio.services.pipeline_execution import (
+    execute_pipeline,
+    get_pipeline_run,
+    list_pipeline_runs,
+    pipeline_run_summary,
 )
 from skydata_studio.services.pipeline_registry import (
     create_pipeline,
@@ -225,5 +233,132 @@ def test_pipeline_api_exposes_summary_list_detail_and_create(pipeline_session: S
         detail_response = client.get(f"/api/v1/pipelines/{created['id']}")
         assert detail_response.status_code == 200
         assert detail_response.json()["versions"][0]["steps"][3]["code"] == "PUBLISH_TARGET"
+    finally:
+        app.dependency_overrides.clear()
+
+
+def test_local_execution_persists_structured_replay_safe_run_evidence(
+    pipeline_session: Session,
+) -> None:
+    mapping_id, _, _ = _mapping(pipeline_session)
+    pipeline = create_pipeline(pipeline_session, _pipeline_payload(mapping_id))
+
+    first = execute_pipeline(
+        pipeline_session,
+        PipelineRunRequest(
+            pipeline_id=pipeline.id,
+            parameters={"RUN_DATE": "2026-08-08"},
+        ),
+    )
+
+    assert first.reused is False
+    assert first.run.status == "SUCCEEDED"
+    assert first.run.parameters == {"RUN_DATE": "2026-08-08"}
+    assert first.run.step_count == 4
+    assert first.run.succeeded_steps == 4
+    assert first.run.failed_steps == 0
+    assert first.run.result["data_mutation_applied"] is False
+    assert [step.step_code for step in first.run.step_runs] == [
+        "READ_SOURCE",
+        "TRANSFORM_MART",
+        "VALIDATE_TARGET",
+        "PUBLISH_TARGET",
+    ]
+    assert first.run.step_runs[0].result["operation"] == "READ_CONTRACT_PROBE"
+    assert (
+        first.run.step_runs[2].result["operation"]
+        == "TARGET_CONTRACT_VALIDATION"
+    )
+    assert (
+        first.run.step_runs[3].result["publication_status"]
+        == "ELIGIBLE_NOT_PUBLISHED"
+    )
+
+    replay = execute_pipeline(
+        pipeline_session,
+        PipelineRunRequest(
+            pipeline_id=pipeline.id,
+            parameters={"RUN_DATE": "2026-08-08"},
+        ),
+    )
+    assert replay.reused is True
+    assert replay.run.id == first.run.id
+    assert replay.run.replay_count == 1
+
+    forced = execute_pipeline(
+        pipeline_session,
+        PipelineRunRequest(
+            pipeline_id=pipeline.id,
+            parameters={"RUN_DATE": "2026-08-08"},
+            replay_mode="FORCE_NEW",
+        ),
+    )
+    assert forced.reused is False
+    assert forced.run.id != first.run.id
+
+    summary = pipeline_run_summary(pipeline_session)
+    assert summary.runs == 2
+    assert summary.step_runs == 8
+    assert summary.replayed_runs == 1
+    assert summary.statuses == {"SUCCEEDED": 2}
+
+    listed = list_pipeline_runs(pipeline_session, pipeline_id=pipeline.id)
+    assert listed.total == 2
+    assert get_pipeline_run(pipeline_session, first.run.id).run_key == first.run.run_key
+
+
+def test_pipeline_run_api_exposes_execution_summary_history_and_detail(
+    pipeline_session: Session,
+) -> None:
+    mapping_id, _, _ = _mapping(pipeline_session)
+    pipeline = create_pipeline(pipeline_session, _pipeline_payload(mapping_id))
+
+    def override_session() -> Generator[Session, None, None]:
+        yield pipeline_session
+
+    app.dependency_overrides[get_session] = override_session
+    client = TestClient(app)
+    try:
+        run_response = client.post(
+            "/api/v1/pipeline-runs",
+            json={
+                "pipeline_id": pipeline.id,
+                "parameters": {"RUN_DATE": "2026-08-08"},
+            },
+        )
+        assert run_response.status_code == 201
+        run_payload = run_response.json()
+        assert run_payload["reused"] is False
+        assert run_payload["run"]["status"] == "SUCCEEDED"
+        assert run_payload["run"]["step_count"] == 4
+
+        summary_response = client.get("/api/v1/pipeline-runs/summary")
+        assert summary_response.status_code == 200
+        assert summary_response.json()["runs"] == 1
+        assert summary_response.json()["step_runs"] == 4
+
+        list_response = client.get(
+            f"/api/v1/pipeline-runs?pipeline_id={pipeline.id}&status=SUCCEEDED"
+        )
+        assert list_response.status_code == 200
+        assert list_response.json()["total"] == 1
+
+        run_id = run_payload["run"]["id"]
+        detail_response = client.get(f"/api/v1/pipeline-runs/{run_id}")
+        assert detail_response.status_code == 200
+        detail = detail_response.json()
+        assert detail["pipeline_code"] == "FED_FUNDS_RATE_PIPELINE"
+        assert detail["step_runs"][3]["step_code"] == "PUBLISH_TARGET"
+
+        replay_response = client.post(
+            "/api/v1/pipeline-runs",
+            json={
+                "pipeline_id": pipeline.id,
+                "parameters": {"RUN_DATE": "2026-08-08"},
+            },
+        )
+        assert replay_response.status_code == 201
+        assert replay_response.json()["reused"] is True
+        assert replay_response.json()["run"]["replay_count"] == 1
     finally:
         app.dependency_overrides.clear()

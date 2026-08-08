@@ -120,7 +120,7 @@ function Sidebar({ mobileOpen, onClose }) {
         <span className="environment-dot" />
         <span>
           <strong>Development</strong>
-          <small>Phase 4.1 pipeline definitions</small>
+          <small>Phase 4.2 local execution</small>
         </span>
       </div>
     </aside>

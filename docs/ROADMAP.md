@@ -165,7 +165,7 @@ Closure evidence:
 
 ## Phase 4.1 — Pipeline Definition Foundation
 
-**Status:** Implemented; pending local PostgreSQL bootstrap, live pipeline-definition proof, validation, and promotion.
+**Status:** Complete. Live workbench, API, PostgreSQL graph proof, validation, and promotion are green.
 
 Changes:
 
@@ -175,14 +175,53 @@ Changes:
 - durable step-to-step dependency graph with success-gated edges;
 - pipeline summary/list/detail/create APIs under `/api/v1/pipelines`;
 - Pipelines workbench that generates a version-1 four-step local design from a READY/ACTIVE mapping and exposes version, parameter, step, and dependency evidence;
-- additive PostgreSQL migration `0003_pipeline_definition.sql` and bootstrap model registration;
-- platform dashboard and navigation advanced to Phase 4.1 while explicitly keeping execution non-mutating until Phase 4.2.
+- additive PostgreSQL migration `0003_pipeline_definition.sql` and bootstrap model registration.
+
+Closure evidence:
+
+- Studio PostgreSQL contains the five Phase 4.1 pipeline-definition tables;
+- `FED_FUNDS_RATE_PIPELINE` is READY in `development`, bound to `MAP_DFF_TO_FED_FUNDS_RATE_MART`, version 1, with one `RUN_DATE` parameter and four steps;
+- `/api/v1/pipelines/summary` reports 1 pipeline, 1 version, 1 parameter, 4 steps, and 3 dependencies;
+- list/detail APIs and Postman return the same mapping, version, parameter, execution-contract, and step evidence visible in the UI;
+- PostgreSQL dependency proof returns `READ_SOURCE → TRANSFORM_TARGET → VALIDATE_TARGET → PUBLISH_TARGET` with the expected SQL/SQL/VALIDATION/PUBLISH types;
+- Phase 4.1 remains non-mutating by design; validation and normal promotion are green.
+
+## Phase 4.2 — Replay-Safe Local Execution and Structured Run Evidence
+
+**Status:** Implemented; pending local bootstrap, live replay proof, validation, and promotion.
+
+Changes:
+
+- durable `pipeline_run` and `pipeline_step_run` persistence with run status, timing, attempt count, resolved parameters, execution context, result payloads, and error evidence;
+- deterministic replay keys derived from pipeline/version/environment/runtime parameters, with explicit `REUSE` and `FORCE_NEW` controls;
+- runtime parameter resolution and type coercion, including daily defaulting for the optional `RUN_DATE` contract;
+- synchronous local dependency executor with success gates, retry counts, skip evidence, and structured step-result contracts;
+- contract-aware local proof handlers for trusted-source resolution, transformation mapping resolution, target-schema validation, and publication eligibility;
+- run summary/list/detail/create APIs under `/api/v1/pipeline-runs`;
+- Pipeline Runs workbench with status metrics, run history, replay controls, and step-level evidence;
+- Pipelines workbench Run action wired to the local execution engine;
+- additive PostgreSQL migration `0004_pipeline_execution.sql`;
+- platform dashboard and navigation advanced to Phase 4.2.
 
 Acceptance evidence required:
 
-- re-running the metadata bootstrap creates `pipeline_definition`, `pipeline_version`, `pipeline_parameter`, `pipeline_step`, and `pipeline_step_dependency` in the existing Studio database;
-- one READY mapping produces a version-1 pipeline with one `RUN_DATE` parameter and four ordered steps;
-- dependency proof shows `TRANSFORM_TARGET` after `READ_SOURCE`, `VALIDATE_TARGET` after `TRANSFORM_TARGET`, and `PUBLISH_TARGET` after `VALIDATE_TARGET`;
-- pipeline list/detail APIs and the Pipelines workbench display the same version, mapping, parameter, and graph evidence;
-- no pipeline execution or target data mutation occurs in Phase 4.1;
+- re-running the bootstrap creates `pipeline_run` and `pipeline_step_run` in the existing Studio database;
+- the DFF pipeline completes one local proof run with four SUCCEEDED step results and a resolved `RUN_DATE`;
+- repeating the same logical request returns the same durable run and increments `replay_count`;
+- forcing a new proof run creates a second durable run with a distinct run key;
+- the run-history API, detail API, UI workbench, and PostgreSQL rows agree on status, steps, parameters, timing, and structured results;
+- validation proves the target schema and mapping contract while publication remains `ELIGIBLE_NOT_PUBLISHED`;
+- no physical target-row mutation occurs in Phase 4.2;
 - Ruff, mypy, pytest, ESLint, Vite build, GitHub checks, and normal promotion are green.
+
+## Phase 4.3 — Curated Table Materialization Proof
+
+**Status:** Planned.
+
+Next boundary:
+
+- introduce the governed data-plane read path required to materialize trusted DFF observations without coupling Studio to SkyCommand implementation tables;
+- execute the mapped `OBSERVATION_DATE → OBSERVATION_DATE` and `VALUE → RATE` transformation into the Studio-owned Federal Funds Rate Mart;
+- apply the mapping's `MERGE`/business-key semantics idempotently;
+- record rows read, inserted, updated, unchanged, rejected, and published in the Phase 4.2 structured run contract;
+- prove repeated logical runs do not duplicate target rows.

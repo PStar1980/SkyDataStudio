@@ -4,7 +4,7 @@
 
 SkyData Studio is the post-ingestion data engineering application in the Sky ecosystem. It begins where SkyCommand's ingestion responsibility ends and prepares trusted data for analytical consumption by SkyWeb Analytics, Power BI, and future client-facing applications.
 
-**Current status:** Phase 0/1, Phase 2, and Phase 3 are complete. Phase 3.2 proved a live DFF → Federal Funds Rate Mart blueprint with two field mappings, durable lineage, target schema enrichment, and PostgreSQL evidence. Phase 4.1 now introduces versioned pipeline definitions, parameters, typed steps, dependency graphs, and a local execution contract without executing data mutations yet.
+**Current status:** Phase 0/1, Phase 2, and Phase 3 are complete. Phase 3.2 proved a live DFF → Federal Funds Rate Mart blueprint with durable mapping and lineage evidence. Phase 4.1 is now proven end to end with a version-1 DFF pipeline, `RUN_DATE`, four ordered steps, API evidence, and PostgreSQL dependency proof. Phase 4.2 adds replay-safe local execution, deterministic run keys, structured step results, and durable run history while keeping physical mart mutation gated for the next boundary.
 
 ---
 
@@ -73,7 +73,28 @@ Re-run the idempotent bootstrap so the existing PostgreSQL volume receives the a
 uv run python .\scripts\bootstrap_metadata.py
 ```
 
-Open `/workspace/pipelines`. A READY/ACTIVE source mapping can generate a version-1 local pipeline definition with a `RUN_DATE` parameter and a four-step dependency chain: `READ_SOURCE → TRANSFORM_TARGET → VALIDATE_TARGET → PUBLISH_TARGET`. Phase 4.1 persists design intent only; Phase 4.2 will introduce the replay-safe local execution engine and structured run evidence.
+Open `/workspace/pipelines`. A READY/ACTIVE source mapping can generate a version-1 local pipeline definition with a `RUN_DATE` parameter and a four-step dependency chain: `READ_SOURCE → TRANSFORM_TARGET → VALIDATE_TARGET → PUBLISH_TARGET`. Phase 4.1 persists the design contract; Phase 4.2 can execute that graph locally and persist replay-safe run evidence.
+
+## Phase 4.2 quick start
+
+Re-run the idempotent bootstrap so the existing Studio PostgreSQL volume receives the additive run-evidence tables:
+
+```powershell
+uv run python .\scripts\bootstrap_metadata.py
+```
+
+Use **Run** from `/workspace/pipelines` or open `/orchestration/runs`. A local proof run resolves the current pipeline version and runtime parameters, derives a deterministic replay key, executes the dependency graph, and persists one structured result per step. Repeating the same logical run reuses the existing durable run by default; **Force New Proof Run** creates an explicit new execution record.
+
+Core endpoints:
+
+```text
+GET  /api/v1/pipeline-runs/summary
+GET  /api/v1/pipeline-runs
+GET  /api/v1/pipeline-runs/{runId}
+POST /api/v1/pipeline-runs
+```
+
+Phase 4.2 intentionally runs in `LOCAL_PROOF` mode. It proves parameters, dependency gates, retries, structured results, replay semantics, target-schema compatibility, and publication eligibility without mutating the curated target table yet. Physical DFF → mart materialization is the next Phase 4 boundary.
 
 ---
 

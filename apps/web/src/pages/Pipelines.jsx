@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import StatusPill from '../components/StatusPill.jsx';
 import { buildQuery, getJson, postJson } from '../services/api.js';
 
@@ -38,6 +39,7 @@ function mappingLabel(mapping) {
 }
 
 function Pipelines() {
+  const navigate = useNavigate();
   const [summary, setSummary] = useState(EMPTY_SUMMARY);
   const [pipelines, setPipelines] = useState({ total: 0, items: [] });
   const [mappings, setMappings] = useState({ total: 0, items: [] });
@@ -173,6 +175,24 @@ function Pipelines() {
     }
   }
 
+  async function runPipeline(pipeline) {
+    setError('');
+    setMessage('');
+    try {
+      const response = await postJson('/api/v1/pipeline-runs', {
+        pipeline_id: pipeline.id,
+        replay_mode: 'REUSE',
+        parameters: {},
+      });
+      setMessage(response.reused
+        ? `${pipeline.code} reused today's replay-safe local proof run.`
+        : `${pipeline.code} completed a new local proof run.`);
+      navigate('/orchestration/runs');
+    } catch (requestError) {
+      setError(requestError.message);
+    }
+  }
+
   async function inspectPipeline(pipelineId) {
     setDetailState('LOADING');
     setSelectedPipeline(null);
@@ -193,11 +213,11 @@ function Pipelines() {
     <div className="workspace-page pipeline-page">
       <section className="registry-intro">
         <div>
-          <span className="eyebrow">PHASE 4.1 · PIPELINE DEFINITION FOUNDATION</span>
+          <span className="eyebrow">PHASE 4.2 · PIPELINE DEFINITION + LOCAL EXECUTION</span>
           <h1>Pipelines</h1>
           <p>
             Turn governed source-to-target blueprints into versioned processing definitions with parameters,
-            typed steps, dependencies, retry controls, and an explicit local execution contract.
+            typed steps, dependencies, retry controls, and a replay-safe local execution contract with structured run evidence.
           </p>
         </div>
         <div className="registry-actions">
@@ -225,7 +245,7 @@ function Pipelines() {
               <span className="eyebrow">VERSION 1 BLUEPRINT</span>
               <h2>Generate a pipeline from a governed mapping</h2>
             </div>
-            <span className="panel-meta">Local execution only · no data mutation yet</span>
+            <span className="panel-meta">Local proof execution · materialization remains gated</span>
           </div>
           <div className="pipeline-form-grid">
             <label className="pipeline-wide">
@@ -279,7 +299,7 @@ function Pipelines() {
                   <td><StatusPill status={pipeline.status} tone={statusTone(pipeline.status)} /></td>
                   <td><strong>{pipeline.step_count}</strong><small>typed steps</small></td>
                   <td><strong>{pipeline.parameter_count}</strong><small>runtime inputs</small></td>
-                  <td><button className="table-action" type="button" onClick={() => inspectPipeline(pipeline.id)}>Inspect</button></td>
+                  <td><div className="table-action-group"><button className="table-action" type="button" onClick={() => inspectPipeline(pipeline.id)}>Inspect</button><button className="table-action run-action" type="button" onClick={() => runPipeline(pipeline)}>Run</button></div></td>
                 </tr>
               ))}
               {!pipelines.items.length ? <tr><td colSpan="8" className="table-empty">No pipeline definitions match the current filters.</td></tr> : null}
