@@ -5,7 +5,7 @@ const FALLBACK = {
   product: 'SkyData Studio',
   subtitle: 'Data Engineering Workbench',
   theme: 'Aurora Foundry',
-  current_phase: 'Phase 3.2 — Source-to-Target Mapping and Product Blueprints',
+  current_phase: 'Phase 4.1 — Pipeline Definition Foundation',
   boundary: 'SkyData Studio starts after SkyCommand ingestion and publishes governed analytical products for downstream consumers.',
   capabilities: [],
 };
@@ -41,7 +41,7 @@ function StudioOverview() {
     <div className="page-stack">
       <section className="hero-panel">
         <div>
-          <span className="eyebrow">AURORA FOUNDRY · PHASE 3.2</span>
+          <span className="eyebrow">AURORA FOUNDRY · PHASE 4.1</span>
           <h1>Shape trusted data into analytical products.</h1>
           <p>{summary.boundary}</p>
           <div className="hero-actions">
@@ -61,8 +61,8 @@ function StudioOverview() {
 
       <section className="metric-grid">
         <article className="metric-card"><span>Platform API</span><strong>{apiState}</strong><small>FastAPI contract service</small></article>
-        <article className="metric-card"><span>Current Phase</span><strong>3.2</strong><small>Mappings + target schema + lineage</small></article>
-        <article className="metric-card"><span>Next Boundary</span><strong>Blueprints</strong><small>Source → target engineering contracts</small></article>
+        <article className="metric-card"><span>Current Phase</span><strong>4.1</strong><small>Versioned pipeline definitions</small></article>
+        <article className="metric-card"><span>Next Boundary</span><strong>Execution</strong><small>Local replay-safe pipeline runs</small></article>
         <article className="metric-card"><span>Orchestrator</span><strong>Airflow 3</strong><small>Batch and asset workflows</small></article>
       </section>
 
@@ -92,7 +92,7 @@ function StudioOverview() {
           {(summary.capabilities.length ? summary.capabilities : [
             { code: 'CONTRACT_BRIDGE', name: 'SkyCommand Contract Bridge', description: 'Typed read-only integration with trusted ingestion contracts.', status: 'FOUNDATION', phase: 2 },
             { code: 'METADATA_REGISTRY', name: 'Metadata Registry + Blueprints', description: 'Studio-owned assets, target schemas, ownership, source-to-target mappings, and lineage.', status: 'FOUNDATION', phase: 3 },
-            { code: 'PIPELINE_WORKBENCH', name: 'ETL/ELT Pipeline Workbench', description: 'Versioned post-ingestion pipelines and structured run evidence.', status: 'PLANNED', phase: 4 },
+            { code: 'PIPELINE_WORKBENCH', name: 'ETL/ELT Pipeline Workbench', description: 'Versioned post-ingestion pipelines and structured run evidence.', status: 'FOUNDATION', phase: 4 },
             { code: 'AIRFLOW', name: 'Apache Airflow Orchestration', description: 'DAGs, assets, schedules, retries, and backfills.', status: 'SCAFFOLDED', phase: 5 },
             { code: 'DBT', name: 'dbt Transformation Layer', description: 'Tested staging, intermediate, mart, and semantic models.', status: 'SCAFFOLDED', phase: 6 },
             { code: 'QUALITY_LINEAGE', name: 'Quality and Lineage', description: 'Trust evidence, dependencies, incidents, and impact analysis.', status: 'PLANNED', phase: 7 },
@@ -110,11 +110,11 @@ function StudioOverview() {
 
       <section className="two-column-grid">
         <article className="panel compact-panel">
-          <div className="panel-heading"><div><span className="eyebrow">CURRENT IMPLEMENTATION</span><h2>Product blueprint and lineage mapping</h2></div><span className="phase-badge">PHASE 3.2</span></div>
+          <div className="panel-heading"><div><span className="eyebrow">CURRENT IMPLEMENTATION</span><h2>Versioned pipeline definition foundation</h2></div><span className="phase-badge">PHASE 4.1</span></div>
           <ol className="implementation-list">
-            <li><span>01</span><div><strong>Source-to-target mapping</strong><small>Define governed movement between registered assets.</small></div></li>
-            <li><span>02</span><div><strong>Target schema contract</strong><small>Document fields, keys, types, and transformations.</small></div></li>
-            <li><span>03</span><div><strong>Durable lineage</strong><small>Create dependency edges before pipeline execution.</small></div></li>
+            <li><span>01</span><div><strong>Pipeline catalogue</strong><small>Register versioned processing definitions against governed mappings.</small></div></li>
+            <li><span>02</span><div><strong>Typed step graph</strong><small>Define SQL, Python, validation, dbt, and publish primitives with dependencies.</small></div></li>
+            <li><span>03</span><div><strong>Runtime contract</strong><small>Persist parameters, retry controls, timeouts, and local execution intent before mutation begins.</small></div></li>
           </ol>
         </article>
         <article className="panel compact-panel">

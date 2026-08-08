@@ -29,7 +29,7 @@ CAPABILITIES = [
             "Defines versioned, parameterized, replayable post-ingestion "
             "processing pipelines."
         ),
-        status="PLANNED",
+        status="FOUNDATION",
         phase=4,
     ),
     Capability(
@@ -66,8 +66,8 @@ ROADMAP = [
     RoadmapPhase(number=0, name="Repository Foundation", status="COMPLETE"),
     RoadmapPhase(number=1, name="Studio Shell and Platform Health", status="COMPLETE"),
     RoadmapPhase(number=2, name="SkyCommand Data-Contract Bridge", status="COMPLETE"),
-    RoadmapPhase(number=3, name="Data Catalogue and Engineering Metadata", status="IN_PROGRESS"),
-    RoadmapPhase(number=4, name="ETL/ELT Pipeline Workbench", status="PLANNED"),
+    RoadmapPhase(number=3, name="Data Catalogue and Engineering Metadata", status="COMPLETE"),
+    RoadmapPhase(number=4, name="ETL/ELT Pipeline Workbench", status="IN_PROGRESS"),
     RoadmapPhase(number=5, name="Apache Airflow Integration", status="PLANNED"),
     RoadmapPhase(number=6, name="dbt Transformation and Modelling", status="PLANNED"),
     RoadmapPhase(number=7, name="Data Quality and Observability", status="PLANNED"),
@@ -83,7 +83,7 @@ def platform_summary() -> PlatformSummary:
         product="SkyData Studio",
         subtitle="Data Engineering Workbench",
         theme="Aurora Foundry",
-        current_phase="Phase 3.2 — Source-to-Target Mapping and Product Blueprints",
+        current_phase="Phase 4.1 — Pipeline Definition Foundation",
         boundary=(
             "SkyData Studio starts after SkyCommand ingestion and publishes governed "
             "analytical products for SkyWeb Analytics, Power BI, and future consumers."

@@ -122,7 +122,7 @@ Closure evidence:
 
 ## Phase 3.2 — Source-to-Target Mapping and Product Blueprints
 
-**Status:** Implemented; pending local PostgreSQL bootstrap, live blueprint proof, validation, and promotion.
+**Status:** Complete. Live PostgreSQL blueprint proof, target schema enrichment, durable lineage, validation, and promotion are green.
 
 Changes:
 
@@ -135,28 +135,54 @@ Changes:
 - additive PostgreSQL migration `0002_source_target_mapping.sql`;
 - platform dashboard and navigation advanced to Phase 3.2.
 
-Acceptance evidence required for closure:
+Closure evidence:
 
-- re-running the metadata bootstrap creates `metadata_mapping` and `metadata_field_mapping` in the existing database;
-- one trusted RAW asset is mapped to a STAGING or MART product;
-- target fields and a durable dependency are created from the mapping specification;
-- asset detail shows inbound/outbound mappings and editable governance/schema metadata;
-- mapping list/detail APIs and UI display the same blueprint evidence;
-- Ruff, mypy, pytest, ESLint, Vite build, GitHub checks, and normal promotion are green.
+- re-running the metadata bootstrap created `metadata_mapping` and `metadata_field_mapping` in the existing database;
+- trusted SkyCommand `RAW / DFF` is mapped to Studio-owned `MART / FED_FUNDS_RATE_MART` through `MAP_DFF_TO_FED_FUNDS_RATE_MART`;
+- two field mappings persist `OBSERVATION_DATE → OBSERVATION_DATE` and `VALUE → RATE`, with the business key and cast contract preserved;
+- target schema enrichment produced the expected two target fields and one durable `TRANSFORMS` dependency;
+- Source Mappings reports 1 mapping, 2 field mappings, 1 lineage edge, 0 drafts, and 1 READY/ACTIVE blueprint;
+- Metadata Registry reports 71 assets, 2 fields, 1 dependency, 1 mapping, and 2 field maps, with the Federal Funds Rate Mart blueprint showing the enriched target schema;
+- direct PostgreSQL queries confirm mapping type `TRANSFORM`, load strategy `MERGE`, status `READY`, source `DFF`, target `FED_FUNDS_RATE_MART`, and both field mappings;
+- local validation, GitHub checks, and normal development promotion are green.
 
 ## Phase 3.2.2 — Windows Validation Runner and Mapping Workbench Polish
 
-**Status:** Implemented; pending local full-suite proof and live mapping acceptance.
+**Status:** Complete.
 
 Changes:
 
 - local and GitHub backend validation invoke pytest through `python -m pytest`, avoiding Windows App Control blocks on the generated `pytest.exe` console launcher while preserving one consistent test entry point;
 - validation runner behavior is covered by a focused unit test;
-- Phase 3.2 remains open until one live RAW-to-target blueprint proves field mappings, dependency creation, and registry lineage end to end.
+- Phase 3.2 closure proof now includes one live RAW-to-MART blueprint with field mappings, dependency creation, target schema enrichment, and registry evidence end to end.
 
-Acceptance evidence required:
+Closure evidence:
 
 - `python scripts/validate.py` reaches and passes pytest locally under the current Windows policy;
 - GitHub backend/frontend validation remains green;
-- one live mapping is registered and visible in both Source Mappings and Metadata Registry blueprint detail;
+- one live mapping is registered and visible in Source Mappings and Metadata Registry blueprint detail;
 - normal SkyCommand development promotion synchronizes `dev` and `main`.
+
+## Phase 4.1 — Pipeline Definition Foundation
+
+**Status:** Implemented; pending local PostgreSQL bootstrap, live pipeline-definition proof, validation, and promotion.
+
+Changes:
+
+- versioned `pipeline_definition` and `pipeline_version` persistence tied optionally to a governed source mapping;
+- typed runtime parameters with required/default/ordinal metadata;
+- typed `SQL`, `PYTHON`, `VALIDATION`, `DBT`, and `PUBLISH` steps with retry, timeout, source/target, mapping, and execution configuration fields;
+- durable step-to-step dependency graph with success-gated edges;
+- pipeline summary/list/detail/create APIs under `/api/v1/pipelines`;
+- Pipelines workbench that generates a version-1 four-step local design from a READY/ACTIVE mapping and exposes version, parameter, step, and dependency evidence;
+- additive PostgreSQL migration `0003_pipeline_definition.sql` and bootstrap model registration;
+- platform dashboard and navigation advanced to Phase 4.1 while explicitly keeping execution non-mutating until Phase 4.2.
+
+Acceptance evidence required:
+
+- re-running the metadata bootstrap creates `pipeline_definition`, `pipeline_version`, `pipeline_parameter`, `pipeline_step`, and `pipeline_step_dependency` in the existing Studio database;
+- one READY mapping produces a version-1 pipeline with one `RUN_DATE` parameter and four ordered steps;
+- dependency proof shows `TRANSFORM_TARGET` after `READ_SOURCE`, `VALIDATE_TARGET` after `TRANSFORM_TARGET`, and `PUBLISH_TARGET` after `VALIDATE_TARGET`;
+- pipeline list/detail APIs and the Pipelines workbench display the same version, mapping, parameter, and graph evidence;
+- no pipeline execution or target data mutation occurs in Phase 4.1;
+- Ruff, mypy, pytest, ESLint, Vite build, GitHub checks, and normal promotion are green.
