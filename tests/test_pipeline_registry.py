@@ -2,10 +2,6 @@ from collections.abc import Generator
 
 import pytest
 from fastapi.testclient import TestClient
-from sqlalchemy import create_engine
-from sqlalchemy.orm import Session
-from sqlalchemy.pool import StaticPool
-
 from skydata_studio.db.base import Base
 from skydata_studio.db.session import get_session
 from skydata_studio.main import app
@@ -21,6 +17,9 @@ from skydata_studio.services.pipeline_registry import (
     list_pipelines,
     pipeline_summary,
 )
+from sqlalchemy import create_engine
+from sqlalchemy.orm import Session
+from sqlalchemy.pool import StaticPool
 
 
 @pytest.fixture

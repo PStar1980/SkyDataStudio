@@ -3,7 +3,6 @@ from typing import Literal
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
-
 type PipelineStatus = Literal["DRAFT", "READY", "ACTIVE", "RETIRED"]
 type PipelineVersionStatus = Literal["DRAFT", "READY", "PUBLISHED", "RETIRED"]
 type PipelineStepType = Literal["SQL", "PYTHON", "VALIDATION", "DBT", "PUBLISH"]
