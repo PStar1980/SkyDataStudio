@@ -384,7 +384,7 @@ async def _read_source_rows(
             contract_version = payload.contract_version
             expected_total = payload.total
             pages += 1
-            batch = [
+            batch: list[dict[str, object]] = [
                 {
                     "OBSERVATION_DATE": item.observation_date.isoformat(),
                     "VALUE": item.value,
@@ -452,9 +452,11 @@ def _transform_rows(mapping: MetadataMapping, state: _ExecutionState) -> None:
                         "Phase 4.3 supports DIRECT and CAST field transformations only; "
                         f"received {transformation_type}."
                     )
-                target_row[field_mapping.target_field_code.lower()] = _coerce_target_value(
-                    raw_value,
-                    field_mapping.target_data_type,
+                target_row[field_mapping.target_field_code.lower()] = (
+                    _coerce_target_value(
+                        raw_value,
+                        field_mapping.target_data_type,
+                    )
                 )
         except PipelineExecutionConflictError:
             rejected += 1
@@ -465,9 +467,13 @@ def _transform_rows(mapping: MetadataMapping, state: _ExecutionState) -> None:
     state.rejected_rows = rejected
 
 
-def _validate_transformed_rows(mapping: MetadataMapping, state: _ExecutionState) -> None:
+def _validate_transformed_rows(
+    mapping: MetadataMapping, state: _ExecutionState
+) -> None:
     if not state.transformed_rows:
-        raise PipelineExecutionConflictError("Transformation produced no publishable rows.")
+        raise PipelineExecutionConflictError(
+            "Transformation produced no publishable rows."
+        )
     if state.rejected_rows:
         raise PipelineExecutionConflictError(
             f"Transformation rejected {state.rejected_rows} row(s); publication is blocked."
@@ -507,7 +513,9 @@ def _validate_transformed_rows(mapping: MetadataMapping, state: _ExecutionState)
         seen.add(key)
 
 
-def _target_table(session: Session, mapping: MetadataMapping) -> tuple[Table, str | None, str]:
+def _target_table(
+    session: Session, mapping: MetadataMapping
+) -> tuple[Table, str | None, str]:
     target = mapping.target_asset
     connection = session.connection()
     dialect = connection.dialect.name
@@ -568,13 +576,12 @@ def _materialize_rows(
             for item in mapping.field_mappings
             if item.key_field
         ]
-    value_codes = [column.name for column in table.columns if column.name not in key_codes]
+    value_codes = [
+        column.name for column in table.columns if column.name not in key_codes
+    ]
 
     existing = session.execute(select(table)).mappings().all()
-    existing_by_key = {
-        tuple(row[code] for code in key_codes): row
-        for row in existing
-    }
+    existing_by_key = {tuple(row[code] for code in key_codes): row for row in existing}
     inserts: list[dict[str, object]] = []
     updates: list[tuple[tuple[object, ...], dict[str, object]]] = []
     unchanged = 0
@@ -585,9 +592,7 @@ def _materialize_rows(
             inserts.append(row)
             continue
         changed_values = {
-            code: row[code]
-            for code in value_codes
-            if prior[code] != row[code]
+            code: row[code] for code in value_codes if prior[code] != row[code]
         }
         if changed_values:
             updates.append((key, changed_values))
@@ -949,7 +954,9 @@ async def execute_pipeline(
         "rows_updated": materialization_result.get("rows_updated", 0),
         "rows_changed": materialization_result.get("rows_changed", 0),
         "rows_unchanged": materialization_result.get("rows_unchanged", 0),
-        "rows_rejected": materialization_result.get("rows_rejected", state.rejected_rows),
+        "rows_rejected": materialization_result.get(
+            "rows_rejected", state.rejected_rows
+        ),
         "rows_published": materialization_result.get("rows_published", 0),
         "target_row_count": materialization_result.get("target_row_count"),
     }
