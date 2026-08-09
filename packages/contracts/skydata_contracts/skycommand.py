@@ -109,6 +109,40 @@ class CatalogueAsset(SkyCommandContractModel):
     discoverable: bool = True
 
 
+class TimeSeriesObservationAsset(SkyCommandContractModel):
+    domain_code: str = Field(alias="domainCode")
+    domain_name: str | None = Field(default=None, alias="domainName")
+    asset_code: str = Field(alias="assetCode")
+    asset_name: str = Field(alias="assetName")
+    asset_kind_code: str = Field(alias="assetKindCode")
+    frequency_code: str | None = Field(default=None, alias="frequencyCode")
+    unit_code: str | None = Field(default=None, alias="unitCode")
+    scale_code: str | None = Field(default=None, alias="scaleCode")
+    geography_code: str | None = Field(default=None, alias="geographyCode")
+    source: CatalogueAssetSource | None = None
+    contract_version: str = Field(alias="contractVersion")
+
+
+class TimeSeriesObservation(SkyCommandContractModel):
+    observation_date: date = Field(alias="observationDate")
+    value: int | float | str
+
+
+class TimeSeriesObservationList(SkyCommandContractModel):
+    ok: bool = True
+    generated_at: datetime = Field(alias="generatedAt")
+    contract_version: str = Field(alias="contractVersion")
+    asset: TimeSeriesObservationAsset
+    total: int = 0
+    limit: int = 250
+    offset: int = 0
+    sort_direction: Literal["ASC", "DESC"] = Field(default="ASC", alias="sortDirection")
+    date_from: date | None = Field(default=None, alias="dateFrom")
+    date_to: date | None = Field(default=None, alias="dateTo")
+    operator: str = "IDENTITY"
+    items: list[TimeSeriesObservation] = Field(default_factory=list)
+
+
 class FreshnessSource(SkyCommandContractModel):
     source_id: int | str | None = Field(default=None, alias="sourceId")
     source_code: str = Field(alias="sourceCode")

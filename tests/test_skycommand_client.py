@@ -104,3 +104,58 @@ async def test_skycommand_client_reads_quality_evidence_filters() -> None:
 
     assert result.total == 1
     assert result.items[0].blocking is True
+
+
+@pytest.mark.anyio
+async def test_skycommand_client_reads_portable_time_series_observations() -> None:
+    def handler(request: httpx.Request) -> httpx.Response:
+        assert request.url.path == "/api/ingestion/catalogue/assets/MACRO/DFF/observations"
+        assert request.url.params["dateTo"] == "2026-08-08"
+        assert request.url.params["limit"] == "5000"
+        assert request.url.params["offset"] == "0"
+        assert request.url.params["sortDirection"] == "ASC"
+        return httpx.Response(
+            200,
+            json={
+                "ok": True,
+                "generatedAt": "2026-08-08T12:00:00Z",
+                "contractVersion": "time_series_observations.v1",
+                "asset": {
+                    "domainCode": "MACRO",
+                    "domainName": "Macroeconomic Data",
+                    "assetCode": "DFF",
+                    "assetName": "Effective Federal Funds Rate",
+                    "assetKindCode": "TIME_SERIES",
+                    "frequencyCode": "DAILY",
+                    "unitCode": "PERCENT",
+                    "contractVersion": "data_asset.v1",
+                },
+                "total": 2,
+                "limit": 5000,
+                "offset": 0,
+                "sortDirection": "ASC",
+                "operator": "IDENTITY",
+                "items": [
+                    {"observationDate": "2026-08-07", "value": 4.33},
+                    {"observationDate": "2026-08-08", "value": 4.33},
+                ],
+            },
+        )
+
+    client = SkyCommandClient(
+        base_url="http://skycommand.local/api",
+        token="bridge-secret",
+        auth_mode="internal",
+        transport=httpx.MockTransport(handler),
+    )
+
+    result = await client.list_asset_observations(
+        domain_code="MACRO",
+        asset_code="DFF",
+        date_to="2026-08-08",
+        limit=5000,
+    )
+
+    assert result.contract_version == "time_series_observations.v1"
+    assert result.total == 2
+    assert result.items[-1].observation_date.isoformat() == "2026-08-08"

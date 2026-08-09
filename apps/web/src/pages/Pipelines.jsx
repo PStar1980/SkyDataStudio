@@ -185,8 +185,8 @@ function Pipelines() {
         parameters: {},
       });
       setMessage(response.reused
-        ? `${pipeline.code} reused today's replay-safe local proof run.`
-        : `${pipeline.code} completed a new local proof run.`);
+        ? `${pipeline.code} reused today's replay-safe materialization run.`
+        : `${pipeline.code} completed a new materialization run.`);
       navigate('/orchestration/runs');
     } catch (requestError) {
       setError(requestError.message);
@@ -213,11 +213,11 @@ function Pipelines() {
     <div className="workspace-page pipeline-page">
       <section className="registry-intro">
         <div>
-          <span className="eyebrow">PHASE 4.2 · PIPELINE DEFINITION + LOCAL EXECUTION</span>
+          <span className="eyebrow">PHASE 4.3 · PIPELINE DEFINITION + LOCAL MATERIALIZATION</span>
           <h1>Pipelines</h1>
           <p>
-            Turn governed source-to-target blueprints into versioned processing definitions with parameters,
-            typed steps, dependencies, retry controls, and a replay-safe local execution contract with structured run evidence.
+            Turn governed source-to-target blueprints into versioned processing definitions, then execute them
+            against trusted observations with replay-safe curated-table materialization and structured row evidence.
           </p>
         </div>
         <div className="registry-actions">
@@ -245,7 +245,7 @@ function Pipelines() {
               <span className="eyebrow">VERSION 1 BLUEPRINT</span>
               <h2>Generate a pipeline from a governed mapping</h2>
             </div>
-            <span className="panel-meta">Local proof execution · materialization remains gated</span>
+            <span className="panel-meta">Governed local materialization · replay-safe MERGE evidence</span>
           </div>
           <div className="pipeline-form-grid">
             <label className="pipeline-wide">

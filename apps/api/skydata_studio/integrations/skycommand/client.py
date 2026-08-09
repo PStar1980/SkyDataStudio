@@ -16,6 +16,7 @@ from skydata_contracts.skycommand import (
     QualityEventList,
     RejectionEventList,
     RevisionEventList,
+    TimeSeriesObservationList,
 )
 
 AuthMode = Literal["internal", "bearer", "none"]
@@ -255,6 +256,29 @@ class SkyCommandClient:
             f"/ingestion/catalogue/freshness/{domain_code}/{asset_code}"
         )
         return self._validate(AssetFreshnessResponse, payload)
+
+    async def list_asset_observations(
+        self,
+        *,
+        domain_code: str,
+        asset_code: str,
+        date_from: str | None = None,
+        date_to: str | None = None,
+        limit: int = 250,
+        offset: int = 0,
+        sort_direction: Literal["ASC", "DESC"] = "ASC",
+    ) -> TimeSeriesObservationList:
+        payload = await self._get(
+            f"/ingestion/catalogue/assets/{domain_code}/{asset_code}/observations",
+            params={
+                "dateFrom": date_from,
+                "dateTo": date_to,
+                "limit": limit,
+                "offset": offset,
+                "sortDirection": sort_direction,
+            },
+        )
+        return self._validate(TimeSeriesObservationList, payload)
 
     async def list_quality_events(
         self,

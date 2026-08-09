@@ -10,10 +10,12 @@ from skydata_contracts.skycommand import (
     QualityEventList,
     RejectionEventList,
     RevisionEventList,
+    TimeSeriesObservationList,
 )
 from skydata_studio.integrations.skycommand.client import SkyCommandClientError
 from skydata_studio.integrations.skycommand.preview import (
     preview_asset_detail,
+    preview_asset_observations,
     preview_assets,
     preview_domains,
     preview_freshness,
@@ -92,6 +94,27 @@ class PreviewGateway:
         asset_code: str,
     ) -> AssetFreshnessResponse:
         return preview_freshness_detail(domain_code, asset_code)
+
+    async def list_asset_observations(
+        self,
+        *,
+        domain_code: str,
+        asset_code: str,
+        date_from: str | None = None,
+        date_to: str | None = None,
+        limit: int = 250,
+        offset: int = 0,
+        sort_direction: str = "ASC",
+    ) -> TimeSeriesObservationList:
+        assert date_from is None
+        assert date_to is None or date_to >= "2026-08-07"
+        assert sort_direction == "ASC"
+        return preview_asset_observations(
+            domain_code,
+            asset_code,
+            limit=limit,
+            offset=offset,
+        )
 
     async def list_quality_events(
         self,
