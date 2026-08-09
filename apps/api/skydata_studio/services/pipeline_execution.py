@@ -52,7 +52,6 @@ from skydata_studio.schemas.execution import (
     PipelineStepRunRead,
 )
 
-
 EXECUTION_ENGINE_VERSION = "SKYDATA_LOCAL_V2"
 MATERIALIZATION_PHASE = "4.3"
 OBSERVATION_PAGE_SIZE = 5000
