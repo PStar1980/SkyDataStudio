@@ -188,40 +188,53 @@ Closure evidence:
 
 ## Phase 4.2 — Replay-Safe Local Execution and Structured Run Evidence
 
-**Status:** Implemented; pending local bootstrap, live replay proof, validation, and promotion.
+**Status:** Complete.
 
-Changes:
+Delivered:
 
 - durable `pipeline_run` and `pipeline_step_run` persistence with run status, timing, attempt count, resolved parameters, execution context, result payloads, and error evidence;
 - deterministic replay keys derived from pipeline/version/environment/runtime parameters, with explicit `REUSE` and `FORCE_NEW` controls;
 - runtime parameter resolution and type coercion, including daily defaulting for the optional `RUN_DATE` contract;
 - synchronous local dependency executor with success gates, retry counts, skip evidence, and structured step-result contracts;
-- contract-aware local proof handlers for trusted-source resolution, transformation mapping resolution, target-schema validation, and publication eligibility;
+- contract-aware proof handlers for trusted-source resolution, mapping resolution, target-schema validation, and publication eligibility;
 - run summary/list/detail/create APIs under `/api/v1/pipeline-runs`;
 - Pipeline Runs workbench with status metrics, run history, replay controls, and step-level evidence;
 - Pipelines workbench Run action wired to the local execution engine;
-- additive PostgreSQL migration `0004_pipeline_execution.sql`;
-- platform dashboard and navigation advanced to Phase 4.2.
+- additive PostgreSQL migration `0004_pipeline_execution.sql`.
 
-Acceptance evidence required:
+Closure evidence:
 
-- re-running the bootstrap creates `pipeline_run` and `pipeline_step_run` in the existing Studio database;
-- the DFF pipeline completes one local proof run with four SUCCEEDED step results and a resolved `RUN_DATE`;
-- repeating the same logical request returns the same durable run and increments `replay_count`;
-- forcing a new proof run creates a second durable run with a distinct run key;
-- the run-history API, detail API, UI workbench, and PostgreSQL rows agree on status, steps, parameters, timing, and structured results;
-- validation proves the target schema and mapping contract while publication remains `ELIGIBLE_NOT_PUBLISHED`;
-- no physical target-row mutation occurs in Phase 4.2;
-- Ruff, mypy, pytest, ESLint, Vite build, GitHub checks, and normal promotion are green.
+- Studio PostgreSQL contains `pipeline_run` and `pipeline_step_run`;
+- the DFF pipeline completed four SUCCEEDED steps with a resolved `RUN_DATE`;
+- the publish probe returned `ELIGIBLE_NOT_PUBLISHED`, while the run result recorded `data_mutation_applied=false` and `materialization_boundary=PHASE_4_3`;
+- repeated safe replay reused the original durable row (observed replay count reached 11 during stress-click proof) without creating duplicate step rows;
+- two forced proof runs received distinct keys, producing three durable runs and exactly twelve step rows total (four per physical run);
+- PostgreSQL and the UI agreed on the READ/TRANSFORM/VALIDATE/PUBLISH operation evidence and successful status;
+- validation was green before the live replay proof.
 
 ## Phase 4.3 — Curated Table Materialization Proof
 
-**Status:** Planned.
+**Status:** Implemented; pending live data-plane materialization proof, validation, and promotion.
 
-Next boundary:
+Changes:
 
-- introduce the governed data-plane read path required to materialize trusted DFF observations without coupling Studio to SkyCommand implementation tables;
-- execute the mapped `OBSERVATION_DATE → OBSERVATION_DATE` and `VALUE → RATE` transformation into the Studio-owned Federal Funds Rate Mart;
-- apply the mapping's `MERGE`/business-key semantics idempotently;
-- record rows read, inserted, updated, unchanged, rejected, and published in the Phase 4.2 structured run contract;
-- prove repeated logical runs do not duplicate target rows.
+- consume SkyCommand's existing governed `time_series_observations.v1` endpoint rather than coupling Studio to SkyCommand implementation tables;
+- page trusted source observations through the typed `SkyCommandGateway` and validate the portable observation contract;
+- execute the registered `OBSERVATION_DATE → OBSERVATION_DATE` and `VALUE → RATE` mapping in memory with target-type coercion and rejection evidence;
+- validate target fields, business keys, duplicate keys, and transformed row readiness before publication;
+- create the Studio-owned target schema/table from registered metadata when it does not yet exist;
+- execute `MERGE` semantics by business key and persist inserted, updated, unchanged, rejected, published, and final target-row counts;
+- mark successful publish results `PUBLISHED`; record `materialization_executed=true` and let `data_mutation_applied` reflect whether the MERGE inserted or updated rows;
+- version the local execution engine in the replay-key input so a Phase 4.2 non-mutating proof can never satisfy a Phase 4.3 materialization request;
+- expose materialization counters and target relation evidence in the Pipeline Runs drawer;
+- advance platform/dashboard navigation to Phase 4.3.
+
+Acceptance evidence required:
+
+- a live DFF run reads observations through SkyCommand's portable API contract and succeeds through all four steps;
+- Studio PostgreSQL contains `mart.fed_funds_rate_mart` with unique `observation_date` business keys and mapped numeric `rate` values;
+- the run result records the physical target relation plus rows read/transformed/inserted/updated/unchanged/rejected/published and target row count;
+- `Replay Safely` reuses the existing run without a second materialization;
+- a forced new materialization run against unchanged source data inserts/updates zero rows and reports the source rows as unchanged, with the target row count stable;
+- if upstream DFF changes between runs, only legitimate new/changed business-key rows are inserted/updated;
+- Ruff, mypy, pytest, ESLint, Vite build, GitHub checks, and normal promotion are green.

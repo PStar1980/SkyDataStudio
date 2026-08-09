@@ -11,6 +11,7 @@ from skydata_contracts.skycommand import (
     QualityEventList,
     RejectionEventList,
     RevisionEventList,
+    TimeSeriesObservationList,
 )
 
 _NOW = datetime.now(UTC).isoformat()
@@ -132,6 +133,52 @@ def preview_assets() -> CatalogueAssetList:
                 }
                 for code, name, source, frequency, unit, latest_date in rows
             ],
+        }
+    )
+
+
+def preview_asset_observations(
+    domain_code: str,
+    asset_code: str,
+    *,
+    limit: int = 250,
+    offset: int = 0,
+) -> TimeSeriesObservationList:
+    normalized_domain = domain_code.upper()
+    normalized_asset = asset_code.upper()
+    asset = next(
+        item
+        for item in preview_assets().items
+        if item.domain_code == normalized_domain and item.asset_code == normalized_asset
+    )
+    rows = [
+        {"observationDate": "2026-08-05", "value": 4.33},
+        {"observationDate": "2026-08-06", "value": 4.33},
+        {"observationDate": "2026-08-07", "value": 4.33},
+    ]
+    page = rows[offset : offset + limit]
+    return TimeSeriesObservationList.model_validate(
+        {
+            "ok": True,
+            "generatedAt": _NOW,
+            "contractVersion": "time_series_observations.v1",
+            "asset": {
+                "domainCode": asset.domain_code,
+                "domainName": asset.domain_name,
+                "assetCode": asset.asset_code,
+                "assetName": asset.asset_name,
+                "assetKindCode": asset.asset_kind_code,
+                "frequencyCode": asset.frequency_code,
+                "unitCode": asset.unit_code,
+                "source": asset.source.model_dump(by_alias=True) if asset.source else None,
+                "contractVersion": asset.contract_version,
+            },
+            "total": len(rows),
+            "limit": limit,
+            "offset": offset,
+            "sortDirection": "ASC",
+            "operator": "IDENTITY",
+            "items": page,
         }
     )
 

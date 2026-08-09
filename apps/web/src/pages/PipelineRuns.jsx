@@ -86,7 +86,7 @@ function PipelineRuns() {
       });
       setMessage(response.reused
         ? `${response.run.pipeline_code} reused the existing replay-safe run.`
-        : `${response.run.pipeline_code} completed a new local proof run.`);
+        : `${response.run.pipeline_code} completed a new materialization run.`);
       setSelectedRun(response.run);
       setRefreshKey((value) => value + 1);
     } catch (requestError) {
@@ -98,11 +98,11 @@ function PipelineRuns() {
     <div className="workspace-page pipeline-runs-page">
       <section className="registry-intro">
         <div>
-          <span className="eyebrow">PHASE 4.2 · REPLAY-SAFE LOCAL EXECUTION</span>
+          <span className="eyebrow">PHASE 4.3 · CURATED TABLE MATERIALIZATION</span>
           <h1>Pipeline Runs</h1>
           <p>
-            Execute the versioned dependency graph locally, resolve runtime parameters, enforce replay keys,
-            and persist structured step evidence before physical mart mutation is enabled.
+            Read governed SkyCommand observations, apply registered source-to-target mappings, materialize
+            curated targets with replay-safe MERGE semantics, and persist row-level execution evidence.
           </p>
         </div>
         <div className="registry-actions">
@@ -185,7 +185,30 @@ function PipelineRuns() {
                   </div>
                   <div className="run-replay-actions">
                     <button className="secondary-button" type="button" onClick={() => replayRun('REUSE')}>Replay Safely</button>
-                    <button className="primary-button" type="button" onClick={() => replayRun('FORCE_NEW')}>Force New Proof Run</button>
+                    <button className="primary-button" type="button" onClick={() => replayRun('FORCE_NEW')}>Force New Materialization Run</button>
+                  </div>
+                </section>
+                <section className="drawer-section">
+                  <div className="drawer-section-heading">
+                    <h3>Materialization evidence</h3>
+                    <span>{selectedRun.result.target_relation || 'Target pending'}</span>
+                  </div>
+                  <div className="materialization-evidence-grid">
+                    <div><span>ROWS READ</span><strong>{selectedRun.result.rows_read ?? 0}</strong></div>
+                    <div><span>INSERTED</span><strong>{selectedRun.result.rows_inserted ?? 0}</strong></div>
+                    <div><span>UPDATED</span><strong>{selectedRun.result.rows_updated ?? 0}</strong></div>
+                    <div><span>UNCHANGED</span><strong>{selectedRun.result.rows_unchanged ?? 0}</strong></div>
+                    <div><span>REJECTED</span><strong>{selectedRun.result.rows_rejected ?? 0}</strong></div>
+                    <div><span>PUBLISHED</span><strong>{selectedRun.result.rows_published ?? 0}</strong></div>
+                    <div><span>TARGET ROWS</span><strong>{selectedRun.result.target_row_count ?? '—'}</strong></div>
+                    <div>
+                      <span>MATERIALIZER</span>
+                      <strong>{selectedRun.result.materialization_executed ? 'EXECUTED' : 'NOT EXECUTED'}</strong>
+                    </div>
+                    <div>
+                      <span>ROWS CHANGED</span>
+                      <strong>{selectedRun.result.rows_changed ?? 0}</strong>
+                    </div>
                   </div>
                 </section>
                 <section className="drawer-section">
@@ -203,6 +226,10 @@ function PipelineRuns() {
                             {step.result.operation ? <span>{step.result.operation}</span> : null}
                             {step.result.validation_status ? <span>{step.result.validation_status}</span> : null}
                             {step.result.publication_status ? <span>{step.result.publication_status}</span> : null}
+                            {step.result.rows_read != null ? <span>{step.result.rows_read} READ</span> : null}
+                            {step.result.rows_inserted != null ? <span>{step.result.rows_inserted} INSERTED</span> : null}
+                            {step.result.rows_updated != null ? <span>{step.result.rows_updated} UPDATED</span> : null}
+                            {step.result.rows_unchanged != null ? <span>{step.result.rows_unchanged} UNCHANGED</span> : null}
                           </div>
                         </div>
                       </article>

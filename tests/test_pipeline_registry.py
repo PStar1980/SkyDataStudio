@@ -4,6 +4,7 @@ import pytest
 from fastapi.testclient import TestClient
 from skydata_studio.db.base import Base
 from skydata_studio.db.session import get_session
+from skydata_studio.integrations.skycommand.dependencies import get_skycommand_gateway
 from skydata_studio.main import app
 from skydata_studio.schemas.execution import PipelineRunRequest
 from skydata_studio.schemas.metadata import MetadataAssetCreate, MetadataMappingCreate
@@ -27,6 +28,8 @@ from skydata_studio.services.pipeline_registry import (
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 from sqlalchemy.pool import StaticPool
+
+from tests.test_asset_workspace import PreviewGateway
 
 
 @pytest.fixture
@@ -236,18 +239,21 @@ def test_pipeline_api_exposes_summary_list_detail_and_create(pipeline_session: S
         app.dependency_overrides.clear()
 
 
-def test_local_execution_persists_structured_replay_safe_run_evidence(
+@pytest.mark.anyio
+async def test_local_execution_persists_structured_replay_safe_run_evidence(
     pipeline_session: Session,
 ) -> None:
     mapping_id, _, _ = _mapping(pipeline_session)
     pipeline = create_pipeline(pipeline_session, _pipeline_payload(mapping_id))
+    gateway = PreviewGateway()
 
-    first = execute_pipeline(
+    first = await execute_pipeline(
         pipeline_session,
         PipelineRunRequest(
             pipeline_id=pipeline.id,
             parameters={"RUN_DATE": "2026-08-08"},
         ),
+        gateway,
     )
 
     assert first.reused is False
@@ -256,44 +262,55 @@ def test_local_execution_persists_structured_replay_safe_run_evidence(
     assert first.run.step_count == 4
     assert first.run.succeeded_steps == 4
     assert first.run.failed_steps == 0
-    assert first.run.result["data_mutation_applied"] is False
+    assert first.run.result["materialization_executed"] is True
+    assert first.run.result["data_mutation_applied"] is True
+    assert first.run.result["rows_read"] == 3
+    assert first.run.result["rows_inserted"] == 3
+    assert first.run.result["target_row_count"] == 3
     assert [step.step_code for step in first.run.step_runs] == [
         "READ_SOURCE",
         "TRANSFORM_MART",
         "VALIDATE_TARGET",
         "PUBLISH_TARGET",
     ]
-    assert first.run.step_runs[0].result["operation"] == "READ_CONTRACT_PROBE"
+    assert first.run.step_runs[0].result["operation"] == "READ_GOVERNED_OBSERVATIONS"
     assert (
         first.run.step_runs[2].result["operation"]
-        == "TARGET_CONTRACT_VALIDATION"
+        == "MATERIALIZATION_PRECHECK"
     )
-    assert (
-        first.run.step_runs[3].result["publication_status"]
-        == "ELIGIBLE_NOT_PUBLISHED"
-    )
+    assert first.run.step_runs[3].result["publication_status"] == "PUBLISHED"
+    assert first.run.step_runs[3].result["target_relation"] == "fed_funds_rate_mart"
 
-    replay = execute_pipeline(
+    replay = await execute_pipeline(
         pipeline_session,
         PipelineRunRequest(
             pipeline_id=pipeline.id,
             parameters={"RUN_DATE": "2026-08-08"},
         ),
+        gateway,
     )
     assert replay.reused is True
     assert replay.run.id == first.run.id
     assert replay.run.replay_count == 1
 
-    forced = execute_pipeline(
+    forced = await execute_pipeline(
         pipeline_session,
         PipelineRunRequest(
             pipeline_id=pipeline.id,
             parameters={"RUN_DATE": "2026-08-08"},
             replay_mode="FORCE_NEW",
         ),
+        gateway,
     )
     assert forced.reused is False
     assert forced.run.id != first.run.id
+    assert forced.run.result["materialization_executed"] is True
+    assert forced.run.result["data_mutation_applied"] is False
+    assert forced.run.result["rows_inserted"] == 0
+    assert forced.run.result["rows_updated"] == 0
+    assert forced.run.result["rows_changed"] == 0
+    assert forced.run.result["rows_unchanged"] == 3
+    assert forced.run.result["target_row_count"] == 3
 
     summary = pipeline_run_summary(pipeline_session)
     assert summary.runs == 2
@@ -306,7 +323,8 @@ def test_local_execution_persists_structured_replay_safe_run_evidence(
     assert get_pipeline_run(pipeline_session, first.run.id).run_key == first.run.run_key
 
 
-def test_pipeline_run_api_exposes_execution_summary_history_and_detail(
+@pytest.mark.anyio
+async def test_pipeline_run_api_exposes_execution_summary_history_and_detail(
     pipeline_session: Session,
 ) -> None:
     mapping_id, _, _ = _mapping(pipeline_session)
@@ -316,6 +334,7 @@ def test_pipeline_run_api_exposes_execution_summary_history_and_detail(
         yield pipeline_session
 
     app.dependency_overrides[get_session] = override_session
+    app.dependency_overrides[get_skycommand_gateway] = PreviewGateway
     client = TestClient(app)
     try:
         run_response = client.post(
@@ -330,6 +349,7 @@ def test_pipeline_run_api_exposes_execution_summary_history_and_detail(
         assert run_payload["reused"] is False
         assert run_payload["run"]["status"] == "SUCCEEDED"
         assert run_payload["run"]["step_count"] == 4
+        assert run_payload["run"]["result"]["rows_inserted"] == 3
 
         summary_response = client.get("/api/v1/pipeline-runs/summary")
         assert summary_response.status_code == 200

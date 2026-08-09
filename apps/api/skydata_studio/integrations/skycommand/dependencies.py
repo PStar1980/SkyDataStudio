@@ -1,4 +1,4 @@
-from typing import Annotated, Protocol
+from typing import Annotated, Literal, Protocol
 
 from fastapi import Depends
 from skydata_contracts.skycommand import (
@@ -12,6 +12,7 @@ from skydata_contracts.skycommand import (
     QualityEventList,
     RejectionEventList,
     RevisionEventList,
+    TimeSeriesObservationList,
 )
 from skydata_studio.core.config import Settings, get_settings
 from skydata_studio.integrations.skycommand.client import SkyCommandClient
@@ -74,6 +75,18 @@ class SkyCommandGateway(Protocol):
         domain_code: str,
         asset_code: str,
     ) -> AssetFreshnessResponse: ...
+
+    async def list_asset_observations(
+        self,
+        *,
+        domain_code: str,
+        asset_code: str,
+        date_from: str | None = None,
+        date_to: str | None = None,
+        limit: int = 250,
+        offset: int = 0,
+        sort_direction: Literal["ASC", "DESC"] = "ASC",
+    ) -> TimeSeriesObservationList: ...
 
     async def list_quality_events(
         self,

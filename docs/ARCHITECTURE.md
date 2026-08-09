@@ -112,4 +112,31 @@ pipeline_definition ── pipeline_version ── pipeline_step
 
 The default replay key is deterministic across pipeline code, version, environment, and resolved parameters. Re-requesting the same logical work therefore returns the existing durable run instead of duplicating it; `FORCE_NEW` is the explicit escape hatch for diagnostic proof runs.
 
-The first engine mode is `LOCAL_PROOF`. It executes dependency semantics and contract-aware handlers, but deliberately leaves `data_mutation_applied=false`. `READ_SOURCE` proves the trusted source metadata boundary, transformation steps prove the governed mapping contract, `VALIDATION` proves target-schema compatibility, and `PUBLISH` records `ELIGIBLE_NOT_PUBLISHED`. Phase 4.3 will attach the governed data plane and make the same runtime contract carry real row-level materialization evidence.
+Phase 4.2 closed in non-mutating proof mode. `READ_SOURCE` proved the trusted source metadata boundary, transformation steps proved the governed mapping contract, `VALIDATION` proved target-schema compatibility, and `PUBLISH` recorded `ELIGIBLE_NOT_PUBLISHED` with `data_mutation_applied=false`.
+
+## Curated materialization boundary
+
+Phase 4.3 preserves the same versioned step graph and run-evidence model while replacing proof handlers with a governed data-plane execution path. Studio reads trusted observations from SkyCommand's portable `time_series_observations.v1` endpoint; it never queries SkyCommand implementation tables.
+
+```text
+SkyCommand observation contract
+          │
+          ▼
+READ_SOURCE ── governed rows
+          │
+          ▼
+TRANSFORM_TARGET ── registered field mappings + type coercion
+          │
+          ▼
+VALIDATE_TARGET ── target schema + business-key checks
+          │
+          ▼
+PUBLISH_TARGET ── idempotent MERGE
+          │
+          ▼
+Studio PostgreSQL: mart.fed_funds_rate_mart
+```
+
+The materializer creates the target relation from registered Studio metadata when necessary and uses mapping business keys for matching. Existing rows with identical non-key values are counted as unchanged; changed values are updated; new business keys are inserted. Structured run evidence records read, transformed, inserted, updated, unchanged, rejected, published, and target-row counts.
+
+Replay reuse remains intentionally different from a forced physical rerun. `REUSE` returns the existing durable execution and performs no second mutation. `FORCE_NEW` creates a distinct run and re-executes the same `MERGE`, which provides the idempotency proof: unchanged source data must not duplicate target rows. The replay-key canonical input also includes the execution-engine version so a pre-materialization Phase 4.2 run cannot be reused after the Phase 4.3 boundary is enabled.

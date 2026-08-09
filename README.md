@@ -4,7 +4,7 @@
 
 SkyData Studio is the post-ingestion data engineering application in the Sky ecosystem. It begins where SkyCommand's ingestion responsibility ends and prepares trusted data for analytical consumption by SkyWeb Analytics, Power BI, and future client-facing applications.
 
-**Current status:** Phase 0/1, Phase 2, and Phase 3 are complete. Phase 3.2 proved a live DFF → Federal Funds Rate Mart blueprint with durable mapping and lineage evidence. Phase 4.1 is now proven end to end with a version-1 DFF pipeline, `RUN_DATE`, four ordered steps, API evidence, and PostgreSQL dependency proof. Phase 4.2 adds replay-safe local execution, deterministic run keys, structured step results, and durable run history while keeping physical mart mutation gated for the next boundary.
+**Current status:** Phase 0/1, Phase 2, and Phase 3 are complete. Phase 4.1 proved the versioned DFF pipeline definition, and Phase 4.2 proved replay-safe local execution with durable run/step evidence and zero physical mutation. Phase 4.3 now attaches the governed SkyCommand observation contract and materializes the Studio-owned Federal Funds Rate Mart with idempotent `MERGE` semantics and row-count evidence.
 
 ---
 
@@ -73,7 +73,7 @@ Re-run the idempotent bootstrap so the existing PostgreSQL volume receives the a
 uv run python .\scripts\bootstrap_metadata.py
 ```
 
-Open `/workspace/pipelines`. A READY/ACTIVE source mapping can generate a version-1 local pipeline definition with a `RUN_DATE` parameter and a four-step dependency chain: `READ_SOURCE → TRANSFORM_TARGET → VALIDATE_TARGET → PUBLISH_TARGET`. Phase 4.1 persists the design contract; Phase 4.2 can execute that graph locally and persist replay-safe run evidence.
+Open `/workspace/pipelines`. A READY/ACTIVE source mapping can generate a version-1 local pipeline definition with a `RUN_DATE` parameter and a four-step dependency chain: `READ_SOURCE → TRANSFORM_TARGET → VALIDATE_TARGET → PUBLISH_TARGET`. Phase 4.1 persists the design contract; later phases execute the same graph without changing its versioned design metadata.
 
 ## Phase 4.2 quick start
 
@@ -83,7 +83,7 @@ Re-run the idempotent bootstrap so the existing Studio PostgreSQL volume receive
 uv run python .\scripts\bootstrap_metadata.py
 ```
 
-Use **Run** from `/workspace/pipelines` or open `/orchestration/runs`. A local proof run resolves the current pipeline version and runtime parameters, derives a deterministic replay key, executes the dependency graph, and persists one structured result per step. Repeating the same logical run reuses the existing durable run by default; **Force New Proof Run** creates an explicit new execution record.
+Use **Run** from `/workspace/pipelines` or open `/orchestration/runs`. A Phase 4.2 proof run resolves the current pipeline version and runtime parameters, derives a deterministic replay key, executes the dependency graph, and persists one structured result per step. Repeating the same logical run reuses the existing durable run by default; `FORCE_NEW` creates an explicit new execution record.
 
 Core endpoints:
 
@@ -94,7 +94,29 @@ GET  /api/v1/pipeline-runs/{runId}
 POST /api/v1/pipeline-runs
 ```
 
-Phase 4.2 intentionally runs in `LOCAL_PROOF` mode. It proves parameters, dependency gates, retries, structured results, replay semantics, target-schema compatibility, and publication eligibility without mutating the curated target table yet. Physical DFF → mart materialization is the next Phase 4 boundary.
+Phase 4.2 closed with live evidence that replay reuse increments the existing run instead of duplicating step rows, while forced proof runs receive distinct keys. Its structured publish result remained `ELIGIBLE_NOT_PUBLISHED` with `data_mutation_applied=false`, preserving a clean handoff to Phase 4.3.
+
+## Phase 4.3 quick start
+
+Phase 4.3 uses SkyCommand's existing portable `time_series_observations.v1` data-plane contract; SkyData Studio does **not** read SkyCommand implementation tables directly. Keep SkyCommand API/database services available, start the Studio PostgreSQL container, then start the Studio API and web application.
+
+Use **Run** from `/workspace/pipelines`. The local engine now:
+
+1. pages trusted DFF observations from SkyCommand through the governed observation endpoint;
+2. applies the registered `OBSERVATION_DATE → OBSERVATION_DATE` and `VALUE → RATE` mapping;
+3. validates target fields and the `OBSERVATION_DATE` business key;
+4. creates the curated Studio target when needed and applies an idempotent `MERGE`; and
+5. records rows read, transformed, inserted, updated, unchanged, rejected, published, changed, and the final target row count.
+
+For the current DFF proof, the physical Studio relation is expected to be:
+
+```text
+mart.fed_funds_rate_mart
+```
+
+`Replay Safely` reuses the existing durable run and does not execute the materializer again. **Force New Materialization Run** creates a new run and executes the `MERGE` again; when the source has not changed, the second physical run should report zero inserts/updates and all source rows as unchanged. A changed upstream source may legitimately produce inserts or updates while preserving the business-key uniqueness guarantee.
+
+The Phase 4.3 replay key includes the local execution-engine version, so an old Phase 4.2 proof run with the same `RUN_DATE` cannot be accidentally reused as a materialized run.
 
 ---
 
