@@ -266,7 +266,7 @@ First acceptance proof:
 
 ## Phase 5.2 — Airflow Pipeline Batch Proof
 
-**Status:** In progress.
+**Status:** Complete.
 
 Scope:
 
@@ -287,5 +287,38 @@ Acceptance proof:
 - the linked Studio run completes all four pipeline steps with Phase 4.3 materialization evidence;
 - Airflow task-instance evidence is visible in SkyData Studio without metadata-database reads;
 - rerunning an Airflow task with the same DAG run ID reuses the same Studio replay key;
+- local validation and GitHub checks remain green.
+
+Closure evidence:
+
+- the DFF Airflow DAG run `skydata__43c672376a514b3caffdac802b710f40` completed successfully with all four task instances green;
+- clearing `execute_studio_pipeline` with downstream tasks selected reran the same DAG run and incremented those Airflow task try numbers from 1 to 2;
+- SkyData Studio retained exactly one linked run with replay key `AIRFLOW:skydata__43c672376a514b3caffdac802b710f40`;
+- the Studio run count remained stable while its replay count increased to 1, proving task retry reused the logical run instead of creating a duplicate;
+- the persisted result retained `materialization_executed = true` and `data_mutation_applied = false`, confirming an idempotent retry did not rematerialize unchanged data;
+- the linked Studio run remained `SUCCEEDED` with 4/4 steps and 26,335 unchanged target rows.
+
+## Phase 5.3 — Airflow Schedules and Controlled Backfills
+
+**Status:** In progress.
+
+Scope:
+
+- give the proven DFF DAG a time-based daily schedule so Airflow owns recurring batch cadence;
+- derive scheduled and backfill `RUN_DATE` values from Airflow data-interval semantics while preserving explicit manual-run dates;
+- expose Airflow backfill creation and history through authenticated REST API v2 only;
+- keep backfill policy conservative by default: missing runs only, one active run, and no implicit replay of successful logical dates;
+- enforce a bounded local proof window of at most seven calendar days and at most three active backfill runs;
+- add a dedicated `Schedules & Backfills` Studio workbench instead of exposing raw Airflow controls alone;
+- keep every scheduled/backfill DAG run on the same replay-safe Studio callback and materialization contract proven in Phase 5.2.
+
+Acceptance proof:
+
+- Airflow reparses the DFF DAG with a visible daily timetable and keeps the DAG active;
+- `/orchestration/backfills` displays the parsed schedule and live backfill catalogue through the Studio API;
+- a one-day controlled backfill created from Studio reaches completion in Airflow;
+- the resulting DAG run resolves its `RUN_DATE` from the Airflow interval and creates one linked `AIRFLOW:` Studio run;
+- the linked Studio run completes 4/4 steps and preserves idempotent materialization evidence;
+- unsafe windows over seven days are rejected before Airflow receives the request;
 - local validation and GitHub checks remain green.
 

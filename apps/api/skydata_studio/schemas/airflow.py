@@ -1,7 +1,7 @@
 from datetime import date, datetime
-from typing import Literal
+from typing import Literal, Self
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 
 class AirflowComponentHealth(BaseModel):
@@ -80,3 +80,45 @@ class AirflowDagRunTriggerRequest(BaseModel):
 
 class AirflowDagRunTriggerResponse(BaseModel):
     run: AirflowDagRunSummary
+
+
+class AirflowBackfillSummary(BaseModel):
+    id: int
+    dag_id: str
+    from_date: datetime
+    to_date: datetime
+    is_paused: bool = False
+    reprocess_behavior: str
+    max_active_runs: int
+    run_backwards: bool = False
+    created_at: datetime | None = None
+    completed_at: datetime | None = None
+    updated_at: datetime | None = None
+
+
+class AirflowBackfillList(BaseModel):
+    dag_id: str
+    total: int
+    items: list[AirflowBackfillSummary]
+
+
+class AirflowBackfillCreateRequest(BaseModel):
+    pipeline_code: str = Field(default="FED_FUNDS_RATE_PIPELINE", min_length=1, max_length=120)
+    version_number: int | None = Field(default=None, ge=1)
+    from_date: date
+    to_date: date
+    reprocess_behavior: Literal["none", "failed", "completed"] = "none"
+    max_active_runs: int = Field(default=1, ge=1, le=3)
+    run_backwards: bool = False
+
+    @model_validator(mode="after")
+    def validate_window(self) -> Self:
+        if self.to_date < self.from_date:
+            raise ValueError("Backfill to_date must be on or after from_date.")
+        if (self.to_date - self.from_date).days > 6:
+            raise ValueError("Local proof backfills are limited to a 7-day window.")
+        return self
+
+
+class AirflowBackfillCreateResponse(BaseModel):
+    backfill: AirflowBackfillSummary

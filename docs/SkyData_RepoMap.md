@@ -84,6 +84,7 @@ SkyDataStudio/
 │           │   ├── PipelineRuns.jsx
 │           │   ├── Pipelines.jsx
 │           │   ├── PlaceholderPage.jsx
+│           │   ├── SchedulesBackfills.jsx
 │           │   ├── SourceMappings.jsx
 │           │   └── StudioOverview.jsx
 │           └── services/

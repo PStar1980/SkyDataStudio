@@ -1,4 +1,4 @@
-from datetime import UTC, datetime
+from datetime import UTC, datetime, time
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
@@ -6,6 +6,9 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from skydata_studio.core.config import Settings, get_settings
 from skydata_studio.integrations.airflow import AirflowClient, AirflowClientError
 from skydata_studio.schemas.airflow import (
+    AirflowBackfillCreateRequest,
+    AirflowBackfillCreateResponse,
+    AirflowBackfillList,
     AirflowDagRunDetail,
     AirflowDagRunList,
     AirflowDagRunTriggerRequest,
@@ -113,3 +116,52 @@ def airflow_dag_run_trigger(
     except AirflowClientError as error:
         raise _service_unavailable(error) from error
     return AirflowDagRunTriggerResponse(run=run)
+
+
+@router.get(
+    "/dags/{dag_id}/backfills",
+    response_model=AirflowBackfillList,
+)
+def airflow_backfills(
+    dag_id: str,
+    settings: Annotated[Settings, Depends(get_settings)],
+    limit: Annotated[int, Query(ge=1, le=100)] = 20,
+) -> AirflowBackfillList:
+    try:
+        return _client(settings).backfills(dag_id, limit=limit)
+    except AirflowClientError as error:
+        raise _service_unavailable(error) from error
+
+
+@router.post(
+    "/dags/{dag_id}/backfills",
+    response_model=AirflowBackfillCreateResponse,
+    status_code=status.HTTP_201_CREATED,
+)
+def airflow_backfill_create(
+    dag_id: str,
+    payload: AirflowBackfillCreateRequest,
+    settings: Annotated[Settings, Depends(get_settings)],
+) -> AirflowBackfillCreateResponse:
+    conf: dict[str, object] = {
+        "pipeline_code": payload.pipeline_code.strip().upper(),
+        "trigger_mode": "BACKFILL",
+    }
+    if payload.version_number is not None:
+        conf["version_number"] = payload.version_number
+
+    from_date = datetime.combine(payload.from_date, time.min, tzinfo=UTC)
+    to_date = datetime.combine(payload.to_date, time.min, tzinfo=UTC)
+    try:
+        backfill = _client(settings).create_backfill(
+            dag_id,
+            from_date=from_date,
+            to_date=to_date,
+            reprocess_behavior=payload.reprocess_behavior,
+            max_active_runs=payload.max_active_runs,
+            run_backwards=payload.run_backwards,
+            conf=conf,
+        )
+    except AirflowClientError as error:
+        raise _service_unavailable(error) from error
+    return AirflowBackfillCreateResponse(backfill=backfill)

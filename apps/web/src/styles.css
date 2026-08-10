@@ -603,13 +603,17 @@ a { color: inherit; }
   .run-replay-actions, .table-action-group { align-items: stretch; flex-direction: column; }
 }
 
-/* Phase 5.1 — Airflow runtime and REST API foundation */
+/* Phase 5 — Airflow runtime, scheduling, and orchestration */
 .status-connected,
 .status-healthy,
-.status-active { color: var(--teal); background: rgba(66,217,198,0.08); }
+.status-active,
+.status-success,
+.status-completed { color: var(--teal); background: rgba(66,217,198,0.08); }
 .status-degraded,
 .status-unhealthy,
-.status-stale { color: var(--amber); background: rgba(243,189,85,0.08); }
+.status-stale,
+.status-running,
+.status-waiting { color: var(--amber); background: rgba(243,189,85,0.08); }
 .status-unavailable { color: var(--coral); background: rgba(255,111,130,0.08); }
 .status-paused { color: var(--violet); background: rgba(154,131,255,0.08); }
 .airflow-page-intro { display: flex; align-items: flex-end; justify-content: space-between; gap: 1.4rem; }
@@ -641,4 +645,30 @@ a { color: inherit; }
   .airflow-component-grid { grid-template-columns: 1fr; }
   .page-intro-actions { width: 100%; flex-direction: column; }
   .page-intro-actions button { width: 100%; }
+}
+
+/* Phase 5.3 — schedules and controlled backfills */
+.schedule-metric-grid .metric-card strong { word-break: break-word; }
+.schedule-control-grid { align-items: stretch; }
+.schedule-contract-list { display: grid; gap: 0.65rem; margin-bottom: 1rem; }
+.schedule-contract-list > div { display: grid; grid-template-columns: minmax(8rem,0.7fr) minmax(0,1.6fr); gap: 0.8rem; align-items: center; border-bottom: 1px solid rgba(111,190,187,0.10); padding-bottom: 0.65rem; }
+.schedule-contract-list span { color: var(--subtle); font-size: 0.62rem; font-weight: 850; letter-spacing: 0.08em; text-transform: uppercase; }
+.schedule-contract-list strong { color: var(--text); font-size: 0.76rem; overflow-wrap: anywhere; }
+.backfill-form { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 0.85rem; }
+.backfill-form label { display: grid; gap: 0.42rem; }
+.backfill-form label > span { color: var(--subtle); font-size: 0.62rem; font-weight: 850; letter-spacing: 0.08em; text-transform: uppercase; }
+.backfill-form input[type="date"],
+.backfill-form select { width: 100%; border: 1px solid rgba(111,190,187,0.18); border-radius: 0.65rem; padding: 0.72rem 0.78rem; color: var(--text); background: rgba(4,15,23,0.82); font: inherit; font-size: 0.76rem; }
+.backfill-form input[type="date"]:focus,
+.backfill-form select:focus { outline: 1px solid rgba(66,217,198,0.48); border-color: rgba(66,217,198,0.48); }
+.backfill-checkbox { grid-column: 1 / -1; display: flex !important; grid-template-columns: none !important; align-items: center; gap: 0.55rem !important; }
+.backfill-checkbox input { accent-color: var(--teal); }
+.backfill-checkbox span { text-transform: none !important; letter-spacing: 0 !important; color: var(--muted) !important; }
+.backfill-warning { grid-column: 1 / -1; border: 1px solid rgba(243,189,85,0.22); border-radius: 0.72rem; padding: 0.78rem 0.85rem; color: #e7cc94; background: rgba(243,189,85,0.05); font-size: 0.68rem; line-height: 1.55; }
+.backfill-form button { grid-column: 1 / -1; justify-self: end; }
+
+@media (max-width: 720px) {
+  .backfill-form { grid-template-columns: 1fr; }
+  .backfill-form button { justify-self: stretch; width: 100%; }
+  .schedule-contract-list > div { grid-template-columns: 1fr; gap: 0.25rem; }
 }

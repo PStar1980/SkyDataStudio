@@ -5,7 +5,7 @@ const FALLBACK = {
   product: 'SkyData Studio',
   subtitle: 'Data Engineering Workbench',
   theme: 'Aurora Foundry',
-  current_phase: 'Phase 5.1 — Airflow Runtime and REST API Foundation',
+  current_phase: 'Phase 5.3 — Airflow Schedules and Controlled Backfills',
   boundary: 'SkyData Studio starts after SkyCommand ingestion and publishes governed analytical products for downstream consumers.',
   capabilities: [],
 };
@@ -41,7 +41,7 @@ function StudioOverview() {
     <div className="page-stack">
       <section className="hero-panel">
         <div>
-          <span className="eyebrow">AURORA FOUNDRY · PHASE 5.1</span>
+          <span className="eyebrow">AURORA FOUNDRY · PHASE 5.3</span>
           <h1>Shape trusted data into analytical products.</h1>
           <p>{summary.boundary}</p>
           <div className="hero-actions">
@@ -61,7 +61,7 @@ function StudioOverview() {
 
       <section className="metric-grid">
         <article className="metric-card"><span>Platform API</span><strong>{apiState}</strong><small>FastAPI contract service</small></article>
-        <article className="metric-card"><span>Current Phase</span><strong>5.1</strong><small>Airflow runtime foundation</small></article>
+        <article className="metric-card"><span>Current Phase</span><strong>5.3</strong><small>Schedules + controlled backfills</small></article>
         <article className="metric-card"><span>Pipeline Proof</span><strong>READY</strong><small>Curated mart materialization proven</small></article>
         <article className="metric-card"><span>Orchestrator</span><strong>Airflow 3</strong><small>Batch and asset workflows</small></article>
       </section>
@@ -110,11 +110,11 @@ function StudioOverview() {
 
       <section className="two-column-grid">
         <article className="panel compact-panel">
-          <div className="panel-heading"><div><span className="eyebrow">CURRENT IMPLEMENTATION</span><h2>Airflow runtime + API boundary</h2></div><span className="phase-badge">PHASE 5.1</span></div>
+          <div className="panel-heading"><div><span className="eyebrow">CURRENT IMPLEMENTATION</span><h2>Airflow scheduling + backfill controls</h2></div><span className="phase-badge">PHASE 5.3</span></div>
           <ol className="implementation-list">
-            <li><span>01</span><div><strong>Isolated Airflow stack</strong><small>Run Airflow 3 API server, scheduler, DAG processor, triggerer, and metadata PostgreSQL in containers.</small></div></li>
-            <li><span>02</span><div><strong>REST API v2 client</strong><small>Acquire a local development JWT and read health/DAG state through the stable public Airflow API.</small></div></li>
-            <li><span>03</span><div><strong>Workbench observability</strong><small>Expose component health and the DAG catalogue inside the Studio Apache Airflow page.</small></div></li>
+            <li><span>01</span><div><strong>Daily Airflow timetable</strong><small>Run the DFF DAG on a time-based schedule while preserving the same Studio execution contract.</small></div></li>
+            <li><span>02</span><div><strong>Controlled backfill API</strong><small>Create bounded replay windows through Airflow REST API v2 without metadata-database reads.</small></div></li>
+            <li><span>03</span><div><strong>Replay-safe interval dates</strong><small>Scheduled and backfill runs derive RUN_DATE from the Airflow data interval.</small></div></li>
           </ol>
         </article>
         <article className="panel compact-panel">

@@ -63,12 +63,12 @@ def _request_json(
 @dag(
     dag_id=DAG_ID,
     description="Durably orchestrate the governed Federal Funds Rate Studio pipeline.",
-    schedule=None,
-    start_date=datetime(2026, 8, 10, tzinfo=UTC),
+    schedule="@daily",
+    start_date=datetime(2026, 8, 1, tzinfo=UTC),
     catchup=False,
     max_active_runs=1,
     is_paused_upon_creation=False,
-    tags=["skydata-studio", "phase-5", "dff", "pipeline"],
+    tags=["skydata-studio", "phase-5", "dff", "pipeline", "scheduled"],
 )
 def fed_funds_rate_pipeline():
     @task(retries=1)
@@ -79,9 +79,18 @@ def fed_funds_rate_pipeline():
         pipeline_code = str(
             conf.get("pipeline_code") or DEFAULT_PIPELINE_CODE
         ).strip().upper()
-        run_date = str(
-            conf.get("run_date") or datetime.now(UTC).date().isoformat()
-        )
+        configured_run_date = conf.get("run_date")
+        if configured_run_date is not None:
+            run_date = str(configured_run_date)
+        else:
+            interval_start = context.get("data_interval_start")
+            logical_date = context.get("logical_date")
+            schedule_date = interval_start or logical_date
+            run_date = (
+                schedule_date.date().isoformat()
+                if schedule_date is not None
+                else datetime.now(UTC).date().isoformat()
+            )
         version_number = conf.get("version_number")
 
         catalogue = _request_json(

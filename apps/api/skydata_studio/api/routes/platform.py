@@ -83,7 +83,7 @@ def platform_summary() -> PlatformSummary:
         product="SkyData Studio",
         subtitle="Data Engineering Workbench",
         theme="Aurora Foundry",
-        current_phase="Phase 5.1 — Airflow Runtime and REST API Foundation",
+        current_phase="Phase 5.3 — Airflow Schedules and Controlled Backfills",
         boundary=(
             "SkyData Studio starts after SkyCommand ingestion and publishes governed "
             "analytical products for SkyWeb Analytics, Power BI, and future consumers."
