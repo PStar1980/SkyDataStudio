@@ -1,10 +1,17 @@
+from datetime import UTC, datetime
 from typing import Annotated
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 
 from skydata_studio.core.config import Settings, get_settings
 from skydata_studio.integrations.airflow import AirflowClient, AirflowClientError
-from skydata_studio.schemas.airflow import AirflowIntegrationSummary
+from skydata_studio.schemas.airflow import (
+    AirflowDagRunDetail,
+    AirflowDagRunList,
+    AirflowDagRunTriggerRequest,
+    AirflowDagRunTriggerResponse,
+    AirflowIntegrationSummary,
+)
 
 router = APIRouter()
 
@@ -17,6 +24,13 @@ def _client(settings: Settings) -> AirflowClient:
         username=settings.airflow_api_username,
         password=settings.airflow_api_password,
         token=settings.airflow_api_token,
+    )
+
+
+def _service_unavailable(error: AirflowClientError) -> HTTPException:
+    return HTTPException(
+        status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+        detail=str(error),
     )
 
 
@@ -47,3 +61,55 @@ def airflow_summary(
             dags=[],
             error=str(error),
         )
+
+
+@router.get("/dags/{dag_id}/runs", response_model=AirflowDagRunList)
+def airflow_dag_runs(
+    dag_id: str,
+    settings: Annotated[Settings, Depends(get_settings)],
+    limit: Annotated[int, Query(ge=1, le=100)] = 20,
+) -> AirflowDagRunList:
+    try:
+        return _client(settings).dag_runs(dag_id, limit=limit)
+    except AirflowClientError as error:
+        raise _service_unavailable(error) from error
+
+
+@router.get(
+    "/dags/{dag_id}/runs/{dag_run_id}",
+    response_model=AirflowDagRunDetail,
+)
+def airflow_dag_run_detail(
+    dag_id: str,
+    dag_run_id: str,
+    settings: Annotated[Settings, Depends(get_settings)],
+) -> AirflowDagRunDetail:
+    try:
+        return _client(settings).dag_run_detail(dag_id, dag_run_id)
+    except AirflowClientError as error:
+        raise _service_unavailable(error) from error
+
+
+@router.post(
+    "/dags/{dag_id}/runs",
+    response_model=AirflowDagRunTriggerResponse,
+    status_code=status.HTTP_201_CREATED,
+)
+def airflow_dag_run_trigger(
+    dag_id: str,
+    payload: AirflowDagRunTriggerRequest,
+    settings: Annotated[Settings, Depends(get_settings)],
+) -> AirflowDagRunTriggerResponse:
+    run_date = payload.run_date or datetime.now(UTC).date()
+    conf: dict[str, object] = {
+        "pipeline_code": payload.pipeline_code.strip().upper(),
+        "run_date": run_date.isoformat(),
+    }
+    if payload.version_number is not None:
+        conf["version_number"] = payload.version_number
+
+    try:
+        run = _client(settings).trigger_dag_run(dag_id, conf=conf)
+    except AirflowClientError as error:
+        raise _service_unavailable(error) from error
+    return AirflowDagRunTriggerResponse(run=run)

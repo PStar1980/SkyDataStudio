@@ -1,3 +1,5 @@
+import json
+
 import httpx
 from skydata_studio.integrations.airflow.client import AirflowClient
 
@@ -96,3 +98,104 @@ def test_airflow_client_reports_degraded_component_health() -> None:
 
     assert summary.connection_status == "DEGRADED"
     assert summary.healthy_components == 3
+
+
+def test_airflow_client_triggers_and_reads_dag_run_evidence() -> None:
+    posted_payloads: list[dict[str, object]] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        if request.url.path == "/auth/token":
+            return httpx.Response(200, json={"access_token": "dev-token"})
+        if request.url.path == "/api/v2/dags/skydata_studio_fed_funds_rate_pipeline/dagRuns":
+            if request.method == "POST":
+                posted_payloads.append(json.loads(request.content.decode("utf-8")))
+                return httpx.Response(
+                    200,
+                    json={
+                        "dag_id": "skydata_studio_fed_funds_rate_pipeline",
+                        "dag_run_id": posted_payloads[-1]["dag_run_id"],
+                        "state": "queued",
+                        "run_type": "manual",
+                        "conf": posted_payloads[-1]["conf"],
+                    },
+                )
+            return httpx.Response(
+                200,
+                json={
+                    "dag_runs": [
+                        {
+                            "dag_id": "skydata_studio_fed_funds_rate_pipeline",
+                            "dag_run_id": "skydata__proof",
+                            "state": "success",
+                            "run_type": "manual",
+                            "start_date": "2026-08-10T15:00:00Z",
+                            "end_date": "2026-08-10T15:00:03Z",
+                            "conf": {
+                                "pipeline_code": "FED_FUNDS_RATE_PIPELINE",
+                                "run_date": "2026-08-10",
+                            },
+                        }
+                    ],
+                    "total_entries": 1,
+                },
+            )
+        if request.url.path == (
+            "/api/v2/dags/skydata_studio_fed_funds_rate_pipeline/"
+            "dagRuns/skydata__proof"
+        ):
+            return httpx.Response(
+                200,
+                json={
+                    "dag_id": "skydata_studio_fed_funds_rate_pipeline",
+                    "dag_run_id": "skydata__proof",
+                    "state": "success",
+                    "run_type": "manual",
+                    "conf": {"pipeline_code": "FED_FUNDS_RATE_PIPELINE"},
+                },
+            )
+        if request.url.path == (
+            "/api/v2/dags/skydata_studio_fed_funds_rate_pipeline/"
+            "dagRuns/skydata__proof/taskInstances"
+        ):
+            return httpx.Response(
+                200,
+                json={
+                    "task_instances": [
+                        {
+                            "task_id": "execute_studio_pipeline",
+                            "task_display_name": "execute_studio_pipeline",
+                            "state": "success",
+                            "try_number": 1,
+                            "map_index": -1,
+                            "duration": 2.5,
+                            "operator": "_PythonDecoratedOperator",
+                        }
+                    ],
+                    "total_entries": 1,
+                },
+            )
+        return httpx.Response(404)
+
+    client = AirflowClient(
+        api_base_url="http://airflow.test/api/v2",
+        auth_mode="simple-all-admins",
+        timeout_seconds=2,
+        transport=httpx.MockTransport(handler),
+    )
+
+    triggered = client.trigger_dag_run(
+        "skydata_studio_fed_funds_rate_pipeline",
+        conf={"pipeline_code": "FED_FUNDS_RATE_PIPELINE", "run_date": "2026-08-10"},
+    )
+    runs = client.dag_runs("skydata_studio_fed_funds_rate_pipeline")
+    detail = client.dag_run_detail(
+        "skydata_studio_fed_funds_rate_pipeline",
+        "skydata__proof",
+    )
+
+    assert triggered.state == "QUEUED"
+    assert str(posted_payloads[0]["dag_run_id"]).startswith("skydata__")
+    assert runs.total == 1
+    assert runs.items[0].state == "SUCCESS"
+    assert detail.task_state_counts == {"SUCCESS": 1}
+    assert detail.studio_run_key == "AIRFLOW:skydata__proof"

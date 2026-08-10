@@ -1,13 +1,21 @@
 from __future__ import annotations
 
+from collections import Counter
 from collections.abc import Mapping
+from datetime import UTC, datetime
 from typing import Any, Literal, cast
+from urllib.parse import quote
+from uuid import uuid4
 
 import httpx
 from skydata_studio.schemas.airflow import (
     AirflowComponentHealth,
+    AirflowDagRunDetail,
+    AirflowDagRunList,
+    AirflowDagRunSummary,
     AirflowDagSummary,
     AirflowIntegrationSummary,
+    AirflowTaskInstanceSummary,
 )
 
 QueryValue = str | int | float | bool | None
@@ -106,6 +114,27 @@ class AirflowClient:
             ) from error
         return cast(dict[str, Any], response.json())
 
+    def _post_json(
+        self,
+        client: httpx.Client,
+        path: str,
+        *,
+        token: str,
+        payload: Mapping[str, object],
+    ) -> dict[str, Any]:
+        try:
+            response = client.post(
+                f"{self.api_base_url}{path}",
+                headers={"Authorization": f"Bearer {token}"},
+                json=dict(payload),
+            )
+            response.raise_for_status()
+        except httpx.HTTPError as error:
+            raise AirflowClientError(
+                f"Airflow API request failed for {path}: {error}."
+            ) from error
+        return cast(dict[str, Any], response.json())
+
     @staticmethod
     def _component(
         payload: dict[str, Any],
@@ -159,6 +188,38 @@ class AirflowClient:
             stale=bool(raw.get("is_stale", False)),
             timetable=str(timetable) if timetable is not None else None,
             tags=tags,
+        )
+
+    @staticmethod
+    def _dag_run(raw: dict[str, Any]) -> AirflowDagRunSummary:
+        raw_conf = raw.get("conf")
+        return AirflowDagRunSummary(
+            dag_id=str(raw.get("dag_id") or ""),
+            dag_run_id=str(raw.get("dag_run_id") or ""),
+            state=str(raw.get("state") or "UNKNOWN").upper(),
+            run_type=str(raw["run_type"]) if raw.get("run_type") is not None else None,
+            logical_date=raw.get("logical_date"),
+            queued_at=raw.get("queued_at"),
+            start_date=raw.get("start_date"),
+            end_date=raw.get("end_date"),
+            conf=cast(dict[str, object], raw_conf) if isinstance(raw_conf, dict) else {},
+        )
+
+    @staticmethod
+    def _task_instance(raw: dict[str, Any]) -> AirflowTaskInstanceSummary:
+        task_id = str(raw.get("task_id") or "")
+        raw_map_index = raw.get("map_index")
+        map_index = raw_map_index if isinstance(raw_map_index, int) else -1
+        return AirflowTaskInstanceSummary(
+            task_id=task_id,
+            task_display_name=str(raw.get("task_display_name") or task_id),
+            state=str(raw.get("state") or "UNKNOWN").upper(),
+            try_number=int(raw.get("try_number") or 0),
+            map_index=map_index,
+            start_date=raw.get("start_date"),
+            end_date=raw.get("end_date"),
+            duration=float(raw["duration"]) if raw.get("duration") is not None else None,
+            operator=str(raw["operator"]) if raw.get("operator") is not None else None,
         )
 
     def summary(self) -> AirflowIntegrationSummary:
@@ -236,4 +297,111 @@ class AirflowClient:
             component_count=len(components),
             components=components,
             dags=dags,
+        )
+
+    def dag_runs(self, dag_id: str, *, limit: int = 20) -> AirflowDagRunList:
+        path = f"/dags/{quote(dag_id, safe='')}/dagRuns"
+        try:
+            with httpx.Client(
+                timeout=self.timeout_seconds,
+                transport=self.transport,
+            ) as client:
+                token = self._token(client)
+                payload = self._get_json(
+                    client,
+                    path,
+                    token=token,
+                    params={"limit": limit, "offset": 0},
+                )
+        except AirflowClientError:
+            raise
+        except Exception as error:
+            raise AirflowClientError(f"Airflow integration failed: {error}.") from error
+
+        raw_runs = payload.get("dag_runs", [])
+        items = (
+            [self._dag_run(item) for item in raw_runs if isinstance(item, dict)]
+            if isinstance(raw_runs, list)
+            else []
+        )
+        fallback_date = datetime.min.replace(tzinfo=UTC)
+        items.sort(
+            key=lambda item: item.start_date
+            or item.queued_at
+            or item.logical_date
+            or fallback_date,
+            reverse=True,
+        )
+        return AirflowDagRunList(
+            dag_id=dag_id,
+            total=int(payload.get("total_entries", len(items)) or 0),
+            items=items,
+        )
+
+    def trigger_dag_run(
+        self,
+        dag_id: str,
+        *,
+        conf: Mapping[str, object],
+    ) -> AirflowDagRunSummary:
+        path = f"/dags/{quote(dag_id, safe='')}/dagRuns"
+        dag_run_id = f"skydata__{uuid4().hex}"
+        try:
+            with httpx.Client(
+                timeout=self.timeout_seconds,
+                transport=self.transport,
+            ) as client:
+                token = self._token(client)
+                payload = self._post_json(
+                    client,
+                    path,
+                    token=token,
+                    payload={
+                        "dag_run_id": dag_run_id,
+                        "logical_date": None,
+                        "conf": dict(conf),
+                    },
+                )
+        except AirflowClientError:
+            raise
+        except Exception as error:
+            raise AirflowClientError(f"Airflow integration failed: {error}.") from error
+        return self._dag_run(payload)
+
+    def dag_run_detail(self, dag_id: str, dag_run_id: str) -> AirflowDagRunDetail:
+        encoded_dag_id = quote(dag_id, safe="")
+        encoded_run_id = quote(dag_run_id, safe="")
+        run_path = f"/dags/{encoded_dag_id}/dagRuns/{encoded_run_id}"
+        task_path = f"{run_path}/taskInstances"
+        try:
+            with httpx.Client(
+                timeout=self.timeout_seconds,
+                transport=self.transport,
+            ) as client:
+                token = self._token(client)
+                run_payload = self._get_json(client, run_path, token=token)
+                task_payload = self._get_json(
+                    client,
+                    task_path,
+                    token=token,
+                    params={"limit": 100, "offset": 0},
+                )
+        except AirflowClientError:
+            raise
+        except Exception as error:
+            raise AirflowClientError(f"Airflow integration failed: {error}.") from error
+
+        raw_tasks = task_payload.get("task_instances", [])
+        tasks = (
+            [self._task_instance(item) for item in raw_tasks if isinstance(item, dict)]
+            if isinstance(raw_tasks, list)
+            else []
+        )
+        tasks.sort(key=lambda item: (item.task_id, item.map_index))
+        counts = Counter(item.state for item in tasks)
+        return AirflowDagRunDetail(
+            run=self._dag_run(run_payload),
+            tasks=tasks,
+            task_state_counts=dict(sorted(counts.items())),
+            studio_run_key=f"AIRFLOW:{dag_run_id}",
         )

@@ -11,7 +11,10 @@ x-airflow-common: &airflow-common
     AIRFLOW__API_AUTH__JWT_SECRET: ${AIRFLOW_JWT_SECRET:-skydata-studio-local-airflow-jwt-secret}
     AIRFLOW__API__SECRET_KEY: ${AIRFLOW_API_SECRET_KEY:-skydata-studio-local-airflow-api-secret}
     AIRFLOW__SCHEDULER__ENABLE_HEALTH_CHECK: "true"
+    SKYDATA_STUDIO_API_BASE_URL: ${AIRFLOW_STUDIO_API_BASE_URL:-http://host.docker.internal:8100/api/v1}
   user: "${AIRFLOW_UID:-50000}:0"
+  extra_hosts:
+    - "host.docker.internal:host-gateway"
   volumes:
     - ../orchestration/airflow/dags:/opt/airflow/dags
     - ../orchestration/airflow/logs:/opt/airflow/logs
