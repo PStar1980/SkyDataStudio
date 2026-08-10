@@ -47,6 +47,32 @@ class Settings(BaseSettings):
         default="http://localhost:8080/api/v2",
         validation_alias="AIRFLOW_API_BASE_URL",
     )
+    airflow_api_auth_mode: Literal[
+        "simple-all-admins", "simple-credentials", "bearer"
+    ] = Field(
+        default="simple-all-admins",
+        validation_alias="AIRFLOW_API_AUTH_MODE",
+    )
+    airflow_api_username: str | None = Field(
+        default=None,
+        validation_alias="AIRFLOW_API_USERNAME",
+    )
+    airflow_api_password: str | None = Field(
+        default=None,
+        repr=False,
+        validation_alias="AIRFLOW_API_PASSWORD",
+    )
+    airflow_api_token: str | None = Field(
+        default=None,
+        repr=False,
+        validation_alias="AIRFLOW_API_TOKEN",
+    )
+    airflow_api_timeout_seconds: float = Field(
+        default=8.0,
+        ge=1.0,
+        le=60.0,
+        validation_alias="AIRFLOW_API_TIMEOUT_SECONDS",
+    )
 
 
 @lru_cache

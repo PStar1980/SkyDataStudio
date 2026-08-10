@@ -1,6 +1,6 @@
 # Roadmap Notes
 
-The canonical implementation roadmap is maintained in the root `README.md` so GitHub visitors immediately understand the product direction.
+The root `README.md` carries the compact public checklist. This file preserves the detailed phase decisions, acceptance evidence, and closure summaries behind that visitor-facing roadmap.
 
 ## Phase 1.2 — Green Validation Baseline
 
@@ -214,7 +214,7 @@ Closure evidence:
 
 ## Phase 4.3 — Curated Table Materialization Proof
 
-**Status:** Implemented; pending live data-plane materialization proof, validation, and promotion.
+**Status:** Complete. Live data-plane materialization, replay/idempotency proof, validation, and normal promotion are green.
 
 Changes:
 
@@ -229,12 +229,38 @@ Changes:
 - expose materialization counters and target relation evidence in the Pipeline Runs drawer;
 - advance platform/dashboard navigation to Phase 4.3.
 
-Acceptance evidence required:
+Closure evidence:
 
-- a live DFF run reads observations through SkyCommand's portable API contract and succeeds through all four steps;
-- Studio PostgreSQL contains `mart.fed_funds_rate_mart` with unique `observation_date` business keys and mapped numeric `rate` values;
-- the run result records the physical target relation plus rows read/transformed/inserted/updated/unchanged/rejected/published and target row count;
-- `Replay Safely` reuses the existing run without a second materialization;
-- a forced new materialization run against unchanged source data inserts/updates zero rows and reports the source rows as unchanged, with the target row count stable;
-- if upstream DFF changes between runs, only legitimate new/changed business-key rows are inserted/updated;
-- Ruff, mypy, pytest, ESLint, Vite build, GitHub checks, and normal promotion are green.
+- the live DFF run read 26,335 governed observations through SkyCommand's portable API contract and all four steps succeeded;
+- Studio PostgreSQL contains `mart.fed_funds_rate` with 26,335 rows spanning 1954-07-01 through 2026-08-06 and zero duplicate `observation_date` keys;
+- the first materialization inserted/published 26,335 rows and recorded complete row-level evidence;
+- `Replay Safely` reused the durable logical run without performing another materialization;
+- a forced new materialization against unchanged source data reported 0 inserted, 0 updated, 26,335 unchanged, 0 rejected, and a stable 26,335-row target;
+- Ruff, mypy, pytest, ESLint, Vite build, GitHub checks, and normal promotion are green;
+- the post-Phase-4 dependency cleanup replaced the deprecated TestClient transport path with `httpx2`, leaving validation warning-free.
+
+## Phase 5.1 — Airflow Runtime and REST API Foundation
+
+**Status:** In progress.
+
+Scope:
+
+- add an isolated Apache Airflow 3.3 local container stack with its own PostgreSQL metadata database;
+- run the API server, scheduler, standalone DAG processor, and triggerer as separate Airflow 3 services;
+- keep DAG authoring on the public `airflow.sdk` Task SDK seam;
+- configure one local-development JWT signing boundary shared by the Airflow components;
+- bind the development Airflow UI/API to loopback and cap LocalExecutor parallelism for a lightweight workstation proof;
+- add a typed Studio Airflow client that acquires a SimpleAuthManager development token and consumes REST API v2 only;
+- expose component health and the DAG catalogue through `/api/v1/integrations/airflow/summary`;
+- replace the Apache Airflow placeholder with a live Studio workbench page;
+- keep all Airflow metadata-database access inside Airflow itself.
+
+First acceptance proof:
+
+- `airflow-init` completes database migration successfully;
+- API server, scheduler, DAG processor, triggerer, and Airflow PostgreSQL are running;
+- `/api/v2/monitor/health` reports healthy core components;
+- `skydata_studio_platform_smoke` is visible in Airflow and in the Studio DAG catalogue;
+- `/orchestration/airflow` reports the live runtime through the Studio API;
+- local validation remains green.
+
