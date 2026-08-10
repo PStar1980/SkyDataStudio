@@ -8,6 +8,7 @@ import MetadataRegistry from './pages/MetadataRegistry.jsx';
 import SourceMappings from './pages/SourceMappings.jsx';
 import Pipelines from './pages/Pipelines.jsx';
 import PipelineRuns from './pages/PipelineRuns.jsx';
+import Airflow from './pages/Airflow.jsx';
 import PlaceholderPage from './pages/PlaceholderPage.jsx';
 
 const PAGE_META = {
@@ -61,6 +62,7 @@ function App() {
           <Route path="/workspace/registry" element={<MetadataRegistry />} />
           <Route path="/workspace/mappings" element={<SourceMappings />} />
           <Route path="/workspace/pipelines" element={<Pipelines />} />
+          <Route path="/orchestration/airflow" element={<Airflow />} />
           <Route path="/orchestration/runs" element={<PipelineRuns />} />
           {Object.entries(PAGE_META)
             .filter(([path]) => ![
@@ -69,6 +71,7 @@ function App() {
               '/workspace/registry',
               '/workspace/mappings',
               '/workspace/pipelines',
+              '/orchestration/airflow',
               '/orchestration/runs',
             ].includes(path))
             .map(([path, [title, subtitle]]) => (

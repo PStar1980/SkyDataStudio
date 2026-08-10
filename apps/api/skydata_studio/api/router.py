@@ -1,6 +1,7 @@
 from fastapi import APIRouter
 
 from skydata_studio.api.routes import (
+    airflow,
     contracts,
     health,
     metadata,
@@ -12,6 +13,11 @@ from skydata_studio.api.routes import (
 
 api_router = APIRouter()
 api_router.include_router(health.router, prefix="/health", tags=["health"])
+api_router.include_router(
+    airflow.router,
+    prefix="/integrations/airflow",
+    tags=["airflow-integration"],
+)
 api_router.include_router(platform.router, prefix="/platform", tags=["platform"])
 api_router.include_router(contracts.router, prefix="/contracts", tags=["contracts"])
 api_router.include_router(metadata.router, prefix="/metadata", tags=["metadata-registry"])

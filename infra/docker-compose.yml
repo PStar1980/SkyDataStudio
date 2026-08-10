@@ -1,3 +1,24 @@
+x-airflow-common: &airflow-common
+  image: ${AIRFLOW_IMAGE_NAME:-apache/airflow:3.3.0}
+  environment: &airflow-common-env
+    AIRFLOW__CORE__EXECUTOR: LocalExecutor
+    AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@airflow-postgres/airflow
+    AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+    AIRFLOW__CORE__PARALLELISM: "4"
+    AIRFLOW__CORE__SIMPLE_AUTH_MANAGER_ALL_ADMINS: "true"
+    AIRFLOW__CORE__EXECUTION_API_SERVER_URL: http://airflow-api-server:8080/execution/
+    AIRFLOW__CORE__FERNET_KEY: ${AIRFLOW_FERNET_KEY:-qK7x1v_TjQPetuVZciqNTIl6W6bLJ29vGtLb7vVCOjM=}
+    AIRFLOW__API_AUTH__JWT_SECRET: ${AIRFLOW_JWT_SECRET:-skydata-studio-local-airflow-jwt-secret}
+    AIRFLOW__API__SECRET_KEY: ${AIRFLOW_API_SECRET_KEY:-skydata-studio-local-airflow-api-secret}
+    AIRFLOW__SCHEDULER__ENABLE_HEALTH_CHECK: "true"
+  user: "${AIRFLOW_UID:-50000}:0"
+  volumes:
+    - ../orchestration/airflow/dags:/opt/airflow/dags
+    - ../orchestration/airflow/logs:/opt/airflow/logs
+  depends_on:
+    airflow-postgres:
+      condition: service_healthy
+
 services:
   studio-postgres:
     image: postgres:17
@@ -18,5 +39,91 @@ services:
       - skydata_studio_postgres:/var/lib/postgresql/data
       - ./db/migrations:/docker-entrypoint-initdb.d:ro
 
+  airflow-postgres:
+    image: postgres:17
+    container_name: skydata-studio-airflow-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: airflow
+      POSTGRES_USER: airflow
+      POSTGRES_PASSWORD: airflow
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U airflow -d airflow"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    volumes:
+      - skydata_studio_airflow_postgres:/var/lib/postgresql/data
+
+  airflow-init:
+    <<: *airflow-common
+    container_name: skydata-studio-airflow-init
+    restart: "no"
+    entrypoint: /bin/bash
+    command:
+      - -c
+      - |
+        airflow db migrate
+        airflow version
+
+  airflow-api-server:
+    <<: *airflow-common
+    container_name: skydata-studio-airflow-api-server
+    restart: unless-stopped
+    command: api-server
+    ports:
+      - "127.0.0.1:8080:8080"
+    depends_on:
+      airflow-postgres:
+        condition: service_healthy
+      airflow-init:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:8080/api/v2/monitor/health"]
+      interval: 10s
+      timeout: 10s
+      retries: 12
+      start_period: 20s
+
+  airflow-scheduler:
+    <<: *airflow-common
+    container_name: skydata-studio-airflow-scheduler
+    restart: unless-stopped
+    command: scheduler
+    depends_on:
+      airflow-postgres:
+        condition: service_healthy
+      airflow-init:
+        condition: service_completed_successfully
+      airflow-api-server:
+        condition: service_healthy
+
+  airflow-dag-processor:
+    <<: *airflow-common
+    container_name: skydata-studio-airflow-dag-processor
+    restart: unless-stopped
+    command: dag-processor
+    depends_on:
+      airflow-postgres:
+        condition: service_healthy
+      airflow-init:
+        condition: service_completed_successfully
+      airflow-api-server:
+        condition: service_healthy
+
+  airflow-triggerer:
+    <<: *airflow-common
+    container_name: skydata-studio-airflow-triggerer
+    restart: unless-stopped
+    command: triggerer
+    depends_on:
+      airflow-postgres:
+        condition: service_healthy
+      airflow-init:
+        condition: service_completed_successfully
+      airflow-api-server:
+        condition: service_healthy
+
 volumes:
   skydata_studio_postgres:
+  skydata_studio_airflow_postgres:

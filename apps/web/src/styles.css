@@ -602,3 +602,43 @@ a { color: inherit; }
   .materialization-evidence-grid { grid-template-columns: 1fr; }
   .run-replay-actions, .table-action-group { align-items: stretch; flex-direction: column; }
 }
+
+/* Phase 5.1 — Airflow runtime and REST API foundation */
+.status-connected,
+.status-healthy,
+.status-active { color: var(--teal); background: rgba(66,217,198,0.08); }
+.status-degraded,
+.status-unhealthy,
+.status-stale { color: var(--amber); background: rgba(243,189,85,0.08); }
+.status-unavailable { color: var(--coral); background: rgba(255,111,130,0.08); }
+.status-paused { color: var(--violet); background: rgba(154,131,255,0.08); }
+.airflow-page-intro { display: flex; align-items: flex-end; justify-content: space-between; gap: 1.4rem; }
+.page-intro-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 0.65rem; }
+.airflow-metric-grid { display: grid; grid-template-columns: repeat(5,minmax(0,1fr)); gap: 0.85rem; }
+.airflow-component-grid { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 0.7rem; }
+.airflow-component-grid article { display: grid; gap: 0.6rem; border: 1px solid rgba(111,190,187,0.13); border-radius: 0.78rem; padding: 0.9rem; background: rgba(5,17,25,0.62); }
+.airflow-component-grid article > div { display: flex; align-items: center; justify-content: space-between; gap: 0.55rem; }
+.airflow-component-grid article > div > span { color: var(--subtle); font-size: 0.58rem; font-weight: 850; letter-spacing: 0.08em; text-transform: uppercase; }
+.airflow-component-grid article > strong { color: var(--mint); font-size: 0.9rem; }
+.airflow-component-grid article > small { color: var(--muted); font-size: 0.64rem; line-height: 1.5; }
+.airflow-empty-state { grid-column: 1 / -1; display: grid; gap: 0.35rem; border: 1px dashed rgba(243,189,85,0.26); border-radius: 0.78rem; padding: 1.2rem; color: var(--muted); background: rgba(243,189,85,0.04); }
+.airflow-empty-state strong { color: #e9d39d; }
+.airflow-table { min-width: 1080px; }
+.airflow-tag-row { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+.airflow-tag-row span { border: 1px solid rgba(154,131,255,0.18); border-radius: 999px; padding: 0.2rem 0.42rem; color: #c9c2ff; background: rgba(154,131,255,0.07); font-size: 0.58rem; }
+.airflow-contract-panel,
+.airflow-next-panel { min-height: 20rem; }
+
+@media (max-width: 1180px) {
+  .airflow-metric-grid { grid-template-columns: repeat(3,minmax(0,1fr)); }
+  .airflow-component-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .airflow-page-intro { align-items: flex-start; flex-direction: column; }
+  .page-intro-actions { justify-content: flex-start; }
+}
+
+@media (max-width: 720px) {
+  .airflow-metric-grid,
+  .airflow-component-grid { grid-template-columns: 1fr; }
+  .page-intro-actions { width: 100%; flex-direction: column; }
+  .page-intro-actions button { width: 100%; }
+}

@@ -29,14 +29,14 @@ CAPABILITIES = [
             "Defines versioned, parameterized, replayable post-ingestion "
             "processing pipelines."
         ),
-        status="FOUNDATION",
+        status="READY",
         phase=4,
     ),
     Capability(
         code="AIRFLOW",
         name="Apache Airflow Orchestration",
         description="Coordinates batch dependencies, assets, schedules, backfills, and task runs.",
-        status="SCAFFOLDED",
+        status="FOUNDATION",
         phase=5,
     ),
     Capability(
@@ -67,8 +67,8 @@ ROADMAP = [
     RoadmapPhase(number=1, name="Studio Shell and Platform Health", status="COMPLETE"),
     RoadmapPhase(number=2, name="SkyCommand Data-Contract Bridge", status="COMPLETE"),
     RoadmapPhase(number=3, name="Data Catalogue and Engineering Metadata", status="COMPLETE"),
-    RoadmapPhase(number=4, name="ETL/ELT Pipeline Workbench", status="IN_PROGRESS"),
-    RoadmapPhase(number=5, name="Apache Airflow Integration", status="PLANNED"),
+    RoadmapPhase(number=4, name="ETL/ELT Pipeline Workbench", status="COMPLETE"),
+    RoadmapPhase(number=5, name="Apache Airflow Integration", status="IN_PROGRESS"),
     RoadmapPhase(number=6, name="dbt Transformation and Modelling", status="PLANNED"),
     RoadmapPhase(number=7, name="Data Quality and Observability", status="PLANNED"),
     RoadmapPhase(number=8, name="Lineage and Impact Analysis", status="PLANNED"),
@@ -83,7 +83,7 @@ def platform_summary() -> PlatformSummary:
         product="SkyData Studio",
         subtitle="Data Engineering Workbench",
         theme="Aurora Foundry",
-        current_phase="Phase 4.3 — Curated Table Materialization Proof",
+        current_phase="Phase 5.1 — Airflow Runtime and REST API Foundation",
         boundary=(
             "SkyData Studio starts after SkyCommand ingestion and publishes governed "
             "analytical products for SkyWeb Analytics, Power BI, and future consumers."

@@ -17,6 +17,7 @@ SkyDataStudio/
 │   │       │   ├── router.py
 │   │       │   └── routes/
 │   │       │       ├── __init__.py
+│   │       │       ├── airflow.py
 │   │       │       ├── contracts.py
 │   │       │       ├── health.py
 │   │       │       ├── metadata.py
@@ -33,6 +34,9 @@ SkyDataStudio/
 │   │       │   ├── bootstrap.py
 │   │       │   └── session.py
 │   │       ├── integrations/
+│   │       │   ├── airflow/
+│   │       │   │   ├── __init__.py
+│   │       │   │   └── client.py
 │   │       │   └── skycommand/
 │   │       │       ├── __init__.py
 │   │       │       ├── client.py
@@ -44,6 +48,7 @@ SkyDataStudio/
 │   │       │   └── pipeline.py
 │   │       ├── schemas/
 │   │       │   ├── __init__.py
+│   │       │   ├── airflow.py
 │   │       │   ├── assets.py
 │   │       │   ├── execution.py
 │   │       │   ├── metadata.py
@@ -73,6 +78,7 @@ SkyDataStudio/
 │           │   ├── StatusPill.jsx
 │           │   └── Topbar.jsx
 │           ├── pages/
+│           │   ├── Airflow.jsx
 │           │   ├── DataAssets.jsx
 │           │   ├── MetadataRegistry.jsx
 │           │   ├── PipelineRuns.jsx
@@ -118,6 +124,8 @@ SkyDataStudio/
 ├── tests/
 │   ├── __init__.py
 │   ├── conftest.py
+│   ├── test_airflow_api.py
+│   ├── test_airflow_client.py
 │   ├── test_asset_detail.py
 │   ├── test_asset_workspace_api.py
 │   ├── test_asset_workspace.py

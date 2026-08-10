@@ -4,7 +4,7 @@
 
 SkyData Studio is the post-ingestion data engineering application in the Sky ecosystem. It begins where SkyCommand's ingestion responsibility ends and prepares trusted data for analytical consumption by SkyWeb Analytics, Power BI, and future client-facing applications.
 
-**Current status:** Phase 0/1, Phase 2, and Phase 3 are complete. Phase 4.1 proved the versioned DFF pipeline definition, and Phase 4.2 proved replay-safe local execution with durable run/step evidence and zero physical mutation. Phase 4.3 now attaches the governed SkyCommand observation contract and materializes the Studio-owned Federal Funds Rate Mart with idempotent `MERGE` semantics and row-count evidence.
+**Current status:** Phases 0 through 4 are complete. The DFF reference pipeline now reads SkyCommand through the governed observation contract, materializes the Studio-owned Federal Funds Rate Mart with replay-safe `MERGE` semantics, and preserves durable run/step evidence. **Phase 5.1 is now in progress:** an isolated Apache Airflow 3 runtime plus REST API v2 integration establishes the control boundary for durable batch orchestration inside the Studio workbench.
 
 ---
 
@@ -111,18 +111,34 @@ Use **Run** from `/workspace/pipelines`. The local engine now:
 For the current DFF proof, the physical Studio relation is expected to be:
 
 ```text
-mart.fed_funds_rate_mart
+mart.fed_funds_rate
 ```
 
 `Replay Safely` reuses the existing durable run and does not execute the materializer again. **Force New Materialization Run** creates a new run and executes the `MERGE` again; when the source has not changed, the second physical run should report zero inserts/updates and all source rows as unchanged. A changed upstream source may legitimately produce inserts or updates while preserving the business-key uniqueness guarantee.
 
 The Phase 4.3 replay key includes the local execution-engine version, so an old Phase 4.2 proof run with the same `RUN_DATE` cannot be accidentally reused as a materialized run.
 
+## Phase 5.1 quick start
+
+Phase 5.1 introduces an isolated Apache Airflow 3.3 runtime. Airflow owns its own metadata PostgreSQL database; SkyData Studio observes it only through the stable public REST API v2. The local development stack uses Airflow's SimpleAuthManager all-admin mode so the Studio backend can acquire a development JWT without storing credentials.
+
+Initialize Airflow once, then start its long-running services:
+
+```powershell
+docker compose -f .\infra\docker-compose.yml up airflow-init
+docker compose -f .\infra\docker-compose.yml up -d airflow-api-server airflow-scheduler airflow-dag-processor airflow-triggerer
+docker compose -f .\infra\docker-compose.yml ps
+```
+
+Airflow UI: `http://localhost:8080`
+
+Open `/orchestration/airflow` in SkyData Studio. The page reads `/api/v2/monitor/health` and the DAG catalogue through the Studio backend and should show the metadata database, scheduler, DAG processor, triggerer, and `skydata_studio_platform_smoke` DAG. No Airflow metadata tables are queried directly.
+
 ---
 
 ## Validation contract
 
-Run the complete local validation suite before every SkyCommand development promotion:
+Run the complete local validation suite before every SkyData Studio development promotion:
 
 ```powershell
 python .\scripts\validate.py
@@ -248,220 +264,25 @@ Configuration
 
 # Implementation roadmap
 
-The roadmap is directional rather than rigid. Each phase closes with tests, working UI proof, documentation, and a repository handoff.
-
-## Phase 0 — Repository and architecture foundation
-
-**Goal:** establish SkyData Studio as a separate, reproducible product.
-
-Deliverables:
-
-- public repository named `SkyDataStudio`;
-- `main` as stable/reviewed and `dev` as the active integration branch;
-- Python `uv` project and React/Vite application structure;
-- `.env.example`, formatting, linting, test, and validation commands;
-- architecture, design-system, integration-contract, and roadmap documentation;
-- repository map and compact ZIP utilities;
-- GitHub Actions baseline for backend and frontend validation.
-
-**Exit proof:** clean checkout can install, run the API, run the UI, and execute validation commands.
-
-## Phase 1 — Studio shell and platform health
-
-**Goal:** deliver the branded application shell and prove the Python full-stack foundation.
-
-Deliverables:
-
-- FastAPI service with `/api/v1/health` and platform-summary endpoints;
-- React workbench with accordion sidebar and Aurora Foundry theme;
-- Studio Overview dashboard showing platform capabilities and integration boundaries;
-- environment-aware configuration and CORS;
-- reusable UI primitives and responsive behavior;
-- initial backend tests and frontend build validation.
-
-**Exit proof:** the dashboard loads live capability data from FastAPI and clearly represents SkyCommand, Airflow, dbt, warehouse, and reporting status.
-
-## Phase 2 — SkyCommand data-contract bridge
-
-**Goal:** consume SkyCommand outputs without duplicating ingestion responsibilities.
-
-Deliverables:
-
-- typed clients for `data_catalogue.v1`, `data_asset.v1`, `data_freshness_status.v1`, `ingestion_run_summary.v1`, and `ingestion_quality_evidence.v1`;
-- API-token and read-only database connection profiles;
-- contract compatibility checks and version negotiation;
-- asset discovery and ingestion-run import/synchronization;
-- ingestion-complete handoff design;
-- boundary dashboard showing source assets available for downstream processing.
-
-**Exit proof:** SkyData Studio can discover trusted assets and ingest run evidence from a live SkyCommand environment without querying SkyCommand implementation tables directly.
-
-## Phase 3 — Data catalogue and engineering metadata
-
-**Goal:** create the Studio's internal representation of post-ingestion data products.
-
-Deliverables:
-
-- domains, systems, connections, namespaces, assets, fields, owners, tags, classifications, and dependencies;
-- raw, staging, intermediate, mart, semantic, and report layers;
-- source-to-target mapping specifications;
-- asset detail pages with freshness, schema, quality, lineage, and run summaries;
-- metadata migrations and administration APIs;
-- reusable non-macro domain proof.
-
-**Exit proof:** an engineer can register and inspect a complete data product from source asset to intended analytical mart.
-
-## Phase 4 — ETL/ELT pipeline workbench
-
-**Goal:** define and execute reusable post-ingestion processing pipelines.
-
-Deliverables:
-
-- pipeline definitions, versions, parameters, steps, dependencies, and environments;
-- SQL, Python, validation, dbt, and publish step types;
-- incremental-load strategies, watermarks, idempotency, and replay controls;
-- execution context and structured step-result contracts;
-- create/manage/run/history user interfaces;
-- local execution engine for development and focused tests.
-
-**Exit proof:** one macro pipeline transforms a trusted SkyCommand asset into a curated table with repeatable run evidence.
-
-## Phase 5 — Apache Airflow integration
-
-**Goal:** make Airflow the durable batch orchestrator for Studio pipelines.
-
-Deliverables:
-
-- Airflow 3 local container stack;
-- Task SDK-based DAG authoring conventions;
-- stable Airflow REST API client—no direct metadata-database reads;
-- DAG catalogue, run history, task details, logs, retries, backfills, and cancellation controls;
-- time-based, asset-aware, and event-driven scheduling patterns;
-- SkyCommand ingestion-complete asset event or API trigger;
-- Studio pipeline-to-DAG generation or registration strategy.
-
-**Exit proof:** a SkyCommand ingestion completion causes the appropriate Airflow pipeline to run, with status visible in SkyData Studio.
-
-## Phase 6 — dbt transformation and modelling foundation
-
-**Goal:** make analytical modelling explicit, tested, documented, and version-controlled.
-
-Deliverables:
-
-- dbt project structure for `sources`, `staging`, `intermediate`, and `marts`;
-- naming, materialization, schema, and incremental-model standards;
-- source freshness, generic tests, singular tests, and model contracts;
-- dbt run/test/build integration inside Airflow;
-- manifest and run-results artifact ingestion;
-- model catalogue and documentation surfaces in the Studio UI.
-
-**Exit proof:** the macro domain has a tested dimensional model and dbt artifacts are visible in Studio.
-
-## Phase 7 — Data quality, reconciliation, and observability
-
-**Goal:** detect bad data before it reaches consumers and explain every decision.
-
-Deliverables:
-
-- layered checks: contract, schema, completeness, uniqueness, validity, referential integrity, reconciliation, freshness, and anomaly detection;
-- severity, blocking policy, ownership, waivers, and issue lifecycle;
-- row-count and aggregate reconciliation between pipeline layers;
-- quality scorecards, incident detail, failed-row samples, and trend charts;
-- alert integration with SkyCommand workflows where operational action is required;
-- service-level objectives for critical data products.
-
-**Exit proof:** failed blocking checks prevent mart publication and create durable, actionable evidence.
-
-## Phase 8 — Lineage and impact analysis
-
-**Goal:** show how data moves and what a change could break.
-
-Deliverables:
-
-- asset-, field-, model-, pipeline-, report-, and metric-level lineage;
-- lineage ingestion from dbt artifacts and Airflow assets;
-- visual dependency graph with upstream/downstream traversal;
-- change impact analysis for schema and model revisions;
-- ownership and incident overlays;
-- optional OpenLineage-compatible event seam.
-
-**Exit proof:** selecting a Power BI measure or SkyWeb metric reveals its path back to the ingested source asset.
-
-## Phase 9 — Analytical marts and semantic delivery
-
-**Goal:** publish stable, consumer-ready analytical products.
-
-Deliverables:
-
-- dimensional modelling standards and conformed dimensions;
-- macro-economic fact/dimension marts;
-- governed metric definitions and semantic metadata;
-- versioned consumer views/APIs for SkyWeb;
-- performance tuning, indexing, partitioning, and caching evidence;
-- data-product release and deprecation workflow.
-
-**Exit proof:** SkyWeb reads curated marts/contracts rather than assembling analytical logic from ingestion tables.
-
-## Phase 10 — Power BI integration and reporting studio
-
-**Goal:** add enterprise reporting skills without turning Power BI into the system of record.
-
-Deliverables:
-
-- Power BI-friendly star schemas and certified views;
-- semantic model and measure catalogue;
-- connection, refresh, gateway, and environment strategy;
-- report inventory, ownership, dependencies, and refresh status;
-- first executive macro-economic report;
-- deployment-pipeline and version-control strategy where supported.
-
-**Exit proof:** a governed Power BI report refreshes from Studio marts and its lineage/quality status is visible in SkyData Studio.
-
-## Phase 11 — Security, governance, and environment promotion
-
-**Goal:** harden the platform for multi-user and production-like operation.
-
-Deliverables:
-
-- authentication and role-based access;
-- secrets and connection governance;
-- development/test/production environment profiles;
-- promotion approvals and release evidence;
-- audit history and sensitive-data classifications;
-- backup, recovery, retention, and disaster-recovery procedures.
-
-**Exit proof:** a versioned data product can be promoted from dev to test to production with approvals and an auditable trail.
-
-## Phase 12 — AI-assisted data engineering
-
-**Goal:** use AI as an accelerator while retaining deterministic controls.
-
-Deliverables:
-
-- assisted mapping, SQL generation, test generation, documentation, and incident summaries;
-- retrieval over approved catalogue and lineage metadata;
-- explain-before-apply workflow for generated changes;
-- automated validation and human approval gates;
-- evaluation suite for correctness, safety, and hallucination resistance.
-
-**Exit proof:** an engineer can propose a transformation through AI assistance, inspect the plan/diff/tests, and promote only validated changes.
-
-## Phase 13 — Portfolio closure and reusable domain proof
-
-**Goal:** demonstrate that the platform is a reusable data-engineering system, not a macro-only demo.
-
-Deliverables:
-
-- complete architecture and operating documentation;
-- automated test and release pipeline;
-- macro end-to-end reference implementation;
-- second-domain portability proof;
-- polished demo script and interview discussion guide;
-- performance, reliability, and quality evidence.
-
-**Exit proof:** the application demonstrates ingestion handoff, ETL, Airflow, dbt, quality, lineage, analytical marts, SkyWeb consumption, and Power BI delivery end to end.
-
----
+The public roadmap is intentionally compact so GitHub visitors can see progress at a glance. Detailed phase decisions, acceptance evidence, and closure notes live in [`docs/ROADMAP.md`](docs/ROADMAP.md).
+
+| Phase | Status | Objective |
+| --- | --- | --- |
+| Phase 0 | ✅ Complete | Repository, architecture, validation, documentation, and promotion foundation |
+| Phase 1 | ✅ Complete | Branded FastAPI + React Studio shell, platform health, and Aurora Foundry design system |
+| Phase 2 | ✅ Complete | Read-only SkyCommand contract bridge, live asset discovery, compatibility, freshness, and quality evidence |
+| Phase 3 | ✅ Complete | Studio-owned metadata registry, governance, source-to-target mappings, target schemas, and lineage dependencies |
+| Phase 4 | ✅ Complete | Versioned ETL/ELT pipeline workbench, replay-safe local execution, structured run evidence, and idempotent curated-table materialization |
+| Phase 5 | 🔄 In Progress | Apache Airflow 3 durable batch orchestration, REST API v2 integration, DAG/run/task observability, schedules, backfills, and ingestion-complete triggers |
+| Phase 6 | ⏳ Planned | dbt transformation and modelling foundation with tested staging, intermediate, mart, and semantic layers |
+| Phase 7 | ⏳ Planned | Data quality, reconciliation, blocking policies, incidents, SLOs, and observability |
+| Phase 8 | ⏳ Planned | Asset/field/model/report lineage and downstream impact analysis |
+| Phase 9 | ⏳ Planned | Curated analytical marts, governed metrics, semantic delivery, and SkyWeb consumer contracts |
+| Phase 10 | ⏳ Planned | Power BI semantic models, refresh strategy, reporting inventory, and governed executive delivery |
+| Phase 11 | ⏳ Planned | Security, RBAC, environment promotion, audit evidence, backup, recovery, and retention |
+| Phase 12 | ⏳ Planned | AI-assisted mapping, SQL, tests, documentation, and explain-before-apply engineering workflows |
+| Phase 13 | ⏳ Planned | Portfolio closure, second-domain portability proof, polished demo, and end-to-end operating evidence |
+| Continuous | 🔄 Ongoing | Expand tests, contracts, documentation, reusable domain seams, UI polish, and operational proof |
 
 ## Initial repository structure
 
@@ -479,7 +300,7 @@ SkyDataStudio/
 ├─ contracts/
 │  └─ skycommand/                # Integration contract documentation
 ├─ docs/                         # Architecture, design, and roadmap detail
-├─ infra/                        # Local PostgreSQL and future Airflow containers
+├─ infra/                        # Studio PostgreSQL and local Airflow containers
 ├─ scripts/                      # Validation, repo map, and handoff packaging
 └─ tests/                        # Backend and contract tests
 ```
@@ -495,7 +316,7 @@ SkyDataStudio/
 - [uv](https://docs.astral.sh/uv/)
 - Node.js 22+
 - PostgreSQL 16 or 17
-- Docker Desktop + WSL2 for the later Airflow stack on Windows
+- Docker Desktop with the WSL2 backend for the local Airflow stack on Windows
 
 ### Backend
 
@@ -542,15 +363,15 @@ feature work → dev → validation/demo → pull request → main
 
 ## Current implementation slice
 
-The initial scaffold already includes:
+The repository currently includes:
 
-- FastAPI health, platform summary, roadmap, and contract-boundary endpoints;
-- typed SkyCommand ingestion contract models;
-- React accordion-sidebar workbench;
-- Aurora Foundry theme and Studio Overview page;
-- dbt project skeleton;
-- Airflow Task SDK smoke DAG;
-- PostgreSQL local container;
-- backend tests and repository validation tooling.
+- live SkyCommand contract discovery, compatibility, freshness, quality, and observation access;
+- a Studio-owned PostgreSQL metadata registry with governed source-to-target mappings;
+- versioned ETL/ELT pipeline definitions, replay-safe local execution, and durable step evidence;
+- proven idempotent materialization of the Federal Funds Rate Mart in `mart.fed_funds_rate`;
+- an isolated Airflow 3.3 local stack with API server, scheduler, DAG processor, triggerer, and dedicated metadata PostgreSQL;
+- a typed Airflow REST API v2 client plus `/orchestration/airflow` runtime/DAG observability;
+- a dbt project skeleton ready for Phase 6;
+- backend/frontend validation, repository map, and compact handoff tooling.
 
-The next implementation target is **Phase 2: SkyCommand data-contract bridge**, starting with a read-only client for the generic Phase 16 catalogue and ingestion-run APIs.
+The active implementation target is **Phase 5: Apache Airflow integration**. Phase 5.1 establishes the runtime and API boundary; the next slice will bind the proven Studio pipeline definition to an Airflow DAG and project DAG/task execution evidence back into SkyData Studio.

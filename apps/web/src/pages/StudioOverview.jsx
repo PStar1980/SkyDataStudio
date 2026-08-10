@@ -5,7 +5,7 @@ const FALLBACK = {
   product: 'SkyData Studio',
   subtitle: 'Data Engineering Workbench',
   theme: 'Aurora Foundry',
-  current_phase: 'Phase 4.3 — Curated Table Materialization Proof',
+  current_phase: 'Phase 5.1 — Airflow Runtime and REST API Foundation',
   boundary: 'SkyData Studio starts after SkyCommand ingestion and publishes governed analytical products for downstream consumers.',
   capabilities: [],
 };
@@ -41,7 +41,7 @@ function StudioOverview() {
     <div className="page-stack">
       <section className="hero-panel">
         <div>
-          <span className="eyebrow">AURORA FOUNDRY · PHASE 4.3</span>
+          <span className="eyebrow">AURORA FOUNDRY · PHASE 5.1</span>
           <h1>Shape trusted data into analytical products.</h1>
           <p>{summary.boundary}</p>
           <div className="hero-actions">
@@ -61,8 +61,8 @@ function StudioOverview() {
 
       <section className="metric-grid">
         <article className="metric-card"><span>Platform API</span><strong>{apiState}</strong><small>FastAPI contract service</small></article>
-        <article className="metric-card"><span>Current Phase</span><strong>4.3</strong><small>Curated table materialization</small></article>
-        <article className="metric-card"><span>Next Boundary</span><strong>Airflow</strong><small>Durable batch orchestration</small></article>
+        <article className="metric-card"><span>Current Phase</span><strong>5.1</strong><small>Airflow runtime foundation</small></article>
+        <article className="metric-card"><span>Pipeline Proof</span><strong>READY</strong><small>Curated mart materialization proven</small></article>
         <article className="metric-card"><span>Orchestrator</span><strong>Airflow 3</strong><small>Batch and asset workflows</small></article>
       </section>
 
@@ -92,8 +92,8 @@ function StudioOverview() {
           {(summary.capabilities.length ? summary.capabilities : [
             { code: 'CONTRACT_BRIDGE', name: 'SkyCommand Contract Bridge', description: 'Typed read-only integration with trusted ingestion contracts.', status: 'FOUNDATION', phase: 2 },
             { code: 'METADATA_REGISTRY', name: 'Metadata Registry + Blueprints', description: 'Studio-owned assets, target schemas, ownership, source-to-target mappings, and lineage.', status: 'FOUNDATION', phase: 3 },
-            { code: 'PIPELINE_WORKBENCH', name: 'ETL/ELT Pipeline Workbench', description: 'Versioned post-ingestion pipelines and structured run evidence.', status: 'FOUNDATION', phase: 4 },
-            { code: 'AIRFLOW', name: 'Apache Airflow Orchestration', description: 'DAGs, assets, schedules, retries, and backfills.', status: 'SCAFFOLDED', phase: 5 },
+            { code: 'PIPELINE_WORKBENCH', name: 'ETL/ELT Pipeline Workbench', description: 'Versioned post-ingestion pipelines and structured run evidence.', status: 'READY', phase: 4 },
+            { code: 'AIRFLOW', name: 'Apache Airflow Orchestration', description: 'DAGs, assets, schedules, retries, and backfills.', status: 'FOUNDATION', phase: 5 },
             { code: 'DBT', name: 'dbt Transformation Layer', description: 'Tested staging, intermediate, mart, and semantic models.', status: 'SCAFFOLDED', phase: 6 },
             { code: 'QUALITY_LINEAGE', name: 'Quality and Lineage', description: 'Trust evidence, dependencies, incidents, and impact analysis.', status: 'PLANNED', phase: 7 },
             { code: 'ANALYTICS_DELIVERY', name: 'Analytics Delivery', description: 'Governed products for SkyWeb Analytics and Power BI.', status: 'PLANNED', phase: 9 },
@@ -102,7 +102,7 @@ function StudioOverview() {
               <div className="capability-top"><span>Phase {capability.phase}</span><StatusPill status={capability.status} /></div>
               <h3>{capability.name}</h3>
               <p>{capability.description}</p>
-              <div className="capability-track"><span style={{ width: capability.status === 'FOUNDATION' ? '28%' : capability.status === 'SCAFFOLDED' ? '14%' : '4%' }} /></div>
+              <div className="capability-track"><span style={{ width: capability.status === 'READY' ? '100%' : capability.status === 'FOUNDATION' ? '28%' : capability.status === 'SCAFFOLDED' ? '14%' : '4%' }} /></div>
             </article>
           ))}
         </div>
@@ -110,11 +110,11 @@ function StudioOverview() {
 
       <section className="two-column-grid">
         <article className="panel compact-panel">
-          <div className="panel-heading"><div><span className="eyebrow">CURRENT IMPLEMENTATION</span><h2>Governed local mart materialization</h2></div><span className="phase-badge">PHASE 4.3</span></div>
+          <div className="panel-heading"><div><span className="eyebrow">CURRENT IMPLEMENTATION</span><h2>Airflow runtime + API boundary</h2></div><span className="phase-badge">PHASE 5.1</span></div>
           <ol className="implementation-list">
-            <li><span>01</span><div><strong>Governed source read</strong><small>Read trusted observations through SkyCommand's portable time-series contract instead of implementation tables.</small></div></li>
-            <li><span>02</span><div><strong>Mapped MERGE</strong><small>Apply the registered field mapping and business-key contract into a Studio-owned mart table.</small></div></li>
-            <li><span>03</span><div><strong>Idempotency evidence</strong><small>Record read, insert, update, unchanged, rejected, and published row counts on every physical proof run.</small></div></li>
+            <li><span>01</span><div><strong>Isolated Airflow stack</strong><small>Run Airflow 3 API server, scheduler, DAG processor, triggerer, and metadata PostgreSQL in containers.</small></div></li>
+            <li><span>02</span><div><strong>REST API v2 client</strong><small>Acquire a local development JWT and read health/DAG state through the stable public Airflow API.</small></div></li>
+            <li><span>03</span><div><strong>Workbench observability</strong><small>Expose component health and the DAG catalogue inside the Studio Apache Airflow page.</small></div></li>
           </ol>
         </article>
         <article className="panel compact-panel">
