@@ -151,9 +151,9 @@ def fed_funds_rate_pipeline():
             raise RuntimeError("Studio pipeline reported failed steps.")
 
         result = execution.get("result")
-        if not isinstance(result, dict) or not result.get("data_mutation_applied"):
+        if not isinstance(result, dict) or not result.get("materialization_executed"):
             raise RuntimeError(
-                "Studio pipeline completed without Phase 4.3 materialization evidence."
+                "Studio pipeline completed without Phase 4.3 materialization execution evidence."
             )
         return execution
 
@@ -168,10 +168,17 @@ def fed_funds_rate_pipeline():
             "studio_run_key": execution["studio_run_key"],
             "studio_run_reused": execution["reused"],
             "succeeded_steps": execution["succeeded_steps"],
+            "materialization_executed": result_payload.get("materialization_executed"),
+            "data_mutation_applied": result_payload.get("data_mutation_applied"),
             "target_relation": result_payload.get("target_relation"),
             "rows_read": result_payload.get("rows_read"),
+            "rows_inserted": result_payload.get("rows_inserted"),
+            "rows_updated": result_payload.get("rows_updated"),
             "rows_changed": result_payload.get("rows_changed"),
+            "rows_unchanged": result_payload.get("rows_unchanged"),
+            "rows_rejected": result_payload.get("rows_rejected"),
             "rows_published": result_payload.get("rows_published"),
+            "target_row_count": result_payload.get("target_row_count"),
         }
 
     contract = resolve_pipeline_contract()

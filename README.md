@@ -4,7 +4,7 @@
 
 SkyData Studio is the post-ingestion data engineering application in the Sky ecosystem. It begins where SkyCommand's ingestion responsibility ends and prepares trusted data for analytical consumption by SkyWeb Analytics, Power BI, and future client-facing applications.
 
-**Current status:** Phases 0 through 4 are complete. The DFF reference pipeline now reads SkyCommand through the governed observation contract, materializes the Studio-owned Federal Funds Rate Mart with replay-safe `MERGE` semantics, and preserves durable run/step evidence. **Phase 5.1 is now in progress:** an isolated Apache Airflow 3 runtime plus REST API v2 integration establishes the control boundary for durable batch orchestration inside the Studio workbench.
+**Current status:** Phases 0 through 4 are complete and Phase 5 is underway. The DFF reference pipeline reads SkyCommand through the governed observation contract, materializes the Studio-owned Federal Funds Rate Mart with replay-safe `MERGE` semantics, and preserves durable run/step evidence. **Phase 5.2 is now in progress:** the isolated Apache Airflow 3 runtime and REST API v2 boundary now orchestrate the proven DFF pipeline through a replay-safe callback into SkyData Studio.
 
 ---
 
