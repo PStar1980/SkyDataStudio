@@ -1,3 +1,45 @@
+function normalizeErrorDetail(detail, fallback) {
+  if (typeof detail === 'string' && detail.trim()) {
+    return detail.replace(/^Value error,\s*/i, '');
+  }
+
+  if (Array.isArray(detail)) {
+    const messages = detail
+      .map((item) => {
+        if (typeof item === 'string') return item;
+        if (!item || typeof item !== 'object') return '';
+
+        const message = item.msg || item.message || item.detail;
+        return typeof message === 'string'
+          ? message.replace(/^Value error,\s*/i, '')
+          : '';
+      })
+      .filter(Boolean);
+
+    if (messages.length) return messages.join(' ');
+  }
+
+  if (detail && typeof detail === 'object') {
+    const message = detail.msg || detail.message || detail.detail;
+    if (typeof message === 'string' && message.trim()) {
+      return message.replace(/^Value error,\s*/i, '');
+    }
+  }
+
+  return fallback;
+}
+
+async function responseErrorMessage(response) {
+  const fallback = `Request failed with HTTP ${response.status}.`;
+
+  try {
+    const payload = await response.json();
+    return normalizeErrorDetail(payload.detail ?? payload.error, fallback);
+  } catch {
+    return fallback;
+  }
+}
+
 export async function getJson(path, { signal } = {}) {
   const response = await fetch(path, {
     headers: { Accept: 'application/json' },
@@ -5,14 +47,7 @@ export async function getJson(path, { signal } = {}) {
   });
 
   if (!response.ok) {
-    let message = `Request failed with HTTP ${response.status}.`;
-    try {
-      const payload = await response.json();
-      message = payload.detail || payload.error || message;
-    } catch {
-      // Keep the status-based message when the response is not JSON.
-    }
-    throw new Error(message);
+    throw new Error(await responseErrorMessage(response));
   }
 
   return response.json();
@@ -41,14 +76,7 @@ export async function postJson(path, payload, { signal } = {}) {
   });
 
   if (!response.ok) {
-    let message = `Request failed with HTTP ${response.status}.`;
-    try {
-      const responsePayload = await response.json();
-      message = responsePayload.detail || responsePayload.error || message;
-    } catch {
-      // Keep the status-based message when the response is not JSON.
-    }
-    throw new Error(message);
+    throw new Error(await responseErrorMessage(response));
   }
 
   return response.json();
@@ -66,14 +94,7 @@ export async function patchJson(path, payload, { signal } = {}) {
   });
 
   if (!response.ok) {
-    let message = `Request failed with HTTP ${response.status}.`;
-    try {
-      const responsePayload = await response.json();
-      message = responsePayload.detail || responsePayload.error || message;
-    } catch {
-      // Keep the status-based message when the response is not JSON.
-    }
-    throw new Error(message);
+    throw new Error(await responseErrorMessage(response));
   }
 
   return response.json();
@@ -91,14 +112,7 @@ export async function putJson(path, payload, { signal } = {}) {
   });
 
   if (!response.ok) {
-    let message = `Request failed with HTTP ${response.status}.`;
-    try {
-      const responsePayload = await response.json();
-      message = responsePayload.detail || responsePayload.error || message;
-    } catch {
-      // Keep the status-based message when the response is not JSON.
-    }
-    throw new Error(message);
+    throw new Error(await responseErrorMessage(response));
   }
 
   return response.json();
