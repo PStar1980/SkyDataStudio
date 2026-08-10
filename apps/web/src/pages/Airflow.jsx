@@ -135,7 +135,7 @@ function Airflow() {
     <div className="page-stack">
       <section className="page-intro airflow-page-intro">
         <div>
-          <span className="eyebrow">PHASE 5.2 · AIRFLOW PIPELINE BATCH PROOF</span>
+          <span className="eyebrow">PHASE 5.3 · AIRFLOW SCHEDULING FOUNDATION</span>
           <h1>Apache Airflow</h1>
           <p>
             Observe the isolated Airflow 3 runtime, launch the governed Federal Funds Rate batch,
@@ -363,7 +363,7 @@ function Airflow() {
               <span className="eyebrow">ORCHESTRATION CONTRACT</span>
               <h2>Airflow owns durable batch scheduling</h2>
             </div>
-            <span className="phase-badge">5.2</span>
+            <span className="phase-badge">5.3</span>
           </div>
           <ol className="implementation-list">
             <li><span>01</span><div><strong>Isolated runtime</strong><small>Airflow keeps its own metadata PostgreSQL database and service processes.</small></div></li>
@@ -376,16 +376,16 @@ function Airflow() {
           <div className="panel-heading">
             <div>
               <span className="eyebrow">NEXT PROOF</span>
-              <h2>Schedule, backfill, and ingestion-trigger the batch</h2>
+              <h2>Ingestion-complete event trigger</h2>
             </div>
             <span className="rule-mark">→</span>
           </div>
           <p className="rule-copy">
-            After the DFF Airflow batch is proven end to end, Phase 5 can add explicit schedules,
-            controlled backfill windows, and an ingestion-complete trigger without changing the
-            pipeline execution contract.
+            Phase 5.3 adds the daily schedule and controlled backfill surface. The remaining Phase 5
+            proof is an ingestion-complete trigger that preserves the same replay-safe Studio
+            execution contract.
           </p>
-          <div className="rule-footer"><span>Schedules</span><span>Backfills</span><span>Event trigger</span></div>
+          <div className="rule-footer"><span>Event trigger</span><span>Replay key</span><span>Evidence</span></div>
         </article>
       </section>
     </div>

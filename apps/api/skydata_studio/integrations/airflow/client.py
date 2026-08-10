@@ -9,6 +9,8 @@ from uuid import uuid4
 
 import httpx
 from skydata_studio.schemas.airflow import (
+    AirflowBackfillList,
+    AirflowBackfillSummary,
     AirflowComponentHealth,
     AirflowDagRunDetail,
     AirflowDagRunList,
@@ -188,6 +190,46 @@ class AirflowClient:
             stale=bool(raw.get("is_stale", False)),
             timetable=str(timetable) if timetable is not None else None,
             tags=tags,
+        )
+
+    @staticmethod
+    def _required_datetime(raw: object, *, field_name: str) -> datetime:
+        if isinstance(raw, datetime):
+            return raw
+        if isinstance(raw, str):
+            normalized = raw.strip()
+            if normalized.endswith("Z"):
+                normalized = f"{normalized[:-1]}+00:00"
+            try:
+                return datetime.fromisoformat(normalized)
+            except ValueError as error:
+                raise AirflowClientError(
+                    f"Airflow response field '{field_name}' is not a valid ISO datetime."
+                ) from error
+        raise AirflowClientError(
+            f"Airflow response field '{field_name}' is missing or invalid."
+        )
+
+    @staticmethod
+    def _backfill(raw: dict[str, Any]) -> AirflowBackfillSummary:
+        return AirflowBackfillSummary(
+            id=int(raw.get("id") or 0),
+            dag_id=str(raw.get("dag_id") or ""),
+            from_date=AirflowClient._required_datetime(
+                raw.get("from_date"),
+                field_name="from_date",
+            ),
+            to_date=AirflowClient._required_datetime(
+                raw.get("to_date"),
+                field_name="to_date",
+            ),
+            is_paused=bool(raw.get("is_paused", False)),
+            reprocess_behavior=str(raw.get("reprocess_behavior") or "none"),
+            max_active_runs=int(raw.get("max_active_runs") or 1),
+            run_backwards=bool(raw.get("run_backwards", False)),
+            created_at=raw.get("created_at"),
+            completed_at=raw.get("completed_at"),
+            updated_at=raw.get("updated_at"),
         )
 
     @staticmethod
@@ -405,3 +447,74 @@ class AirflowClient:
             task_state_counts=dict(sorted(counts.items())),
             studio_run_key=f"AIRFLOW:{dag_run_id}",
         )
+
+    def backfills(self, dag_id: str, *, limit: int = 20) -> AirflowBackfillList:
+        try:
+            with httpx.Client(
+                timeout=self.timeout_seconds,
+                transport=self.transport,
+            ) as client:
+                token = self._token(client)
+                payload = self._get_json(
+                    client,
+                    "/backfills",
+                    token=token,
+                    params={"dag_id": dag_id, "limit": limit, "offset": 0},
+                )
+        except AirflowClientError:
+            raise
+        except Exception as error:
+            raise AirflowClientError(f"Airflow integration failed: {error}.") from error
+
+        raw_backfills = payload.get("backfills", [])
+        items = (
+            [self._backfill(item) for item in raw_backfills if isinstance(item, dict)]
+            if isinstance(raw_backfills, list)
+            else []
+        )
+        items.sort(
+            key=lambda item: item.created_at or item.from_date,
+            reverse=True,
+        )
+        return AirflowBackfillList(
+            dag_id=dag_id,
+            total=int(payload.get("total_entries", len(items)) or len(items)),
+            items=items,
+        )
+
+    def create_backfill(
+        self,
+        dag_id: str,
+        *,
+        from_date: datetime,
+        to_date: datetime,
+        reprocess_behavior: str,
+        max_active_runs: int,
+        run_backwards: bool,
+        conf: Mapping[str, object],
+    ) -> AirflowBackfillSummary:
+        try:
+            with httpx.Client(
+                timeout=self.timeout_seconds,
+                transport=self.transport,
+            ) as client:
+                token = self._token(client)
+                payload = self._post_json(
+                    client,
+                    "/backfills",
+                    token=token,
+                    payload={
+                        "dag_id": dag_id,
+                        "from_date": from_date.isoformat(),
+                        "to_date": to_date.isoformat(),
+                        "run_backwards": run_backwards,
+                        "dag_run_conf": dict(conf),
+                        "reprocess_behavior": reprocess_behavior,
+                        "max_active_runs": max_active_runs,
+                    },
+                )
+        except AirflowClientError:
+            raise
+        except Exception as error:
+            raise AirflowClientError(f"Airflow integration failed: {error}.") from error
+        return self._backfill(payload)

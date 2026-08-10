@@ -114,3 +114,90 @@ def test_airflow_dag_run_endpoints_project_public_api_evidence(
     assert detail_response.json()["studio_run_key"] == "AIRFLOW:skydata__proof"
     assert trigger_response.status_code == 201
     assert trigger_response.json()["run"]["dag_run_id"] == "skydata__proof"
+
+
+def test_airflow_backfill_endpoints_apply_controlled_policy(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from datetime import UTC, datetime
+
+    from skydata_studio.schemas.airflow import AirflowBackfillList, AirflowBackfillSummary
+
+    backfill = AirflowBackfillSummary(
+        id=7,
+        dag_id="skydata_studio_fed_funds_rate_pipeline",
+        from_date=datetime(2026, 8, 9, tzinfo=UTC),
+        to_date=datetime(2026, 8, 9, tzinfo=UTC),
+        is_paused=False,
+        reprocess_behavior="none",
+        max_active_runs=1,
+        run_backwards=False,
+        created_at=datetime(2026, 8, 10, tzinfo=UTC),
+    )
+
+    def fake_backfills(
+        self: AirflowClient,
+        dag_id: str,
+        *,
+        limit: int = 20,
+    ) -> AirflowBackfillList:
+        assert dag_id == "skydata_studio_fed_funds_rate_pipeline"
+        assert limit == 20
+        return AirflowBackfillList(dag_id=dag_id, total=1, items=[backfill])
+
+    def fake_create_backfill(
+        self: AirflowClient,
+        dag_id: str,
+        *,
+        from_date: datetime,
+        to_date: datetime,
+        reprocess_behavior: str,
+        max_active_runs: int,
+        run_backwards: bool,
+        conf: dict[str, object],
+    ) -> AirflowBackfillSummary:
+        assert dag_id == "skydata_studio_fed_funds_rate_pipeline"
+        assert from_date == datetime(2026, 8, 9, tzinfo=UTC)
+        assert to_date == datetime(2026, 8, 9, tzinfo=UTC)
+        assert reprocess_behavior == "none"
+        assert max_active_runs == 1
+        assert run_backwards is False
+        assert conf == {
+            "pipeline_code": "FED_FUNDS_RATE_PIPELINE",
+            "trigger_mode": "BACKFILL",
+        }
+        return backfill
+
+    monkeypatch.setattr(AirflowClient, "backfills", fake_backfills)
+    monkeypatch.setattr(AirflowClient, "create_backfill", fake_create_backfill)
+
+    list_response = client.get(
+        "/api/v1/integrations/airflow/dags/"
+        "skydata_studio_fed_funds_rate_pipeline/backfills"
+    )
+    create_response = client.post(
+        "/api/v1/integrations/airflow/dags/"
+        "skydata_studio_fed_funds_rate_pipeline/backfills",
+        json={
+            "pipeline_code": "FED_FUNDS_RATE_PIPELINE",
+            "from_date": "2026-08-09",
+            "to_date": "2026-08-09",
+            "reprocess_behavior": "none",
+            "max_active_runs": 1,
+            "run_backwards": False,
+        },
+    )
+    oversized_response = client.post(
+        "/api/v1/integrations/airflow/dags/"
+        "skydata_studio_fed_funds_rate_pipeline/backfills",
+        json={
+            "from_date": "2026-08-01",
+            "to_date": "2026-08-08",
+        },
+    )
+
+    assert list_response.status_code == 200
+    assert list_response.json()["items"][0]["id"] == 7
+    assert create_response.status_code == 201
+    assert create_response.json()["backfill"]["reprocess_behavior"] == "none"
+    assert oversized_response.status_code == 422

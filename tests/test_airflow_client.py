@@ -199,3 +199,82 @@ def test_airflow_client_triggers_and_reads_dag_run_evidence() -> None:
     assert runs.items[0].state == "SUCCESS"
     assert detail.task_state_counts == {"SUCCESS": 1}
     assert detail.studio_run_key == "AIRFLOW:skydata__proof"
+
+
+def test_airflow_client_creates_and_lists_backfills() -> None:
+    from datetime import UTC, datetime
+
+    posted_payloads: list[dict[str, object]] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        if request.url.path == "/auth/token":
+            return httpx.Response(200, json={"access_token": "dev-token"})
+        if request.url.path == "/api/v2/backfills":
+            if request.method == "POST":
+                posted_payloads.append(json.loads(request.content.decode("utf-8")))
+                return httpx.Response(
+                    200,
+                    json={
+                        "id": 11,
+                        "dag_id": "skydata_studio_fed_funds_rate_pipeline",
+                        "from_date": "2026-08-09T00:00:00Z",
+                        "to_date": "2026-08-09T00:00:00Z",
+                        "dag_run_conf": posted_payloads[-1]["dag_run_conf"],
+                        "is_paused": False,
+                        "reprocess_behavior": "none",
+                        "max_active_runs": 1,
+                        "run_backwards": False,
+                        "created_at": "2026-08-10T20:00:00Z",
+                    },
+                )
+            assert request.url.params["dag_id"] == "skydata_studio_fed_funds_rate_pipeline"
+            return httpx.Response(
+                200,
+                json={
+                    "backfills": [
+                        {
+                            "id": 11,
+                            "dag_id": "skydata_studio_fed_funds_rate_pipeline",
+                            "from_date": "2026-08-09T00:00:00Z",
+                            "to_date": "2026-08-09T00:00:00Z",
+                            "is_paused": False,
+                            "reprocess_behavior": "none",
+                            "max_active_runs": 1,
+                            "run_backwards": False,
+                            "created_at": "2026-08-10T20:00:00Z",
+                        }
+                    ],
+                    "total_entries": 1,
+                },
+            )
+        return httpx.Response(404)
+
+    client = AirflowClient(
+        api_base_url="http://airflow.test/api/v2",
+        auth_mode="simple-all-admins",
+        timeout_seconds=2,
+        transport=httpx.MockTransport(handler),
+    )
+
+    created = client.create_backfill(
+        "skydata_studio_fed_funds_rate_pipeline",
+        from_date=datetime(2026, 8, 9, tzinfo=UTC),
+        to_date=datetime(2026, 8, 9, tzinfo=UTC),
+        reprocess_behavior="none",
+        max_active_runs=1,
+        run_backwards=False,
+        conf={
+            "pipeline_code": "FED_FUNDS_RATE_PIPELINE",
+            "trigger_mode": "BACKFILL",
+        },
+    )
+    backfills = client.backfills("skydata_studio_fed_funds_rate_pipeline")
+
+    assert created.id == 11
+    assert backfills.total == 1
+    assert backfills.items[0].reprocess_behavior == "none"
+    assert posted_payloads[0]["max_active_runs"] == 1
+    assert posted_payloads[0]["dag_run_conf"] == {
+        "pipeline_code": "FED_FUNDS_RATE_PIPELINE",
+        "trigger_mode": "BACKFILL",
+    }

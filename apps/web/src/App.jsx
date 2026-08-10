@@ -9,6 +9,7 @@ import SourceMappings from './pages/SourceMappings.jsx';
 import Pipelines from './pages/Pipelines.jsx';
 import PipelineRuns from './pages/PipelineRuns.jsx';
 import Airflow from './pages/Airflow.jsx';
+import SchedulesBackfills from './pages/SchedulesBackfills.jsx';
 import PlaceholderPage from './pages/PlaceholderPage.jsx';
 
 const PAGE_META = {
@@ -64,6 +65,7 @@ function App() {
           <Route path="/workspace/pipelines" element={<Pipelines />} />
           <Route path="/orchestration/airflow" element={<Airflow />} />
           <Route path="/orchestration/runs" element={<PipelineRuns />} />
+          <Route path="/orchestration/backfills" element={<SchedulesBackfills />} />
           {Object.entries(PAGE_META)
             .filter(([path]) => ![
               '/dashboard',
@@ -73,6 +75,7 @@ function App() {
               '/workspace/pipelines',
               '/orchestration/airflow',
               '/orchestration/runs',
+              '/orchestration/backfills',
             ].includes(path))
             .map(([path, [title, subtitle]]) => (
               <Route
