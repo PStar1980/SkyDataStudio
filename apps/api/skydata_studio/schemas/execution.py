@@ -14,7 +14,7 @@ class PipelineRunRequest(BaseModel):
     parameters: dict[str, object] = Field(default_factory=dict)
     replay_mode: PipelineReplayMode = "REUSE"
     replay_key: str | None = Field(default=None, min_length=1, max_length=160)
-    trigger_type: Literal["MANUAL", "TEST"] = "MANUAL"
+    trigger_type: Literal["MANUAL", "TEST", "AIRFLOW"] = "MANUAL"
 
     @field_validator("replay_key")
     @classmethod

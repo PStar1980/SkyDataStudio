@@ -108,6 +108,7 @@ SkyDataStudio/
 ├── orchestration/
 │   └── airflow/
 │       └── dags/
+│           ├── fed_funds_rate_pipeline.py
 │           └── studio_platform_smoke.py
 ├── packages/
 │   └── contracts/

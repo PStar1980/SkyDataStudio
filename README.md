@@ -327,6 +327,14 @@ uv run uvicorn skydata_studio.main:app --app-dir apps/api --reload --port 8100
 
 API documentation: `http://localhost:8100/docs`
 
+For the Phase 5.2 Airflow callback proof, Airflow runs inside Docker and must be able to reach the host-side Studio API. Start the backend on all local interfaces for that proof:
+
+```powershell
+uv run uvicorn skydata_studio.main:app --app-dir apps/api --reload --host 0.0.0.0 --port 8100
+```
+
+Docker resolves the host through `host.docker.internal`; the callback URL is controlled by `AIRFLOW_STUDIO_API_BASE_URL`. Keep this development-only binding behind the local firewall.
+
 ### Frontend
 
 ```powershell
@@ -370,8 +378,9 @@ The repository currently includes:
 - versioned ETL/ELT pipeline definitions, replay-safe local execution, and durable step evidence;
 - proven idempotent materialization of the Federal Funds Rate Mart in `mart.fed_funds_rate`;
 - an isolated Airflow 3.3 local stack with API server, scheduler, DAG processor, triggerer, and dedicated metadata PostgreSQL;
-- a typed Airflow REST API v2 client plus `/orchestration/airflow` runtime/DAG observability;
+- a typed Airflow REST API v2 client plus `/orchestration/airflow` runtime, DAG-run, and task-instance observability;
+- a Phase 5.2 DFF Airflow batch DAG that calls the proven Studio engine through a replay-safe public API callback;
 - a dbt project skeleton ready for Phase 6;
 - backend/frontend validation, repository map, and compact handoff tooling.
 
-The active implementation target is **Phase 5: Apache Airflow integration**. Phase 5.1 establishes the runtime and API boundary; the next slice will bind the proven Studio pipeline definition to an Airflow DAG and project DAG/task execution evidence back into SkyData Studio.
+The active implementation target is **Phase 5: Apache Airflow integration**. Phase 5.1 established the isolated runtime and REST API boundary. Phase 5.2 now binds the proven DFF pipeline to an Airflow DAG, launches it through REST API v2, and projects DAG/task execution evidence back into SkyData Studio while preserving the local execution engine.

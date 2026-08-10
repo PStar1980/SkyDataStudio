@@ -241,7 +241,7 @@ Closure evidence:
 
 ## Phase 5.1 — Airflow Runtime and REST API Foundation
 
-**Status:** In progress.
+**Status:** Complete.
 
 Scope:
 
@@ -263,4 +263,29 @@ First acceptance proof:
 - `skydata_studio_platform_smoke` is visible in Airflow and in the Studio DAG catalogue;
 - `/orchestration/airflow` reports the live runtime through the Studio API;
 - local validation remains green.
+
+## Phase 5.2 — Airflow Pipeline Batch Proof
+
+**Status:** In progress.
+
+Scope:
+
+- add a dedicated `skydata_studio_fed_funds_rate_pipeline` Airflow DAG for the proven DFF pipeline;
+- keep Airflow responsible for durable orchestration while SkyData Studio retains mapping, replay, validation, and materialization authority;
+- have the DAG call the public Studio API rather than importing Studio database models or reading Studio PostgreSQL directly;
+- derive a stable Studio replay key from the Airflow DAG run ID so Airflow task retries cannot duplicate materialization;
+- extend pipeline-run trigger evidence with `AIRFLOW`;
+- trigger DAG runs through the authenticated Airflow REST API v2 boundary;
+- read DAG-run and task-instance state back through REST API v2 and project it into the Apache Airflow workbench;
+- keep the existing local engine available for direct/manual proof and recovery.
+
+Acceptance proof:
+
+- the new DFF DAG is parsed and active in Airflow;
+- a Studio-launched Airflow DAG run reaches `SUCCESS`;
+- the DAG resolves `FED_FUNDS_RATE_PIPELINE` through the Studio API and executes one replay-safe Studio pipeline run;
+- the linked Studio run completes all four pipeline steps with Phase 4.3 materialization evidence;
+- Airflow task-instance evidence is visible in SkyData Studio without metadata-database reads;
+- rerunning an Airflow task with the same DAG run ID reuses the same Studio replay key;
+- local validation and GitHub checks remain green.
 
