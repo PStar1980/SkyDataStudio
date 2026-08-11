@@ -5,12 +5,12 @@ param(
 )
 
 $composeFile = Join-Path $PSScriptRoot "..\infra\docker-compose.yml"
-$args = @("compose", "-f", $composeFile, "run", "--rm", "dbt", $Command, "--profiles-dir", ".")
+$dockerArgs = @("compose", "-f", $composeFile, "run", "--rm", "dbt", $Command, "--profiles-dir", ".")
 
 if ($Select) {
-    $args += @("--select", $Select)
+    $dockerArgs += @("--select", $Select)
 }
 
 Write-Host "SkyData Studio dbt: $Command $Select" -ForegroundColor Cyan
-& docker @args
+& docker @dockerArgs
 exit $LASTEXITCODE
