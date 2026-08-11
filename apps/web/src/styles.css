@@ -722,6 +722,7 @@ a { color: inherit; }
   .transformation-metric-grid { grid-template-columns: 1fr; }
 }
 .status-missing { color: var(--amber); background: rgba(243,189,85,0.08); }
+.status-pending { color: var(--amber); background: rgba(243,189,85,0.08); }
 
 
 /* Phase 6.2 — dbt model catalogue and artifact evidence */
@@ -776,4 +777,202 @@ a { color: inherit; }
 @media (max-width: 640px) {
   .data-model-metric-grid,
   .data-model-column-list article { grid-template-columns: 1fr; }
+}
+
+
+/* Phase 6.3 semantic layer */
+.semantic-intro {
+  align-items: end;
+}
+
+.semantic-metric-grid {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+.semantic-model-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+}
+
+.semantic-model-card,
+.semantic-metric-card {
+  border: 1px solid rgba(80, 231, 207, 0.18);
+  border-radius: 14px;
+  background: linear-gradient(145deg, rgba(7, 27, 37, 0.92), rgba(6, 18, 29, 0.96));
+}
+
+.semantic-model-card {
+  padding: 18px;
+}
+
+.semantic-model-heading,
+.semantic-metric-card header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.semantic-model-heading > div,
+.semantic-metric-card header > div {
+  display: grid;
+  gap: 5px;
+}
+
+.semantic-model-heading span,
+.semantic-definition-block > span,
+.semantic-contract-grid span,
+.semantic-metric-card header span,
+.semantic-metric-card dt {
+  color: var(--muted);
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.semantic-model-heading strong {
+  font-size: 1.08rem;
+}
+
+.semantic-model-heading code,
+.semantic-metric-card code {
+  color: var(--cyan);
+  font-size: 0.75rem;
+}
+
+.semantic-model-card > p,
+.semantic-metric-card > p {
+  margin: 14px 0;
+  color: var(--soft);
+  line-height: 1.55;
+}
+
+.semantic-contract-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin: 16px 0;
+}
+
+.semantic-contract-grid > div {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid rgba(80, 231, 207, 0.12);
+  border-radius: 10px;
+  background: rgba(3, 14, 22, 0.58);
+}
+
+.semantic-contract-grid strong {
+  overflow: hidden;
+  color: var(--text);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.semantic-contract-grid small {
+  color: var(--muted);
+}
+
+.semantic-definition-block {
+  display: grid;
+  gap: 9px;
+}
+
+.semantic-chip-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.semantic-chip-list > span {
+  display: grid;
+  gap: 2px;
+  min-width: 150px;
+  padding: 9px 11px;
+  border: 1px solid rgba(139, 114, 255, 0.2);
+  border-radius: 9px;
+  background: rgba(139, 114, 255, 0.06);
+}
+
+.semantic-chip-list strong {
+  font-size: 0.76rem;
+}
+
+.semantic-chip-list small {
+  color: var(--muted);
+  font-size: 0.67rem;
+}
+
+.semantic-metric-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.semantic-metric-card {
+  padding: 16px;
+}
+
+.semantic-metric-card h3 {
+  margin: 2px 0 0;
+  font-size: 1rem;
+}
+
+.semantic-metric-card dl {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0;
+}
+
+.semantic-metric-card dl > div {
+  display: grid;
+  gap: 4px;
+  padding: 9px 10px;
+  border-radius: 8px;
+  background: rgba(2, 13, 21, 0.6);
+}
+
+.semantic-metric-card dd {
+  margin: 0;
+  overflow: hidden;
+  color: var(--text);
+  font-size: 0.76rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.semantic-empty {
+  display: grid;
+  gap: 6px;
+  min-height: 110px;
+  place-content: center;
+  text-align: center;
+  color: var(--muted);
+}
+
+.semantic-empty strong {
+  color: var(--text);
+}
+
+.semantic-empty code {
+  color: var(--cyan);
+}
+
+@media (max-width: 1180px) {
+  .semantic-metric-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 820px) {
+  .semantic-metric-grid,
+  .semantic-contract-grid,
+  .semantic-metric-list {
+    grid-template-columns: 1fr;
+  }
 }

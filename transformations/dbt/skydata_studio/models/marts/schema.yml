@@ -1,19 +1,78 @@
 version: 2
 
 models:
+  - name: time_spine_daily
+    description: Daily MetricFlow time spine used for governed time joins and aggregations.
+    time_spine:
+      standard_granularity_column: date_day
+    columns:
+      - name: date_day
+        description: Continuous daily calendar grain for MetricFlow semantic queries.
+        granularity: day
+
   - name: fct_fed_funds_rate_daily
     description: Consumer-ready daily Federal Funds Rate fact model produced by dbt.
+    semantic_model:
+      enabled: true
+      name: fed_funds_rate_daily
+    agg_time_dimension: observation_date
     columns:
+      - name: observation_key
+        description: Stable one-row-per-day semantic entity key derived from the observation date.
+        entity:
+          name: fed_funds_observation
+          type: primary
       - name: observation_date
         description: "Grain and business key: one row per observation date."
+        granularity: day
+        dimension:
+          type: time
         data_tests:
           - not_null
           - unique
+      - name: observation_month
+        description: Calendar month containing the daily observation.
+        granularity: month
+        dimension:
+          type: time
+      - name: observation_year
+        description: Calendar year containing the daily observation.
+        dimension:
+          type: categorical
       - name: rate
+        description: Federal Funds Effective Rate for the observation date.
         data_tests:
           - not_null
       - name: rate_direction
+        description: Direction of movement compared with the prior available observation.
+        dimension:
+          type: categorical
         data_tests:
           - accepted_values:
               arguments:
                 values: ['BASELINE', 'UP', 'DOWN', 'UNCHANGED']
+    metrics:
+      - name: average_federal_funds_rate
+        label: Average Federal Funds Rate
+        description: Average effective Federal Funds Rate over the selected semantic time grain.
+        type: simple
+        agg: average
+        expr: rate
+      - name: minimum_federal_funds_rate
+        label: Minimum Federal Funds Rate
+        description: Minimum effective Federal Funds Rate over the selected semantic time grain.
+        type: simple
+        agg: min
+        expr: rate
+      - name: maximum_federal_funds_rate
+        label: Maximum Federal Funds Rate
+        description: Maximum effective Federal Funds Rate over the selected semantic time grain.
+        type: simple
+        agg: max
+        expr: rate
+      - name: federal_funds_observation_count
+        label: Federal Funds Observation Count
+        description: Distinct daily Federal Funds Rate observations in the selected semantic slice.
+        type: simple
+        agg: count_distinct
+        expr: observation_key

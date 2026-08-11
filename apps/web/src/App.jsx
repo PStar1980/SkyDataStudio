@@ -12,6 +12,7 @@ import Airflow from './pages/Airflow.jsx';
 import SchedulesBackfills from './pages/SchedulesBackfills.jsx';
 import Transformations from './pages/Transformations.jsx';
 import DataModels from './pages/DataModels.jsx';
+import SemanticLayer from './pages/SemanticLayer.jsx';
 import PlaceholderPage from './pages/PlaceholderPage.jsx';
 
 const PAGE_META = {
@@ -67,6 +68,7 @@ function App() {
           <Route path="/workspace/pipelines" element={<Pipelines />} />
           <Route path="/workspace/transformations" element={<Transformations />} />
           <Route path="/workspace/models" element={<DataModels />} />
+          <Route path="/delivery/semantic" element={<SemanticLayer />} />
           <Route path="/orchestration/airflow" element={<Airflow />} />
           <Route path="/orchestration/runs" element={<PipelineRuns />} />
           <Route path="/orchestration/backfills" element={<SchedulesBackfills />} />
@@ -82,6 +84,7 @@ function App() {
               '/orchestration/airflow',
               '/orchestration/runs',
               '/orchestration/backfills',
+              '/delivery/semantic',
             ].includes(path))
             .map(([path, [title, subtitle]]) => (
               <Route

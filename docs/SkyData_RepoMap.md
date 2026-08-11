@@ -89,6 +89,7 @@ SkyDataStudio/
 │           │   ├── Pipelines.jsx
 │           │   ├── PlaceholderPage.jsx
 │           │   ├── SchedulesBackfills.jsx
+│           │   ├── SemanticLayer.jsx
 │           │   ├── SourceMappings.jsx
 │           │   ├── StudioOverview.jsx
 │           │   └── Transformations.jsx
@@ -165,9 +166,9 @@ SkyDataStudio/
             │   │   ├── int_fed_funds_rate_changes.sql
             │   │   └── schema.yml
             │   ├── marts/
-            │   │   ├── .gitkeep
             │   │   ├── fct_fed_funds_rate_daily.sql
-            │   │   └── schema.yml
+            │   │   ├── schema.yml
+            │   │   └── time_spine_daily.sql
             │   └── staging/
             │       ├── schema.yml
             │       ├── sources.yml
@@ -196,6 +197,7 @@ SkyDataStudio/
             │   │       │   │       └── unique_int_fed_funds_rate_changes_observation_date.sql
             │   │       │   ├── marts/
             │   │       │   │   ├── fct_fed_funds_rate_daily.sql
+            │   │       │   │   ├── time_spine_daily.sql
             │   │       │   │   └── schema.yml/
             │   │       │   │       ├── accepted_values_fct_fed_funds__ce738edf7a8c271de47c966afcab8ce8.sql
             │   │       │   │       ├── not_null_fct_fed_funds_rate_daily_observation_date.sql
@@ -224,6 +226,7 @@ SkyDataStudio/
             │           │   │       └── unique_int_fed_funds_rate_changes_observation_date.sql
             │           │   ├── marts/
             │           │   │   ├── fct_fed_funds_rate_daily.sql
+            │           │   │   ├── time_spine_daily.sql
             │           │   │   └── schema.yml/
             │           │   │       ├── accepted_values_fct_fed_funds__ce738edf7a8c271de47c966afcab8ce8.sql
             │           │   │       ├── not_null_fct_fed_funds_rate_daily_observation_date.sql

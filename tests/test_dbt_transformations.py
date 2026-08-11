@@ -164,9 +164,313 @@ def test_dbt_model_catalogue_projects_manifest_and_run_results(tmp_path: Path) -
     assert summary.models[1].test_count == 1
 
 
+def test_dbt_model_catalogue_excludes_semantic_utility_models(tmp_path: Path) -> None:
+    target_dir = tmp_path / "target"
+    target_dir.mkdir()
+    manifest = {
+        "metadata": {"generated_at": "2026-08-11T18:20:00Z", "dbt_version": "1.12.0"},
+        "sources": {},
+        "nodes": {
+            "model.skydata_studio.fct_fed_funds_rate_daily": {
+                "resource_type": "model",
+                "package_name": "skydata_studio",
+                "name": "fct_fed_funds_rate_daily",
+                "schema": "dbt_mart",
+                "alias": "fct_fed_funds_rate_daily",
+                "description": "Business mart",
+                "original_file_path": "models/marts/fct_fed_funds_rate_daily.sql",
+                "tags": ["phase6", "mart"],
+                "columns": {},
+                "config": {"enabled": True, "materialized": "table"},
+                "depends_on": {"nodes": []},
+            },
+            "model.skydata_studio.time_spine_daily": {
+                "resource_type": "model",
+                "package_name": "skydata_studio",
+                "name": "time_spine_daily",
+                "schema": "dbt_mart",
+                "alias": "time_spine_daily",
+                "description": "MetricFlow utility",
+                "original_file_path": "models/marts/time_spine_daily.sql",
+                "tags": ["phase6", "mart", "semantic_utility"],
+                "columns": {"date_day": {"description": "Calendar day"}},
+                "config": {"enabled": True, "materialized": "table"},
+                "depends_on": {"nodes": []},
+            },
+        },
+    }
+    run_results = {
+        "results": [
+            {
+                "unique_id": "model.skydata_studio.fct_fed_funds_rate_daily",
+                "status": "success",
+            },
+            {
+                "unique_id": "model.skydata_studio.time_spine_daily",
+                "status": "success",
+            },
+        ]
+    }
+    (target_dir / "manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
+    (target_dir / "run_results.json").write_text(
+        json.dumps(run_results), encoding="utf-8"
+    )
+
+    summary = dbt_model_catalogue(target_dir)
+
+    assert summary.model_count == 1
+    assert summary.ready_model_count == 1
+    assert [model.name for model in summary.models] == ["fct_fed_funds_rate_daily"]
+
+
 def test_dbt_model_catalogue_returns_missing_when_manifest_is_absent(tmp_path: Path) -> None:
     summary = dbt_model_catalogue(tmp_path / "target")
 
     assert summary.artifact_status == "MISSING"
     assert summary.model_count == 0
     assert summary.models == []
+
+
+def test_dbt_semantic_layer_projects_manifest_semantic_evidence(tmp_path: Path) -> None:
+    from skydata_studio.services.dbt_transformations import dbt_semantic_layer
+
+    target_dir = tmp_path / "target"
+    target_dir.mkdir()
+    manifest = {
+        "metadata": {"generated_at": "2026-08-11T16:20:00Z", "dbt_version": "1.12.0"},
+        "semantic_models": {
+            "semantic_model.skydata_studio.fed_funds_rate_daily": {
+                "package_name": "skydata_studio",
+                "name": "fed_funds_rate_daily",
+                "description": "Federal Funds Rate semantic model",
+                "original_file_path": "models/marts/schema.yml",
+                "node_relation": {
+                    "schema_name": "dbt_mart",
+                    "alias": "fct_fed_funds_rate_daily",
+                },
+                "defaults": {"agg_time_dimension": "observation_date"},
+                "entities": [
+                    {
+                        "name": "fed_funds_observation",
+                        "type": "primary",
+                        "expr": "observation_key",
+                    }
+                ],
+                "dimensions": [
+                    {
+                        "name": "observation_date",
+                        "type": "time",
+                        "type_params": {"time_granularity": "day"},
+                    },
+                    {
+                        "name": "rate_direction",
+                        "type": "categorical",
+                        "type_params": None,
+                    },
+                ],
+                "measures": [
+                    {
+                        "name": "average_federal_funds_rate",
+                        "agg": "average",
+                        "expr": "rate",
+                        "agg_time_dimension": "observation_date",
+                    },
+                    {
+                        "name": "federal_funds_observation_count",
+                        "agg": "count_distinct",
+                        "expr": "observation_key",
+                        "agg_time_dimension": "observation_date",
+                    },
+                ],
+            }
+        },
+        "metrics": {
+            "metric.skydata_studio.average_federal_funds_rate": {
+                "package_name": "skydata_studio",
+                "name": "average_federal_funds_rate",
+                "label": "Average Federal Funds Rate",
+                "description": "Average rate",
+                "type": "simple",
+                "type_params": {"measure": {"name": "average_federal_funds_rate"}},
+            },
+            "metric.skydata_studio.federal_funds_observation_count": {
+                "package_name": "skydata_studio",
+                "name": "federal_funds_observation_count",
+                "label": "Federal Funds Observation Count",
+                "description": "Observation count",
+                "type": "simple",
+                "type_params": {
+                    "measure": {"name": "federal_funds_observation_count"}
+                },
+            },
+        },
+    }
+    (target_dir / "manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
+
+    summary = dbt_semantic_layer(target_dir)
+
+    assert summary.artifact_status == "READY"
+    assert summary.semantic_model_count == 1
+    assert summary.metric_count == 2
+    assert summary.entity_count == 1
+    assert summary.dimension_count == 2
+    assert summary.semantic_models[0].relation == "dbt_mart.fct_fed_funds_rate_daily"
+    assert summary.semantic_models[0].default_time_dimension == "observation_date"
+    assert summary.semantic_models[0].entities[0].entity_type == "PRIMARY"
+    assert summary.metrics[0].aggregation == "AVERAGE"
+    assert summary.metrics[0].expression == "rate"
+    assert summary.metrics[0].semantic_model == "fed_funds_rate_daily"
+
+
+def test_dbt_semantic_layer_returns_pending_before_semantic_artifacts(tmp_path: Path) -> None:
+    from skydata_studio.services.dbt_transformations import dbt_semantic_layer
+
+    target_dir = tmp_path / "target"
+    target_dir.mkdir()
+    (target_dir / "manifest.json").write_text(
+        json.dumps(
+            {
+                "metadata": {
+                    "generated_at": "2026-08-11T16:20:00Z",
+                    "dbt_version": "1.12.0",
+                },
+                "semantic_models": {},
+                "metrics": {},
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    summary = dbt_semantic_layer(target_dir)
+
+    assert summary.artifact_status == "PENDING"
+    assert summary.semantic_model_count == 0
+    assert summary.metric_count == 0
+
+
+def test_dbt_semantic_endpoint_projects_semantic_catalogue(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from skydata_studio.schemas.dbt import (
+        DbtSemanticDimensionSummary,
+        DbtSemanticEntitySummary,
+        DbtSemanticLayerSummary,
+        DbtSemanticMetricSummary,
+        DbtSemanticModelSummary,
+    )
+
+    expected = DbtSemanticLayerSummary(
+        artifact_status="READY",
+        generated_at="2026-08-11T16:20:00Z",
+        dbt_version="1.12.0",
+        semantic_model_count=1,
+        metric_count=1,
+        entity_count=1,
+        dimension_count=1,
+        semantic_models=[
+            DbtSemanticModelSummary(
+                unique_id="semantic_model.skydata_studio.fed_funds_rate_daily",
+                name="fed_funds_rate_daily",
+                relation="dbt_mart.fct_fed_funds_rate_daily",
+                default_time_dimension="observation_date",
+                entities=[
+                    DbtSemanticEntitySummary(
+                        name="fed_funds_observation",
+                        entity_type="PRIMARY",
+                        expression="observation_key",
+                    )
+                ],
+                dimensions=[
+                    DbtSemanticDimensionSummary(
+                        name="observation_date",
+                        dimension_type="TIME",
+                        granularity="DAY",
+                    )
+                ],
+                metric_names=["average_federal_funds_rate"],
+            )
+        ],
+        metrics=[
+            DbtSemanticMetricSummary(
+                unique_id="metric.skydata_studio.average_federal_funds_rate",
+                name="average_federal_funds_rate",
+                label="Average Federal Funds Rate",
+                metric_type="SIMPLE",
+                aggregation="AVERAGE",
+                expression="rate",
+                time_dimension="observation_date",
+                semantic_model="fed_funds_rate_daily",
+            )
+        ],
+    )
+
+    monkeypatch.setattr(dbt_route, "dbt_semantic_layer", lambda: expected)
+    response = client.get("/api/v1/transformations/dbt/semantic")
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["artifact_status"] == "READY"
+    assert payload["semantic_model_count"] == 1
+    assert payload["metric_count"] == 1
+    assert payload["semantic_models"][0]["entities"][0]["entity_type"] == "PRIMARY"
+
+
+def test_dbt_semantic_layer_supports_v112_inline_metric_artifact_shape(
+    tmp_path: Path,
+) -> None:
+    from skydata_studio.services.dbt_transformations import dbt_semantic_layer
+
+    target_dir = tmp_path / "target"
+    target_dir.mkdir()
+    semantic_unique_id = "semantic_model.skydata_studio.fed_funds_rate_daily"
+    manifest = {
+        "metadata": {"generated_at": "2026-08-11T16:30:00Z", "dbt_version": "1.12.0"},
+        "semantic_models": {
+            semantic_unique_id: {
+                "package_name": "skydata_studio",
+                "name": "fed_funds_rate_daily",
+                "original_file_path": "models/marts/schema.yml",
+                "node_relation": {
+                    "schema_name": "dbt_mart",
+                    "alias": "fct_fed_funds_rate_daily",
+                },
+                "agg_time_dimension": "observation_date",
+                "entities": [
+                    {
+                        "name": "fed_funds_observation",
+                        "type": "primary",
+                        "expr": "observation_key",
+                    }
+                ],
+                "dimensions": [
+                    {
+                        "name": "observation_date",
+                        "type": "time",
+                        "type_params": {"time_granularity": "day"},
+                    }
+                ],
+            }
+        },
+        "metrics": {
+            "metric.skydata_studio.average_federal_funds_rate": {
+                "package_name": "skydata_studio",
+                "name": "average_federal_funds_rate",
+                "label": "Average Federal Funds Rate",
+                "type": "simple",
+                "agg": "average",
+                "expr": "rate",
+                "agg_time_dimension": "observation_date",
+                "depends_on": {"nodes": [semantic_unique_id]},
+            }
+        },
+    }
+    (target_dir / "manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
+
+    summary = dbt_semantic_layer(target_dir)
+
+    assert summary.artifact_status == "READY"
+    assert summary.semantic_models[0].default_time_dimension == "observation_date"
+    assert summary.semantic_models[0].metric_names == ["average_federal_funds_rate"]
+    assert summary.metrics[0].aggregation == "AVERAGE"
+    assert summary.metrics[0].expression == "rate"
+    assert summary.metrics[0].semantic_model == "fed_funds_rate_daily"
