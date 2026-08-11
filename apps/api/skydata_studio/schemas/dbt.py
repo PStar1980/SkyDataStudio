@@ -67,3 +67,55 @@ class DbtModelCatalogueSummary(BaseModel):
     source_count: int = Field(ge=0)
     test_count: int = Field(ge=0)
     models: list[DbtModelCatalogueItem]
+
+
+class DbtSemanticEntitySummary(BaseModel):
+    name: str
+    entity_type: Literal["PRIMARY", "UNIQUE", "FOREIGN", "NATURAL"]
+    expression: str | None = None
+    description: str | None = None
+
+
+class DbtSemanticDimensionSummary(BaseModel):
+    name: str
+    dimension_type: Literal["TIME", "CATEGORICAL"]
+    expression: str | None = None
+    granularity: str | None = None
+    description: str | None = None
+
+
+class DbtSemanticMetricSummary(BaseModel):
+    unique_id: str
+    name: str
+    label: str
+    metric_type: Literal["SIMPLE", "RATIO", "CUMULATIVE", "DERIVED", "CONVERSION"]
+    description: str | None = None
+    aggregation: str | None = None
+    expression: str | None = None
+    time_dimension: str | None = None
+    semantic_model: str | None = None
+
+
+class DbtSemanticModelSummary(BaseModel):
+    unique_id: str
+    name: str
+    description: str | None = None
+    relation: str | None = None
+    default_time_dimension: str | None = None
+    entities: list[DbtSemanticEntitySummary]
+    dimensions: list[DbtSemanticDimensionSummary]
+    metric_names: list[str]
+
+
+class DbtSemanticLayerSummary(BaseModel):
+    project_name: str = "skydata_studio"
+    phase: str = "Phase 6.3 — dbt Semantic Model and Governed Metric Foundation"
+    artifact_status: Literal["READY", "PENDING", "MISSING"]
+    generated_at: str | None = None
+    dbt_version: str | None = None
+    semantic_model_count: int = Field(ge=0)
+    metric_count: int = Field(ge=0)
+    entity_count: int = Field(ge=0)
+    dimension_count: int = Field(ge=0)
+    semantic_models: list[DbtSemanticModelSummary]
+    metrics: list[DbtSemanticMetricSummary]

@@ -1,4 +1,5 @@
 select
+    observation_date::text as observation_key,
     observation_date,
     observation_month,
     observation_year,

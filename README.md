@@ -4,7 +4,7 @@
 
 SkyData Studio is the post-ingestion data engineering application in the Sky ecosystem. It begins where SkyCommand's ingestion responsibility ends and prepares trusted data for analytical consumption by SkyWeb Analytics, Power BI, and future client-facing applications.
 
-**Current status:** Phases 0 through 5 are complete, and **Phase 6.1 is complete** with a Docker-isolated dbt/Postgres runtime, three tested staging → intermediate → mart models, 14 dbt data tests, and 3/3 model/layer readiness over the 26,335-row Federal Funds Rate proof. **Phase 6.2 is now in progress:** SkyData Studio reads dbt's generated manifest and run-result artifacts to expose a live Data Models catalogue with build, test, column, and direct dependency evidence.
+**Current status:** Phases 0 through 5 are complete, **Phase 6.1 is complete** with a Docker-isolated dbt/Postgres runtime and the proven three-layer Federal Funds Rate model chain, and **Phase 6.2 is complete** with an artifact-backed Data Models catalogue reporting 3/3 models ready, 1 source, and 14 data tests. **Phase 6.3 is now in progress:** the governed mart becomes SkyData Studio's first dbt semantic model, with a stable entity, reusable dimensions, and four governed metrics projected from dbt artifacts.
 
 ---
 
@@ -155,7 +155,7 @@ Unblock-File .\scripts\dbt.ps1  # only when Windows marks the trusted local help
 .\scripts\dbt.ps1 build
 ```
 
-Phase 6.1 materializes the proven `stg_fed_funds_rate → int_fed_funds_rate_changes → fct_fed_funds_rate_daily` chain. Open `/workspace/transformations` for physical relation readiness and row-count proof. Phase 6.2 reads the generated `target/manifest.json` and `target/run_results.json` artifacts through `GET /api/v1/transformations/dbt/models`; open `/workspace/models` to inspect model layers, materializations, tests, columns, tags, and direct dependencies. Generated dbt artifacts remain ignored by Git and are refreshed by the next dbt build.
+Phase 6.1 materializes the proven `stg_fed_funds_rate → int_fed_funds_rate_changes → fct_fed_funds_rate_daily` chain. Open `/workspace/transformations` for physical relation readiness and row-count proof. Phase 6.2 reads the generated `target/manifest.json` and `target/run_results.json` artifacts through `GET /api/v1/transformations/dbt/models`; open `/workspace/models` to inspect model layers, materializations, tests, columns, tags, and direct dependencies. Phase 6.3 adds model-embedded semantic definitions to the governed mart, a dedicated DAY-grain MetricFlow time spine, and projects semantic evidence through `GET /api/v1/transformations/dbt/semantic`; open `/delivery/semantic` to inspect the semantic model, primary entity, dimensions, and governed metrics. Generated dbt artifacts remain ignored by Git and are refreshed by the next dbt build.
 
 ---
 
@@ -406,7 +406,8 @@ The repository currently includes:
 - a Phase 5.3 daily DFF timetable plus bounded Airflow REST API v2 backfill controls;
 - a completed Phase 5.4 native Airflow asset-event bridge from terminal successful SkyCommand FRED/DFF ingestion evidence, including duplicate-signal reuse;
 - a completed Phase 6.1 Dockerized dbt/Postgres runtime plus the first governed staging → intermediate → mart model chain with 14 green data tests;
-- a Phase 6.2 artifact-backed dbt model catalogue surface for logical model, column, test, build, and dependency evidence;
+- a completed Phase 6.2 artifact-backed dbt model catalogue surface for logical model, column, test, build, and dependency evidence;
+- a Phase 6.3 model-embedded dbt semantic definition surface with one governed semantic model, reusable dimensions, and four governed metrics;
 - backend/frontend validation, repository map, and compact handoff tooling.
 
-The active implementation target is **Phase 6.2 — dbt Model Catalogue and Artifact Evidence**. Phase 6.1 is complete: the isolated runtime, PostgreSQL connection, three-layer DFF model chain, 26,335-row grain, 14 data tests, Transformations API, and workbench readiness proof are green. Phase 6.2 now turns dbt's generated artifacts into the logical Data Models surface without duplicating dbt-owned metadata in Studio PostgreSQL.
+The active implementation target is **Phase 6.3 — dbt Semantic Model and Governed Metric Foundation**. Phase 6.1 is complete: the isolated runtime, PostgreSQL connection, three-layer DFF model chain, 26,335-row grain, 14 data tests, Transformations API, and workbench readiness proof are green. Phase 6.2 is also complete: dbt's generated artifacts now drive a 3/3-ready logical Data Models catalogue without duplicating dbt-owned metadata in Studio PostgreSQL. Phase 6.3 extends that same single-authority pattern into semantic metadata: one mart-owned semantic model, one stable primary entity, reusable dimensions, four governed metrics, and one dedicated DAY-grain MetricFlow time spine surfaced through artifact evidence.

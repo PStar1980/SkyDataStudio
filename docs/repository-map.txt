@@ -70,11 +70,13 @@ SkyDataStudio
 │       │   ├── pages
 │       │   │   ├── Airflow.jsx
 │       │   │   ├── DataAssets.jsx
+│       │   │   ├── DataModels.jsx
 │       │   │   ├── MetadataRegistry.jsx
 │       │   │   ├── PipelineRuns.jsx
 │       │   │   ├── Pipelines.jsx
 │       │   │   ├── PlaceholderPage.jsx
 │       │   │   ├── SchedulesBackfills.jsx
+│       │   │   ├── SemanticLayer.jsx
 │       │   │   ├── SourceMappings.jsx
 │       │   │   ├── StudioOverview.jsx
 │       │   │   └── Transformations.jsx
@@ -157,7 +159,8 @@ SkyDataStudio
 │           │   ├── marts
 │           │   │   ├── .gitkeep
 │           │   │   ├── fct_fed_funds_rate_daily.sql
-│           │   │   └── schema.yml
+│           │   │   ├── schema.yml
+│           │   │   └── time_spine_daily.sql
 │           │   └── staging
 │           │       ├── schema.yml
 │           │       ├── sources.yml
@@ -170,6 +173,7 @@ SkyDataStudio
 │           ├── tests
 │           │   ├── .gitkeep
 │           │   └── assert_fed_funds_rate_reasonable.sql
+│           ├── .user.yml
 │           ├── dbt_project.yml
 │           ├── profiles.yml
 │           └── profiles.yml.example

@@ -5,7 +5,7 @@ const FALLBACK = {
   product: 'SkyData Studio',
   subtitle: 'Data Engineering Workbench',
   theme: 'Aurora Foundry',
-  current_phase: 'Phase 6.2 — dbt Model Catalogue and Artifact Evidence',
+  current_phase: 'Phase 6.3 — dbt Semantic Model and Governed Metric Foundation',
   boundary: 'SkyData Studio starts after SkyCommand ingestion and publishes governed analytical products for downstream consumers.',
   capabilities: [],
 };
@@ -41,7 +41,7 @@ function StudioOverview() {
     <div className="page-stack">
       <section className="hero-panel">
         <div>
-          <span className="eyebrow">AURORA FOUNDRY · PHASE 6.2</span>
+          <span className="eyebrow">AURORA FOUNDRY · PHASE 6.3</span>
           <h1>Shape trusted data into analytical products.</h1>
           <p>{summary.boundary}</p>
           <div className="hero-actions">
@@ -61,7 +61,7 @@ function StudioOverview() {
 
       <section className="metric-grid">
         <article className="metric-card"><span>Platform API</span><strong>{apiState}</strong><small>FastAPI contract service</small></article>
-        <article className="metric-card"><span>Current Phase</span><strong>6.2</strong><small>dbt artifact-backed model catalogue</small></article>
+        <article className="metric-card"><span>Current Phase</span><strong>6.3</strong><small>governed semantic model + metrics</small></article>
         <article className="metric-card"><span>Pipeline Proof</span><strong>READY</strong><small>Curated mart materialization proven</small></article>
         <article className="metric-card"><span>Orchestrator</span><strong>Airflow 3</strong><small>Batch and asset workflows</small></article>
       </section>
@@ -110,11 +110,11 @@ function StudioOverview() {
 
       <section className="two-column-grid">
         <article className="panel compact-panel">
-          <div className="panel-heading"><div><span className="eyebrow">CURRENT IMPLEMENTATION</span><h2>dbt model catalogue and artifact evidence</h2></div><span className="phase-badge">PHASE 6.2</span></div>
+          <div className="panel-heading"><div><span className="eyebrow">CURRENT IMPLEMENTATION</span><h2>dbt semantic model and governed metric foundation</h2></div><span className="phase-badge">PHASE 6.3</span></div>
           <ol className="implementation-list">
-            <li><span>01</span><div><strong>Artifact-backed catalogue</strong><small>Read dbt manifest and run-result artifacts instead of duplicating model metadata in Studio storage.</small></div></li>
-            <li><span>02</span><div><strong>Model dependency evidence</strong><small>Project direct source/model dependencies, layers, materializations, tags, columns, and tests.</small></div></li>
-            <li><span>03</span><div><strong>Live Data Models workbench</strong><small>Inspect the latest dbt build graph and model contracts from one portfolio-ready surface.</small></div></li>
+            <li><span>01</span><div><strong>Semantic model contract</strong><small>Annotate the governed mart with one primary entity and reusable time/categorical dimensions.</small></div></li>
+            <li><span>02</span><div><strong>Governed metrics</strong><small>Define average, minimum, maximum, and observation-count metrics beside the dbt model that owns them.</small></div></li>
+            <li><span>03</span><div><strong>Artifact-backed semantic workbench</strong><small>Project parsed semantic-model and metric evidence without copying dbt-owned definitions into Studio storage.</small></div></li>
           </ol>
         </article>
         <article className="panel compact-panel">

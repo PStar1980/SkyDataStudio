@@ -12,6 +12,11 @@ from skydata_studio.schemas.dbt import (
     DbtModelColumnSummary,
     DbtModelDependencySummary,
     DbtRelationSummary,
+    DbtSemanticDimensionSummary,
+    DbtSemanticEntitySummary,
+    DbtSemanticLayerSummary,
+    DbtSemanticMetricSummary,
+    DbtSemanticModelSummary,
     DbtTransformationSummary,
 )
 
@@ -211,6 +216,7 @@ def dbt_model_catalogue(target_dir: Path | None = None) -> DbtModelCatalogueSumm
         and node.get("resource_type") == "model"
         and node.get("package_name") == "skydata_studio"
         and bool((node.get("config") or {}).get("enabled", True))
+        and "semantic_utility" not in (node.get("tags") or [])
     }
     test_nodes = [
         node
@@ -308,4 +314,303 @@ def dbt_model_catalogue(target_dir: Path | None = None) -> DbtModelCatalogueSumm
         source_count=len(sources),
         test_count=len(test_nodes),
         models=models,
+    )
+
+
+def _semantic_relation(semantic_model: dict[str, Any]) -> str | None:
+    node_relation = semantic_model.get("node_relation")
+    if isinstance(node_relation, dict):
+        schema = node_relation.get("schema_name")
+        alias = node_relation.get("alias")
+        if isinstance(schema, str) and schema and isinstance(alias, str) and alias:
+            return f"{schema}.{alias}"
+        relation_name = node_relation.get("relation_name")
+        if isinstance(relation_name, str) and relation_name:
+            return relation_name
+    model = semantic_model.get("model")
+    return str(model) if isinstance(model, str) and model else None
+
+
+def _semantic_default_time_dimension(semantic_model: dict[str, Any]) -> str | None:
+    direct_value = semantic_model.get("agg_time_dimension")
+    if isinstance(direct_value, str) and direct_value:
+        return direct_value
+    defaults = semantic_model.get("defaults")
+    if not isinstance(defaults, dict):
+        return None
+    value = defaults.get("agg_time_dimension")
+    return str(value) if isinstance(value, str) and value else None
+
+
+def _semantic_entities(semantic_model: dict[str, Any]) -> list[DbtSemanticEntitySummary]:
+    raw_entities = semantic_model.get("entities")
+    if not isinstance(raw_entities, list):
+        return []
+    entities: list[DbtSemanticEntitySummary] = []
+    for entity in raw_entities:
+        if not isinstance(entity, dict):
+            continue
+        raw_type = str(entity.get("type") or "").upper()
+        if raw_type not in {"PRIMARY", "UNIQUE", "FOREIGN", "NATURAL"}:
+            continue
+        entities.append(
+            DbtSemanticEntitySummary(
+                name=str(entity.get("name") or "unnamed_entity"),
+                entity_type=cast(Any, raw_type),
+                expression=(str(entity.get("expr")) if entity.get("expr") else None),
+                description=(
+                    str(entity.get("description")) if entity.get("description") else None
+                ),
+            )
+        )
+    return entities
+
+
+def _semantic_dimensions(
+    semantic_model: dict[str, Any],
+) -> list[DbtSemanticDimensionSummary]:
+    raw_dimensions = semantic_model.get("dimensions")
+    if not isinstance(raw_dimensions, list):
+        return []
+    dimensions: list[DbtSemanticDimensionSummary] = []
+    for dimension in raw_dimensions:
+        if not isinstance(dimension, dict):
+            continue
+        raw_type = str(dimension.get("type") or "").upper()
+        if raw_type not in {"TIME", "CATEGORICAL"}:
+            continue
+        type_params = dimension.get("type_params")
+        granularity = None
+        if isinstance(type_params, dict):
+            value = type_params.get("time_granularity")
+            if isinstance(value, str) and value:
+                granularity = value.upper()
+        dimensions.append(
+            DbtSemanticDimensionSummary(
+                name=str(dimension.get("name") or "unnamed_dimension"),
+                dimension_type=cast(Any, raw_type),
+                expression=(str(dimension.get("expr")) if dimension.get("expr") else None),
+                granularity=granularity,
+                description=(
+                    str(dimension.get("description"))
+                    if dimension.get("description")
+                    else None
+                ),
+            )
+        )
+    return dimensions
+
+
+def _semantic_measure_index(
+    semantic_models: dict[str, Any],
+) -> dict[str, tuple[str, dict[str, Any], str | None]]:
+    index: dict[str, tuple[str, dict[str, Any], str | None]] = {}
+    for semantic_model in semantic_models.values():
+        if not isinstance(semantic_model, dict):
+            continue
+        semantic_name = str(semantic_model.get("name") or "")
+        default_time_dimension = _semantic_default_time_dimension(semantic_model)
+        raw_measures = semantic_model.get("measures")
+        if not isinstance(raw_measures, list):
+            continue
+        for measure in raw_measures:
+            if not isinstance(measure, dict):
+                continue
+            name = measure.get("name")
+            if isinstance(name, str) and name:
+                index[name] = (semantic_name, measure, default_time_dimension)
+    return index
+
+
+def _semantic_metric_measure_name(metric: dict[str, Any]) -> str | None:
+    type_params = metric.get("type_params")
+    if not isinstance(type_params, dict):
+        return None
+    measure = type_params.get("measure")
+    if isinstance(measure, dict):
+        name = measure.get("name")
+        return str(name) if isinstance(name, str) and name else None
+    return None
+
+
+def _semantic_metric_model_name(
+    metric: dict[str, Any],
+    semantic_models: dict[str, Any],
+) -> str | None:
+    for key in ("semantic_model", "semantic_model_name"):
+        value = metric.get(key)
+        if isinstance(value, str) and value:
+            return value.split(".")[-1]
+
+    depends_on = metric.get("depends_on")
+    dependency_ids = depends_on.get("nodes", []) if isinstance(depends_on, dict) else []
+    for dependency_id in dependency_ids:
+        if not isinstance(dependency_id, str):
+            continue
+        semantic_model = semantic_models.get(dependency_id)
+        if isinstance(semantic_model, dict):
+            return str(semantic_model.get("name") or dependency_id)
+
+    metric_path = metric.get("original_file_path")
+    if isinstance(metric_path, str) and metric_path:
+        matches = [
+            semantic_model
+            for semantic_model in semantic_models.values()
+            if isinstance(semantic_model, dict)
+            and semantic_model.get("original_file_path") == metric_path
+        ]
+        if len(matches) == 1:
+            return str(matches[0].get("name") or "") or None
+    return None
+
+
+def dbt_semantic_layer(target_dir: Path | None = None) -> DbtSemanticLayerSummary:
+    target = target_dir or _default_dbt_target_dir()
+    manifest_path = target / "manifest.json"
+    if not manifest_path.exists():
+        return DbtSemanticLayerSummary(
+            artifact_status="MISSING",
+            semantic_model_count=0,
+            metric_count=0,
+            entity_count=0,
+            dimension_count=0,
+            semantic_models=[],
+            metrics=[],
+        )
+
+    manifest = _read_json(manifest_path)
+    metadata = manifest.get("metadata")
+    metadata = metadata if isinstance(metadata, dict) else {}
+
+    raw_semantic_models = manifest.get("semantic_models")
+    raw_metrics = manifest.get("metrics")
+    semantic_models_payload = (
+        cast(dict[str, Any], raw_semantic_models)
+        if isinstance(raw_semantic_models, dict)
+        else {}
+    )
+    metrics_payload = (
+        cast(dict[str, Any], raw_metrics) if isinstance(raw_metrics, dict) else {}
+    )
+
+    project_semantic_models = {
+        unique_id: semantic_model
+        for unique_id, semantic_model in semantic_models_payload.items()
+        if isinstance(semantic_model, dict)
+        and semantic_model.get("package_name") == "skydata_studio"
+    }
+    project_metrics = {
+        unique_id: metric
+        for unique_id, metric in metrics_payload.items()
+        if isinstance(metric, dict) and metric.get("package_name") == "skydata_studio"
+    }
+
+    measure_index = _semantic_measure_index(project_semantic_models)
+    metric_names_by_semantic_model: dict[str, list[str]] = {}
+    metrics: list[DbtSemanticMetricSummary] = []
+    for unique_id, metric in sorted(
+        project_metrics.items(), key=lambda item: str(item[1].get("name") or "")
+    ):
+        measure_name = _semantic_metric_measure_name(metric)
+        semantic_name = _semantic_metric_model_name(metric, project_semantic_models)
+        measure: dict[str, Any] = {}
+        default_time_dimension = None
+        if measure_name and measure_name in measure_index:
+            semantic_name, measure, default_time_dimension = measure_index[measure_name]
+        elif semantic_name:
+            semantic_model = next(
+                (
+                    candidate
+                    for candidate in project_semantic_models.values()
+                    if isinstance(candidate, dict)
+                    and candidate.get("name") == semantic_name
+                ),
+                None,
+            )
+            if isinstance(semantic_model, dict):
+                default_time_dimension = _semantic_default_time_dimension(semantic_model)
+
+        if semantic_name:
+            metric_names_by_semantic_model.setdefault(semantic_name, []).append(
+                str(metric.get("name") or unique_id)
+            )
+
+        metric_type = str(metric.get("type") or "simple").upper()
+        if metric_type not in {"SIMPLE", "RATIO", "CUMULATIVE", "DERIVED", "CONVERSION"}:
+            metric_type = "SIMPLE"
+        aggregation_value = metric.get("agg", measure.get("agg"))
+        expression_value = metric.get("expr", measure.get("expr"))
+        time_dimension_value = metric.get(
+            "agg_time_dimension",
+            measure.get("agg_time_dimension", default_time_dimension),
+        )
+        aggregation = (
+            str(aggregation_value) if isinstance(aggregation_value, str) else None
+        )
+        expression = str(expression_value) if isinstance(expression_value, str) else None
+        time_dimension = (
+            str(time_dimension_value)
+            if isinstance(time_dimension_value, str)
+            else default_time_dimension
+        )
+        metrics.append(
+            DbtSemanticMetricSummary(
+                unique_id=unique_id,
+                name=str(metric.get("name") or unique_id),
+                label=str(metric.get("label") or metric.get("name") or unique_id),
+                metric_type=cast(Any, metric_type),
+                description=(
+                    str(metric.get("description")) if metric.get("description") else None
+                ),
+                aggregation=aggregation.upper() if aggregation else None,
+                expression=expression,
+                time_dimension=time_dimension,
+                semantic_model=semantic_name,
+            )
+        )
+
+    semantic_models: list[DbtSemanticModelSummary] = []
+    for unique_id, semantic_model in sorted(
+        project_semantic_models.items(), key=lambda item: str(item[1].get("name") or "")
+    ):
+        entities = _semantic_entities(semantic_model)
+        dimensions = _semantic_dimensions(semantic_model)
+        name = str(semantic_model.get("name") or unique_id)
+        semantic_models.append(
+            DbtSemanticModelSummary(
+                unique_id=unique_id,
+                name=name,
+                description=(
+                    str(semantic_model.get("description"))
+                    if semantic_model.get("description")
+                    else None
+                ),
+                relation=_semantic_relation(semantic_model),
+                default_time_dimension=_semantic_default_time_dimension(semantic_model),
+                entities=entities,
+                dimensions=dimensions,
+                metric_names=sorted(metric_names_by_semantic_model.get(name, [])),
+            )
+        )
+
+    entity_count = sum(len(model.entities) for model in semantic_models)
+    dimension_count = sum(len(model.dimensions) for model in semantic_models)
+    artifact_status: Literal["READY", "PENDING", "MISSING"] = (
+        "READY" if semantic_models and metrics else "PENDING"
+    )
+
+    return DbtSemanticLayerSummary(
+        artifact_status=artifact_status,
+        generated_at=(
+            str(metadata.get("generated_at")) if metadata.get("generated_at") else None
+        ),
+        dbt_version=(
+            str(metadata.get("dbt_version")) if metadata.get("dbt_version") else None
+        ),
+        semantic_model_count=len(semantic_models),
+        metric_count=len(metrics),
+        entity_count=entity_count,
+        dimension_count=dimension_count,
+        semantic_models=semantic_models,
+        metrics=metrics,
     )

@@ -58,6 +58,10 @@ metadata_domain ─ metadata_system ─ metadata_connection
 
 SkyCommand assets enter the registry as `RAW` assets. Studio-created products advance through `STAGING`, `INTERMEDIATE`, `MART`, `SEMANTIC`, and `REPORT` layers. The registry becomes the stable metadata boundary used by the pipeline workbench, dbt artifact ingestion, lineage, and analytics delivery.
 
+### dbt semantic metadata boundary
+
+Phase 6.3 keeps semantic authorship beside the dbt model that owns the analytical grain and supplies MetricFlow with a dedicated DAY-grain calendar time spine. The first contract flows `dbt_mart.fct_fed_funds_rate_daily → fed_funds_rate_daily semantic model → governed metrics → dbt artifacts → Studio Semantic Layer workbench`. SkyData Studio reads generated evidence; it does not copy dbt semantic definitions into Studio PostgreSQL. This phase establishes portable definitions and observability only, leaving hosted semantic-query execution and downstream BI integrations as later delivery boundaries.
+
 ## Product blueprint and mapping boundary
 
 Phase 3.2 adds a design-time contract between registered source assets and intended targets. A mapping is metadata, not execution: it records how a pipeline *should* move and shape data before Phase 4 introduces a runnable pipeline engine.

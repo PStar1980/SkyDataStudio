@@ -407,7 +407,7 @@ Closure evidence:
 
 ## Phase 6.2 — dbt Model Catalogue and Artifact Evidence
 
-**Status:** In progress.
+**Status:** Complete.
 
 Scope:
 
@@ -425,4 +425,37 @@ Acceptance proof:
 - all three model build statuses resolve to READY from `run_results.json`;
 - the Data Models workbench displays the staging → intermediate → mart dependency chain and exposes model detail for tags, columns, tests, and direct lineage;
 - removing/cleaning the dbt target produces an explicit MISSING artifact state rather than stale or fabricated metadata;
+- local validation and GitHub checks remain green.
+
+Closure evidence:
+
+- `GET /api/v1/transformations/dbt/models` reports `artifact_status=READY`, dbt Core 1.12.0, 3 discovered models, 3 ready models, 1 source, and 14 data tests;
+- the Data Models workbench displays the complete staging → intermediate → mart graph as READY and exposes the same three models in the runtime inventory;
+- model-level test evidence resolves to 3 staging tests, 3 intermediate tests, and 5 mart tests, with the remaining 3 tests attached directly to the curated source;
+- direct lineage resolves `fed_funds_rate → stg_fed_funds_rate → int_fed_funds_rate_changes → fct_fed_funds_rate_daily`;
+- local validation completes with 52 pytest tests, clean Ruff/mypy, zero npm vulnerabilities, clean ESLint, and a successful Vite production build.
+
+## Phase 6.3 — dbt Semantic Model and Governed Metric Foundation
+
+**Status:** In progress.
+
+Scope:
+
+- adopt dbt Core 1.12's model-embedded semantic YAML specification on the governed Federal Funds Rate mart;
+- add a dedicated daily MetricFlow time spine so time-based semantic parsing and aggregation have a continuous DAY-grain calendar;
+- define `fed_funds_rate_daily` as the first Studio semantic model without creating a second semantic metadata store;
+- add a stable `observation_key` primary entity while preserving the proven one-row-per-day mart grain;
+- expose `observation_date`, `observation_month`, `observation_year`, and `rate_direction` as governed semantic dimensions;
+- define four simple governed metrics: average rate, minimum rate, maximum rate, and distinct observation count;
+- project parsed semantic-model and metric evidence from dbt artifacts through `GET /api/v1/transformations/dbt/semantic`;
+- replace the Semantic Layer placeholder with an artifact-backed workbench for semantic models, entities, dimensions, and metrics;
+- keep Phase 6.3 limited to portable definitions and artifact evidence rather than claiming a hosted dbt Semantic Layer query service.
+
+Acceptance proof:
+
+- `./scripts/dbt.ps1 build` completes 4 physical dbt models (3 business models plus 1 semantic utility time spine) and 14 data tests with `PASS=18`, `WARN=0`, `ERROR=0`, and `SKIP=0`;
+- the generated dbt manifest contains exactly 1 Studio semantic model and 4 Studio metrics;
+- `GET /api/v1/transformations/dbt/semantic` reports `artifact_status=READY`, 1 semantic model, 4 metrics, 1 entity, and the expected dimensions;
+- the Semantic Layer workbench displays the governed model, primary entity, dimensions, and all four metrics from the generated artifact evidence;
+- `dbt_mart.fct_fed_funds_rate_daily` retains 26,335 rows, `dbt_mart.time_spine_daily` exists at DAY granularity, and the business-model Data Models workbench remains 3/3 ready because semantic utility models are excluded from that catalogue;
 - local validation and GitHub checks remain green.
