@@ -328,6 +328,19 @@ class IngestionRunList(SkyCommandContractModel):
     items: list[IngestionRunRecord] = Field(default_factory=list)
 
 
+class IngestionRunDetailItem(SkyCommandContractModel):
+    asset_code: str = Field(alias="assetCode")
+    outcome_code: str | None = Field(default=None, alias="outcomeCode")
+
+
+class IngestionRunDetailResponse(SkyCommandContractModel):
+    ok: bool = True
+    contract_version: str = Field(alias="contractVersion")
+    generated_at: datetime = Field(alias="generatedAt")
+    run: IngestionRunRecord
+    items: list[IngestionRunDetailItem] = Field(default_factory=list)
+
+
 class CatalogueAssetResponse(SkyCommandContractModel):
     ok: bool = True
     contract_version: str = Field(alias="contractVersion")

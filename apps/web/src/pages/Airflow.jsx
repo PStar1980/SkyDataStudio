@@ -24,6 +24,17 @@ const EMPTY_RUNS = {
   items: [],
 };
 
+const EMPTY_INGESTION_EVENT = {
+  dag_id: PROOF_DAG_ID,
+  asset_uri: 'x-skycommand://ingestion/macro/dff',
+  asset_registered: false,
+  eligible: false,
+  already_emitted: false,
+  ingestion_run: null,
+  event: null,
+  message: 'Waiting for SkyCommand ingestion evidence.',
+};
+
 function formatDate(value) {
   if (!value) return '—';
   return new Date(value).toLocaleString();
@@ -36,8 +47,12 @@ function Airflow() {
   const [loading, setLoading] = useState(true);
   const [runsLoading, setRunsLoading] = useState(true);
   const [launching, setLaunching] = useState(false);
+  const [eventLoading, setEventLoading] = useState(true);
+  const [eventLaunching, setEventLaunching] = useState(false);
+  const [ingestionEvent, setIngestionEvent] = useState(EMPTY_INGESTION_EVENT);
   const [message, setMessage] = useState('');
   const [runMessage, setRunMessage] = useState('');
+  const [eventMessage, setEventMessage] = useState('');
   const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
@@ -86,6 +101,29 @@ function Airflow() {
     return () => controller.abort();
   }, [refreshKey]);
 
+  useEffect(() => {
+    const controller = new AbortController();
+
+    getJson(
+      `/api/v1/integrations/airflow/dags/${PROOF_DAG_ID}/ingestion-events/latest`,
+      { signal: controller.signal },
+    )
+      .then((payload) => {
+        setIngestionEvent(payload);
+      })
+      .catch((error) => {
+        if (error.name !== 'AbortError') {
+          setIngestionEvent(EMPTY_INGESTION_EVENT);
+          setEventMessage(error.message);
+        }
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setEventLoading(false);
+      });
+
+    return () => controller.abort();
+  }, [refreshKey]);
+
   const pausedDags = useMemo(
     () => summary.dags.filter((dag) => dag.paused).length,
     [summary.dags],
@@ -99,8 +137,10 @@ function Airflow() {
   function refreshSummary() {
     setLoading(true);
     setRunsLoading(true);
+    setEventLoading(true);
     setMessage('');
     setRunMessage('');
+    setEventMessage('');
     setRefreshKey((current) => current + 1);
   }
 
@@ -124,6 +164,35 @@ function Airflow() {
       .finally(() => setLaunching(false));
   }
 
+  function launchIngestionEvent() {
+    setEventLaunching(true);
+    setEventMessage('');
+    const ingestionRunId = ingestionEvent.ingestion_run?.ingestion_run_id;
+
+    postJson(`/api/v1/integrations/airflow/dags/${PROOF_DAG_ID}/ingestion-events`, {
+      ingestion_run_id: ingestionRunId || null,
+      domain_code: 'MACRO',
+      source_code: 'FRED',
+      asset_code: 'DFF',
+      pipeline_code: 'FED_FUNDS_RATE_PIPELINE',
+    })
+      .then((payload) => {
+        const runIds = payload.event.created_dag_run_ids || [];
+        const createdRun = runIds.length ? ` and created DAG run ${runIds[0]}` : '';
+        setEventMessage(
+          payload.reused
+            ? `SkyCommand ingestion run ${payload.ingestion_run.ingestion_run_id} already has asset event #${payload.event.id}; the signal was safely reused.`
+            : `Airflow asset event #${payload.event.id} was emitted for SkyCommand ingestion run ${payload.ingestion_run.ingestion_run_id}${createdRun}.`,
+        );
+        setRunsLoading(true);
+        setSelectedRun(null);
+        setEventLoading(true);
+        setRefreshKey((current) => current + 1);
+      })
+      .catch((error) => setEventMessage(error.message))
+      .finally(() => setEventLaunching(false));
+  }
+
   function inspectRun(dagRunId) {
     setRunMessage('');
     getJson(`/api/v1/integrations/airflow/dags/${PROOF_DAG_ID}/runs/${encodeURIComponent(dagRunId)}`)
@@ -135,12 +204,12 @@ function Airflow() {
     <div className="page-stack">
       <section className="page-intro airflow-page-intro">
         <div>
-          <span className="eyebrow">PHASE 5.3 · AIRFLOW SCHEDULING FOUNDATION</span>
+          <span className="eyebrow">PHASE 5.4 · INGESTION-COMPLETE EVENT TRIGGER</span>
           <h1>Apache Airflow</h1>
           <p>
-            Observe the isolated Airflow 3 runtime, launch the governed Federal Funds Rate batch,
-            and project DAG/task evidence back through REST API v2 without reading Airflow&apos;s
-            metadata database.
+            Observe the isolated Airflow runtime, launch the governed Federal Funds Rate batch,
+            and push a SkyCommand ingestion-complete signal into Airflow as a native asset event
+            while preserving the same replay-safe Studio execution contract.
           </p>
         </div>
         <div className="page-intro-actions">
@@ -320,6 +389,73 @@ function Airflow() {
         </div>
       </section>
 
+      <section className="panel asset-table-panel">
+        <div className="panel-heading">
+          <div>
+            <span className="eyebrow">SKYCOMMAND → AIRFLOW ASSET EVENT</span>
+            <h2>DFF ingestion-complete trigger</h2>
+            <p className="rule-copy">
+              The latest terminal successful SkyCommand FRED/DFF ingestion run can emit a native
+              Airflow asset event. Duplicate signals reuse the existing event instead of creating
+              another orchestration run.
+            </p>
+          </div>
+          <button
+            className="primary-button"
+            type="button"
+            onClick={launchIngestionEvent}
+            disabled={
+              eventLaunching
+              || eventLoading
+              || !ingestionEvent.eligible
+              || !ingestionEvent.asset_registered
+            }
+          >
+            {eventLaunching
+              ? 'Emitting…'
+              : ingestionEvent.already_emitted
+                ? 'Reuse Event Proof'
+                : 'Emit Ingestion Event'}
+          </button>
+        </div>
+        {eventMessage ? <div className="workspace-alert">{eventMessage}</div> : null}
+        <div className="airflow-event-grid">
+          <article>
+            <span>SkyCommand Run</span>
+            <strong>{ingestionEvent.ingestion_run?.ingestion_run_id || '—'}</strong>
+            <small>{ingestionEvent.ingestion_run?.status_code || 'Waiting for evidence'}</small>
+          </article>
+          <article>
+            <span>Source Asset</span>
+            <strong>FRED / DFF</strong>
+            <small>{ingestionEvent.asset_uri}</small>
+          </article>
+          <article>
+            <span>Airflow Asset</span>
+            <strong>{ingestionEvent.asset_registered ? 'REGISTERED' : 'WAITING'}</strong>
+            <small>Native REST API v2 asset-event boundary</small>
+          </article>
+          <article>
+            <span>Signal State</span>
+            <strong>
+              {ingestionEvent.already_emitted
+                ? 'EMITTED'
+                : ingestionEvent.eligible ? 'READY' : 'WAITING'}
+            </strong>
+            <small>{ingestionEvent.message}</small>
+          </article>
+        </div>
+        {ingestionEvent.event ? (
+          <div className="rule-footer">
+            <span>Event #{ingestionEvent.event.id}</span>
+            <span>{formatDate(ingestionEvent.event.timestamp)}</span>
+            <span>
+              {ingestionEvent.event.created_dag_run_ids?.[0] || 'Scheduler processing'}
+            </span>
+          </div>
+        ) : null}
+      </section>
+
       {selectedRun ? (
         <section className="panel asset-table-panel">
           <div className="panel-heading">
@@ -363,29 +499,30 @@ function Airflow() {
               <span className="eyebrow">ORCHESTRATION CONTRACT</span>
               <h2>Airflow owns durable batch scheduling</h2>
             </div>
-            <span className="phase-badge">5.3</span>
+            <span className="phase-badge">5.4</span>
           </div>
           <ol className="implementation-list">
             <li><span>01</span><div><strong>Isolated runtime</strong><small>Airflow keeps its own metadata PostgreSQL database and service processes.</small></div></li>
             <li><span>02</span><div><strong>Stable API boundary</strong><small>Studio triggers and observes Airflow through authenticated REST API v2 calls only.</small></div></li>
             <li><span>03</span><div><strong>Replay-safe callback</strong><small>Each DAG run calls the proven Studio engine with an Airflow-derived replay key.</small></div></li>
             <li><span>04</span><div><strong>Task evidence</strong><small>DAG-run and task-instance state is projected back into the Studio workbench.</small></div></li>
+            <li><span>05</span><div><strong>Asset event trigger</strong><small>SkyCommand ingestion completion becomes a deduplicated Airflow asset event.</small></div></li>
           </ol>
         </article>
         <article className="panel compact-panel airflow-next-panel">
           <div className="panel-heading">
             <div>
-              <span className="eyebrow">NEXT PROOF</span>
-              <h2>Ingestion-complete event trigger</h2>
+              <span className="eyebrow">PHASE 5 CLOSURE</span>
+              <h2>Prove event-driven idempotency</h2>
             </div>
             <span className="rule-mark">→</span>
           </div>
           <p className="rule-copy">
-            Phase 5.3 adds the daily schedule and controlled backfill surface. The remaining Phase 5
-            proof is an ingestion-complete trigger that preserves the same replay-safe Studio
-            execution contract.
+            Emit the latest eligible DFF ingestion event, confirm Airflow schedules the DAG without
+            a manual launch, then send the same ingestion signal again and prove that the event and
+            Studio materialization are reused safely.
           </p>
-          <div className="rule-footer"><span>Event trigger</span><span>Replay key</span><span>Evidence</span></div>
+          <div className="rule-footer"><span>Asset event</span><span>Deduplication</span><span>4/4 evidence</span></div>
         </article>
       </section>
     </div>

@@ -4,7 +4,7 @@
 
 SkyData Studio is the post-ingestion data engineering application in the Sky ecosystem. It begins where SkyCommand's ingestion responsibility ends and prepares trusted data for analytical consumption by SkyWeb Analytics, Power BI, and future client-facing applications.
 
-**Current status:** Phases 0 through 4 are complete and Phase 5 is underway. The DFF reference pipeline reads SkyCommand through the governed observation contract, materializes the Studio-owned Federal Funds Rate Mart with replay-safe `MERGE` semantics, and preserves durable run/step evidence. **Phase 5.2 is complete:** Airflow now orchestrates the proven DFF batch through a replay-safe Studio callback, and task retries with the same DAG run ID reuse the same Studio run rather than rematerializing it. **Phase 5.3 is now in progress:** the DFF DAG gains a time-based schedule plus a bounded REST API v2 backfill surface.
+**Current status:** Phases 0 through 4 are complete and Phase 5 is underway. The DFF reference pipeline reads SkyCommand through the governed observation contract, materializes the Studio-owned Federal Funds Rate Mart with replay-safe `MERGE` semantics, and preserves durable run/step evidence. **Phases 5.1–5.3 are complete:** Airflow owns the durable batch, daily schedule, controlled backfills, and replay-safe callback evidence. **Phase 5.4 is now in progress:** SkyCommand ingestion completion is promoted into a native Airflow asset event so the same DFF DAG can run from either time or data-arrival signals.
 
 ---
 
@@ -137,6 +137,10 @@ Open `/orchestration/airflow` in SkyData Studio. The page reads `/api/v2/monitor
 ## Phase 5.3 quick start
 
 Phase 5.3 turns the proven DFF DAG into a daily time-based workflow and adds controlled backfill creation through Airflow REST API v2. Scheduled and backfill runs derive `RUN_DATE` from the Airflow data interval; manual runs may still provide an explicit date. The Studio API limits local proof backfills to seven calendar days and at most three concurrent runs, with missing-runs-only reprocessing as the safe default.
+
+## Phase 5.4 quick start
+
+Phase 5.4 adds a native Airflow asset event at `x-skycommand://ingestion/macro/dff`. The DFF DAG keeps its daily timetable through an asset-or-time schedule. SkyData Studio resolves terminal successful FRED/DFF ingestion evidence through SkyCommand's read-only API, emits one Airflow asset event through REST API v2, and deduplicates repeated signals for the same ingestion run. Open `/orchestration/airflow` and use **Emit Ingestion Event** to run the proof.
 
 Open `/orchestration/backfills` after Airflow has reparsed the DAG. The DFF timetable should be visible there, together with the controlled backfill form and Airflow-owned backfill history. The first proof should use a one-day window and `max_active_runs = 1`.
 
@@ -387,7 +391,8 @@ The repository currently includes:
 - a typed Airflow REST API v2 client plus `/orchestration/airflow` runtime, DAG-run, and task-instance observability;
 - a Phase 5.2 DFF Airflow batch DAG that calls the proven Studio engine through a replay-safe public API callback and safely reuses the Studio run on Airflow task retry;
 - a Phase 5.3 daily DFF timetable plus bounded Airflow REST API v2 backfill controls;
+- a Phase 5.4 native Airflow asset-event bridge from terminal successful SkyCommand FRED/DFF ingestion evidence;
 - a dbt project skeleton ready for Phase 6;
 - backend/frontend validation, repository map, and compact handoff tooling.
 
-The active implementation target is **Phase 5: Apache Airflow integration**. Phase 5.1 established the isolated runtime and REST API boundary. Phase 5.2 proved end-to-end Airflow orchestration, Studio callback replay safety, and task-retry idempotency. Phase 5.3 now adds time-based scheduling and controlled backfill windows before the final ingestion-complete event-trigger proof.
+The active implementation target is **Phase 5: Apache Airflow integration**. Phase 5.1 established the isolated runtime and REST API boundary. Phase 5.2 proved end-to-end Airflow orchestration, Studio callback replay safety, and task-retry idempotency. Phase 5.3 completed time-based scheduling and controlled backfill windows. Phase 5.4 is the final Airflow proof: a native ingestion-complete asset event that triggers the same replay-safe DFF pipeline without a manual launch.

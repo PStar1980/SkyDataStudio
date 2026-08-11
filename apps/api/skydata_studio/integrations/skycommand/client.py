@@ -12,6 +12,7 @@ from skydata_contracts.skycommand import (
     CatalogueAssetResponse,
     CatalogueDomainList,
     CatalogueSourceList,
+    IngestionRunDetailResponse,
     IngestionRunList,
     QualityEventList,
     RejectionEventList,
@@ -234,6 +235,14 @@ class SkyCommandClient:
             },
         )
         return self._validate(IngestionRunList, payload)
+
+    async def get_run(
+        self,
+        *,
+        ingestion_run_id: str | int,
+    ) -> IngestionRunDetailResponse:
+        payload = await self._get(f"/ingestion/runs/{ingestion_run_id}")
+        return self._validate(IngestionRunDetailResponse, payload)
 
     async def get_asset(
         self,

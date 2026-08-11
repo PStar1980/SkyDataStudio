@@ -300,7 +300,7 @@ Closure evidence:
 
 ## Phase 5.3 — Airflow Schedules and Controlled Backfills
 
-**Status:** In progress.
+**Status:** Complete.
 
 Scope:
 
@@ -322,3 +322,38 @@ Acceptance proof:
 - unsafe windows over seven days are rejected before Airflow receives the request;
 - local validation and GitHub checks remain green.
 
+
+
+Closure evidence:
+
+- the DFF DAG is active on the daily `0 0 * * *` timetable while preserving manual launch support;
+- the Studio `Schedules & Backfills` workbench created and recorded a completed one-day Airflow backfill;
+- the linked Airflow backfill produced one `AIRFLOW:` Studio run that completed 4/4 pipeline steps with zero failed steps;
+- the materialized Federal Funds Rate mart remained replay-safe and idempotent through the scheduled/backfill execution contract;
+- an oversized local proof window was rejected with HTTP 422 before Airflow accepted a backfill request;
+- the shared frontend API error normalizer renders the guardrail as `Local proof backfills are limited to a 7-day window.`;
+- Ruff, mypy, 46 pytest tests, npm CI, ESLint, and Vite build are green after the guardrail proof.
+
+## Phase 5.4 — Ingestion-Complete Event Trigger
+
+**Status:** In progress.
+
+Scope:
+
+- declare a DFF ingestion-complete Airflow asset and combine it with the existing daily timetable;
+- resolve the latest terminal successful SkyCommand `MACRO/FRED/DFF` ingestion run through the existing read-only contract bridge;
+- emit the completion signal through Airflow REST API v2 asset events rather than manually triggering the DAG;
+- carry ingestion-run identity and run-date evidence into the existing replay-safe Studio callback;
+- deduplicate repeated signals for the same SkyCommand ingestion run by reusing the previously emitted Airflow asset event;
+- project asset-event registration, ingestion eligibility, event identity, and resulting DAG-run evidence into the Apache Airflow workbench;
+- keep SkyCommand as ingestion authority, Airflow as orchestration authority, and Studio as transformation/materialization authority.
+
+Acceptance proof:
+
+- Airflow reparses the DFF DAG with both the daily timetable and the DFF ingestion-complete asset dependency;
+- Studio identifies an eligible terminal successful SkyCommand FRED/DFF ingestion run;
+- `Emit Ingestion Event` creates one Airflow asset event through REST API v2;
+- Airflow schedules the DFF DAG from that asset event without using the manual DAG-run endpoint;
+- the resulting Studio run is `AIRFLOW` triggered, completes 4/4 steps, and preserves Phase 4.3 materialization evidence;
+- emitting the same SkyCommand ingestion run a second time reuses the existing asset event and does not create duplicate orchestration;
+- local validation and GitHub checks remain green.

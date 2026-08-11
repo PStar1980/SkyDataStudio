@@ -15,10 +15,21 @@ from urllib.error import HTTPError, URLError
 from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 
-from airflow.sdk import dag, get_current_context, task
+from airflow.sdk import (
+    Asset,
+    AssetOrTimeSchedule,
+    CronTriggerTimetable,
+    dag,
+    get_current_context,
+    task,
+)
 
 DAG_ID = "skydata_studio_fed_funds_rate_pipeline"
 DEFAULT_PIPELINE_CODE = "FED_FUNDS_RATE_PIPELINE"
+INGESTION_COMPLETE_ASSET = Asset(
+    uri="x-skycommand://ingestion/macro/dff",
+    name="skycommand_dff_ingestion_complete",
+)
 STUDIO_API_BASE_URL = os.environ.get(
     "SKYDATA_STUDIO_API_BASE_URL",
     "http://host.docker.internal:8100/api/v1",
@@ -63,12 +74,22 @@ def _request_json(
 @dag(
     dag_id=DAG_ID,
     description="Durably orchestrate the governed Federal Funds Rate Studio pipeline.",
-    schedule="@daily",
+    schedule=AssetOrTimeSchedule(
+        timetable=CronTriggerTimetable("0 0 * * *", timezone="UTC"),
+        assets=[INGESTION_COMPLETE_ASSET],
+    ),
     start_date=datetime(2026, 8, 1, tzinfo=UTC),
     catchup=False,
     max_active_runs=1,
     is_paused_upon_creation=False,
-    tags=["skydata-studio", "phase-5", "dff", "pipeline", "scheduled"],
+    tags=[
+        "skydata-studio",
+        "phase-5",
+        "dff",
+        "pipeline",
+        "scheduled",
+        "event-driven",
+    ],
 )
 def fed_funds_rate_pipeline():
     @task(retries=1)
@@ -76,10 +97,34 @@ def fed_funds_rate_pipeline():
         context = get_current_context()
         dag_run = context["dag_run"]
         conf = dict(dag_run.conf or {})
+        event_extra: dict[str, object] = {}
+        triggering_asset_events = context.get("triggering_asset_events")
+        if isinstance(triggering_asset_events, dict):
+            for raw_events in triggering_asset_events.values():
+                if not isinstance(raw_events, list):
+                    continue
+                for raw_event in reversed(raw_events):
+                    raw_extra = (
+                        raw_event.get("extra")
+                        if isinstance(raw_event, dict)
+                        else getattr(raw_event, "extra", None)
+                    )
+                    if (
+                        isinstance(raw_extra, dict)
+                        and raw_extra.get("event_type")
+                        == "SKYCOMMAND_INGESTION_COMPLETE"
+                    ):
+                        event_extra = raw_extra
+                        break
+                if event_extra:
+                    break
+
         pipeline_code = str(
-            conf.get("pipeline_code") or DEFAULT_PIPELINE_CODE
+            conf.get("pipeline_code")
+            or event_extra.get("pipeline_code")
+            or DEFAULT_PIPELINE_CODE
         ).strip().upper()
-        configured_run_date = conf.get("run_date")
+        configured_run_date = conf.get("run_date") or event_extra.get("run_date")
         if configured_run_date is not None:
             run_date = str(configured_run_date)
         else:
@@ -91,7 +136,7 @@ def fed_funds_rate_pipeline():
                 if schedule_date is not None
                 else datetime.now(UTC).date().isoformat()
             )
-        version_number = conf.get("version_number")
+        version_number = conf.get("version_number") or event_extra.get("version_number")
 
         catalogue = _request_json(
             "GET",
@@ -120,6 +165,16 @@ def fed_funds_rate_pipeline():
             "version_number": version_number,
             "run_date": run_date,
             "airflow_dag_run_id": str(dag_run.run_id),
+            "trigger_mode": str(
+                event_extra.get("event_type")
+                or conf.get("trigger_mode")
+                or dag_run.run_type
+            ),
+            "skycommand_ingestion_run_id": event_extra.get(
+                "skycommand_ingestion_run_id"
+            ),
+            "source_code": event_extra.get("source_code"),
+            "asset_code": event_extra.get("asset_code"),
         }
 
     @task(retries=1, retry_delay=timedelta(seconds=5))
@@ -148,6 +203,12 @@ def fed_funds_rate_pipeline():
             "succeeded_steps": int(run.get("succeeded_steps") or 0),
             "failed_steps": int(run.get("failed_steps") or 0),
             "result": run.get("result") if isinstance(run.get("result"), dict) else {},
+            "trigger_mode": contract.get("trigger_mode"),
+            "skycommand_ingestion_run_id": contract.get(
+                "skycommand_ingestion_run_id"
+            ),
+            "source_code": contract.get("source_code"),
+            "asset_code": contract.get("asset_code"),
         }
 
     @task
@@ -188,6 +249,12 @@ def fed_funds_rate_pipeline():
             "rows_rejected": result_payload.get("rows_rejected"),
             "rows_published": result_payload.get("rows_published"),
             "target_row_count": result_payload.get("target_row_count"),
+            "trigger_mode": execution.get("trigger_mode"),
+            "skycommand_ingestion_run_id": execution.get(
+                "skycommand_ingestion_run_id"
+            ),
+            "source_code": execution.get("source_code"),
+            "asset_code": execution.get("asset_code"),
         }
 
     contract = resolve_pipeline_contract()

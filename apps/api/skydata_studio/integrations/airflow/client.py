@@ -9,6 +9,8 @@ from uuid import uuid4
 
 import httpx
 from skydata_studio.schemas.airflow import (
+    AirflowAssetEventSummary,
+    AirflowAssetSummary,
     AirflowBackfillList,
     AirflowBackfillSummary,
     AirflowComponentHealth,
@@ -233,6 +235,43 @@ class AirflowClient:
         )
 
     @staticmethod
+    def _asset(raw: dict[str, Any]) -> AirflowAssetSummary:
+        return AirflowAssetSummary(
+            id=int(raw.get("id") or 0),
+            uri=str(raw.get("uri") or ""),
+            name=str(raw.get("name")) if raw.get("name") is not None else None,
+            group=str(raw.get("group")) if raw.get("group") is not None else None,
+        )
+
+    @staticmethod
+    def _asset_event(raw: dict[str, Any]) -> AirflowAssetEventSummary:
+        raw_extra = raw.get("extra")
+        extra = cast(dict[str, object], raw_extra) if isinstance(raw_extra, dict) else {}
+        raw_created = raw.get("created_dagruns")
+        created_ids: list[str] = []
+        if isinstance(raw_created, list):
+            for item in raw_created:
+                if not isinstance(item, dict):
+                    continue
+                run_id = item.get("run_id") or item.get("dag_run_id")
+                if run_id is not None:
+                    created_ids.append(str(run_id))
+        raw_timestamp = raw.get("timestamp")
+        timestamp = (
+            AirflowClient._required_datetime(raw_timestamp, field_name="timestamp")
+            if raw_timestamp is not None
+            else None
+        )
+        return AirflowAssetEventSummary(
+            id=int(raw.get("id") or 0),
+            asset_id=int(raw.get("asset_id") or 0),
+            uri=str(raw.get("uri") or ""),
+            timestamp=timestamp,
+            extra=extra,
+            created_dag_run_ids=created_ids,
+        )
+
+    @staticmethod
     def _dag_run(raw: dict[str, Any]) -> AirflowDagRunSummary:
         raw_conf = raw.get("conf")
         return AirflowDagRunSummary(
@@ -340,6 +379,89 @@ class AirflowClient:
             components=components,
             dags=dags,
         )
+
+    def asset_by_uri(self, uri: str) -> AirflowAssetSummary | None:
+        try:
+            with httpx.Client(
+                timeout=self.timeout_seconds,
+                transport=self.transport,
+            ) as client:
+                token = self._token(client)
+                payload = self._get_json(
+                    client,
+                    "/assets",
+                    token=token,
+                    params={"uri_pattern": uri, "limit": 100, "offset": 0},
+                )
+        except AirflowClientError:
+            raise
+        except Exception as error:
+            raise AirflowClientError(f"Airflow integration failed: {error}.") from error
+
+        raw_assets = payload.get("assets", [])
+        assets = (
+            [self._asset(item) for item in raw_assets if isinstance(item, dict)]
+            if isinstance(raw_assets, list)
+            else []
+        )
+        return next((asset for asset in assets if asset.uri == uri), None)
+
+    def asset_events(
+        self,
+        asset_id: int,
+        *,
+        limit: int = 50,
+    ) -> list[AirflowAssetEventSummary]:
+        try:
+            with httpx.Client(
+                timeout=self.timeout_seconds,
+                transport=self.transport,
+            ) as client:
+                token = self._token(client)
+                payload = self._get_json(
+                    client,
+                    "/assets/events",
+                    token=token,
+                    params={"asset_id": asset_id, "limit": limit, "offset": 0},
+                )
+        except AirflowClientError:
+            raise
+        except Exception as error:
+            raise AirflowClientError(f"Airflow integration failed: {error}.") from error
+
+        raw_events = payload.get("asset_events", [])
+        events = (
+            [self._asset_event(item) for item in raw_events if isinstance(item, dict)]
+            if isinstance(raw_events, list)
+            else []
+        )
+        fallback_date = datetime.min.replace(tzinfo=UTC)
+        events.sort(key=lambda item: item.timestamp or fallback_date, reverse=True)
+        return events
+
+    def create_asset_event(
+        self,
+        asset_id: int,
+        *,
+        extra: Mapping[str, object],
+    ) -> AirflowAssetEventSummary:
+        try:
+            with httpx.Client(
+                timeout=self.timeout_seconds,
+                transport=self.transport,
+            ) as client:
+                token = self._token(client)
+                payload = self._post_json(
+                    client,
+                    "/assets/events",
+                    token=token,
+                    payload={"asset_id": asset_id, "extra": dict(extra)},
+                )
+        except AirflowClientError:
+            raise
+        except Exception as error:
+            raise AirflowClientError(f"Airflow integration failed: {error}.") from error
+        return self._asset_event(payload)
 
     def dag_runs(self, dag_id: str, *, limit: int = 20) -> AirflowDagRunList:
         path = f"/dags/{quote(dag_id, safe='')}/dagRuns"
