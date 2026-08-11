@@ -10,6 +10,7 @@ import Pipelines from './pages/Pipelines.jsx';
 import PipelineRuns from './pages/PipelineRuns.jsx';
 import Airflow from './pages/Airflow.jsx';
 import SchedulesBackfills from './pages/SchedulesBackfills.jsx';
+import Transformations from './pages/Transformations.jsx';
 import PlaceholderPage from './pages/PlaceholderPage.jsx';
 
 const PAGE_META = {
@@ -63,6 +64,7 @@ function App() {
           <Route path="/workspace/registry" element={<MetadataRegistry />} />
           <Route path="/workspace/mappings" element={<SourceMappings />} />
           <Route path="/workspace/pipelines" element={<Pipelines />} />
+          <Route path="/workspace/transformations" element={<Transformations />} />
           <Route path="/orchestration/airflow" element={<Airflow />} />
           <Route path="/orchestration/runs" element={<PipelineRuns />} />
           <Route path="/orchestration/backfills" element={<SchedulesBackfills />} />
@@ -73,6 +75,7 @@ function App() {
               '/workspace/registry',
               '/workspace/mappings',
               '/workspace/pipelines',
+              '/workspace/transformations',
               '/orchestration/airflow',
               '/orchestration/runs',
               '/orchestration/backfills',

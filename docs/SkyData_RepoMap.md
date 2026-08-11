@@ -19,6 +19,7 @@ SkyDataStudio/
 │   │       │       ├── __init__.py
 │   │       │       ├── airflow.py
 │   │       │       ├── contracts.py
+│   │       │       ├── dbt.py
 │   │       │       ├── health.py
 │   │       │       ├── metadata.py
 │   │       │       ├── pipeline_runs.py
@@ -50,6 +51,7 @@ SkyDataStudio/
 │   │       │   ├── __init__.py
 │   │       │   ├── airflow.py
 │   │       │   ├── assets.py
+│   │       │   ├── dbt.py
 │   │       │   ├── execution.py
 │   │       │   ├── metadata.py
 │   │       │   ├── pipelines.py
@@ -59,6 +61,7 @@ SkyDataStudio/
 │   │           ├── asset_detail.py
 │   │           ├── asset_workspace.py
 │   │           ├── contract_compatibility.py
+│   │           ├── dbt_transformations.py
 │   │           ├── metadata_registry.py
 │   │           ├── pipeline_execution.py
 │   │           └── pipeline_registry.py
@@ -86,7 +89,8 @@ SkyDataStudio/
 │           │   ├── PlaceholderPage.jsx
 │           │   ├── SchedulesBackfills.jsx
 │           │   ├── SourceMappings.jsx
-│           │   └── StudioOverview.jsx
+│           │   ├── StudioOverview.jsx
+│           │   └── Transformations.jsx
 │           └── services/
 │               └── api.js
 ├── contracts/
@@ -100,12 +104,14 @@ SkyDataStudio/
 │   └── SkyData_RepoMap.md
 ├── infra/
 │   ├── docker-compose.yml
-│   └── db/
-│       └── migrations/
-│           ├── 0001_metadata_registry.sql
-│           ├── 0002_source_target_mapping.sql
-│           ├── 0003_pipeline_definition.sql
-│           └── 0004_pipeline_execution.sql
+│   ├── db/
+│   │   └── migrations/
+│   │       ├── 0001_metadata_registry.sql
+│   │       ├── 0002_source_target_mapping.sql
+│   │       ├── 0003_pipeline_definition.sql
+│   │       └── 0004_pipeline_execution.sql
+│   └── dbt/
+│       └── Dockerfile
 ├── orchestration/
 │   └── airflow/
 │       └── dags/
@@ -118,6 +124,7 @@ SkyDataStudio/
 │           └── skycommand.py
 ├── scripts/
 │   ├── bootstrap_metadata.py
+│   ├── dbt.ps1
 │   ├── generate_repo_map.py
 │   ├── generate_repo_zip.py
 │   ├── initialize_repo.ps1
@@ -132,6 +139,7 @@ SkyDataStudio/
 │   ├── test_asset_workspace_api.py
 │   ├── test_asset_workspace.py
 │   ├── test_contract_compatibility.py
+│   ├── test_dbt_transformations.py
 │   ├── test_health.py
 │   ├── test_metadata_registry.py
 │   ├── test_pipeline_registry.py
@@ -144,21 +152,29 @@ SkyDataStudio/
     └── dbt/
         └── skydata_studio/
             ├── dbt_project.yml
+            ├── profiles.yml
             ├── profiles.yml.example
             ├── macros/
-            │   └── .gitkeep
+            │   ├── .gitkeep
+            │   └── generate_schema_name.sql
             ├── models/
             │   ├── intermediate/
-            │   │   └── .gitkeep
+            │   │   ├── .gitkeep
+            │   │   ├── int_fed_funds_rate_changes.sql
+            │   │   └── schema.yml
             │   ├── marts/
-            │   │   └── .gitkeep
+            │   │   ├── .gitkeep
+            │   │   ├── fct_fed_funds_rate_daily.sql
+            │   │   └── schema.yml
             │   └── staging/
             │       ├── schema.yml
             │       ├── sources.yml
+            │       ├── stg_fed_funds_rate.sql
             │       └── stg_skycommand__ingestion_assets.sql
             ├── seeds/
             │   └── .gitkeep
             ├── snapshots/
             │   └── .gitkeep
             └── tests/
-                └── .gitkeep
+                ├── .gitkeep
+                └── assert_fed_funds_rate_reasonable.sql

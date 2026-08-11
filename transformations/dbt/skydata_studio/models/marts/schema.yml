@@ -1,0 +1,19 @@
+version: 2
+
+models:
+  - name: fct_fed_funds_rate_daily
+    description: Consumer-ready daily Federal Funds Rate fact model produced by dbt.
+    columns:
+      - name: observation_date
+        description: "Grain and business key: one row per observation date."
+        data_tests:
+          - not_null
+          - unique
+      - name: rate
+        data_tests:
+          - not_null
+      - name: rate_direction
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['BASELINE', 'UP', 'DOWN', 'UNCHANGED']

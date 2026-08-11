@@ -8,7 +8,9 @@ SkyDataStudio
 │   │       ├── api
 │   │       │   ├── routes
 │   │       │   │   ├── __init__.py
+│   │       │   │   ├── airflow.py
 │   │       │   │   ├── contracts.py
+│   │       │   │   ├── dbt.py
 │   │       │   │   ├── health.py
 │   │       │   │   ├── metadata.py
 │   │       │   │   ├── pipeline_runs.py
@@ -26,6 +28,9 @@ SkyDataStudio
 │   │       │   ├── bootstrap.py
 │   │       │   └── session.py
 │   │       ├── integrations
+│   │       │   ├── airflow
+│   │       │   │   ├── __init__.py
+│   │       │   │   └── client.py
 │   │       │   └── skycommand
 │   │       │       ├── __init__.py
 │   │       │       ├── client.py
@@ -37,7 +42,9 @@ SkyDataStudio
 │   │       │   └── pipeline.py
 │   │       ├── schemas
 │   │       │   ├── __init__.py
+│   │       │   ├── airflow.py
 │   │       │   ├── assets.py
+│   │       │   ├── dbt.py
 │   │       │   ├── execution.py
 │   │       │   ├── metadata.py
 │   │       │   ├── pipelines.py
@@ -47,6 +54,7 @@ SkyDataStudio
 │   │       │   ├── asset_detail.py
 │   │       │   ├── asset_workspace.py
 │   │       │   ├── contract_compatibility.py
+│   │       │   ├── dbt_transformations.py
 │   │       │   ├── metadata_registry.py
 │   │       │   ├── pipeline_execution.py
 │   │       │   └── pipeline_registry.py
@@ -60,13 +68,16 @@ SkyDataStudio
 │       │   │   ├── StatusPill.jsx
 │       │   │   └── Topbar.jsx
 │       │   ├── pages
+│       │   │   ├── Airflow.jsx
 │       │   │   ├── DataAssets.jsx
 │       │   │   ├── MetadataRegistry.jsx
 │       │   │   ├── PipelineRuns.jsx
 │       │   │   ├── Pipelines.jsx
 │       │   │   ├── PlaceholderPage.jsx
+│       │   │   ├── SchedulesBackfills.jsx
 │       │   │   ├── SourceMappings.jsx
-│       │   │   └── StudioOverview.jsx
+│       │   │   ├── StudioOverview.jsx
+│       │   │   └── Transformations.jsx
 │       │   ├── services
 │       │   │   └── api.js
 │       │   ├── App.jsx
@@ -93,10 +104,13 @@ SkyDataStudio
 │   │       ├── 0002_source_target_mapping.sql
 │   │       ├── 0003_pipeline_definition.sql
 │   │       └── 0004_pipeline_execution.sql
+│   ├── dbt
+│   │   └── Dockerfile
 │   └── docker-compose.yml
 ├── orchestration
 │   └── airflow
 │       └── dags
+│           ├── fed_funds_rate_pipeline.py
 │           └── studio_platform_smoke.py
 ├── packages
 │   └── contracts
@@ -105,6 +119,7 @@ SkyDataStudio
 │           └── skycommand.py
 ├── scripts
 │   ├── bootstrap_metadata.py
+│   ├── dbt.ps1
 │   ├── generate_repo_map.py
 │   ├── generate_repo_zip.py
 │   ├── initialize_repo.ps1
@@ -113,10 +128,13 @@ SkyDataStudio
 ├── tests
 │   ├── __init__.py
 │   ├── conftest.py
+│   ├── test_airflow_api.py
+│   ├── test_airflow_client.py
 │   ├── test_asset_detail.py
 │   ├── test_asset_workspace.py
 │   ├── test_asset_workspace_api.py
 │   ├── test_contract_compatibility.py
+│   ├── test_dbt_transformations.py
 │   ├── test_health.py
 │   ├── test_metadata_registry.py
 │   ├── test_pipeline_registry.py
@@ -129,23 +147,31 @@ SkyDataStudio
 │   └── dbt
 │       └── skydata_studio
 │           ├── macros
-│           │   └── .gitkeep
+│           │   ├── .gitkeep
+│           │   └── generate_schema_name.sql
 │           ├── models
 │           │   ├── intermediate
-│           │   │   └── .gitkeep
+│           │   │   ├── .gitkeep
+│           │   │   ├── int_fed_funds_rate_changes.sql
+│           │   │   └── schema.yml
 │           │   ├── marts
-│           │   │   └── .gitkeep
+│           │   │   ├── .gitkeep
+│           │   │   ├── fct_fed_funds_rate_daily.sql
+│           │   │   └── schema.yml
 │           │   └── staging
 │           │       ├── schema.yml
 │           │       ├── sources.yml
+│           │       ├── stg_fed_funds_rate.sql
 │           │       └── stg_skycommand__ingestion_assets.sql
 │           ├── seeds
 │           │   └── .gitkeep
 │           ├── snapshots
 │           │   └── .gitkeep
 │           ├── tests
-│           │   └── .gitkeep
+│           │   ├── .gitkeep
+│           │   └── assert_fed_funds_rate_reasonable.sql
 │           ├── dbt_project.yml
+│           ├── profiles.yml
 │           └── profiles.yml.example
 ├── .editorconfig
 ├── .env.example

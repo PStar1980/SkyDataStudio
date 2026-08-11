@@ -1,5 +1,8 @@
--- Foundation placeholder. Phase 2 will bind this model to an approved SkyCommand
--- consumer view or synchronized contract table.
+{{ config(enabled=false) }}
+
+-- Retained only as historical scaffolding from the Phase 2 contract bridge.
+-- Phase 6.1 models now begin from the Studio-owned curated relation
+-- mart.fed_funds_rate rather than a placeholder synchronization table.
 
 select
     cast(null as text) as domain_code,
