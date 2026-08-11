@@ -1,0 +1,13 @@
+version: 2
+
+models:
+  - name: int_fed_funds_rate_changes
+    description: Reusable Federal Funds Rate model with prior-day and change attributes.
+    columns:
+      - name: observation_date
+        data_tests:
+          - not_null
+          - unique
+      - name: rate
+        data_tests:
+          - not_null

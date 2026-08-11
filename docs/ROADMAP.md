@@ -336,7 +336,7 @@ Closure evidence:
 
 ## Phase 5.4 — Ingestion-Complete Event Trigger
 
-**Status:** In progress.
+**Status:** Complete.
 
 Scope:
 
@@ -356,4 +356,40 @@ Acceptance proof:
 - Airflow schedules the DFF DAG from that asset event without using the manual DAG-run endpoint;
 - the resulting Studio run is `AIRFLOW` triggered, completes 4/4 steps, and preserves Phase 4.3 materialization evidence;
 - emitting the same SkyCommand ingestion run a second time reuses the existing asset event and does not create duplicate orchestration;
+- local validation and GitHub checks remain green.
+
+
+Closure evidence:
+
+- Studio resolved terminal successful SkyCommand FRED/DFF ingestion run `6c1adaad-ebe5-4536-bad1-165a6471a581`;
+- Airflow registered `x-skycommand://ingestion/macro/dff` and accepted asset event `#1`;
+- the native event created Airflow asset-triggered DAG run `asset_triggered__2026-08-10T23:56:51.944633+00:00_RvPL91Wa` without using the manual DAG-run endpoint;
+- the linked Studio run completed 4/4 steps with zero failed steps and preserved idempotent 26,335-row materialization evidence;
+- replaying the same ingestion signal reused asset event `#1` instead of creating duplicate orchestration;
+- the daily scheduled Airflow run continued to execute through the same contract after the asset-triggered proof;
+- Ruff, mypy, 49 pytest tests, npm CI, ESLint, and Vite build remained green.
+
+## Phase 6.1 — dbt Runtime and Layered Model Foundation
+
+**Status:** In progress.
+
+Scope:
+
+- run dbt as an ephemeral Docker/Compose workload instead of adding dbt packages to the FastAPI application environment;
+- pin the container to dbt Core 1.12.0 and dbt-postgres 1.11.0;
+- use the Phase 4.3 `mart.fed_funds_rate` relation as the governed dbt source seam;
+- create explicit `dbt_staging`, `dbt_intermediate`, and `dbt_mart` schemas so dbt-owned relations cannot collide with the pipeline materializer;
+- build `stg_fed_funds_rate`, `int_fed_funds_rate_changes`, and `fct_fed_funds_rate_daily`;
+- add source/model key, nullability, accepted-value, and rate-reasonableness tests;
+- expose dbt relation readiness and row-count evidence through `/api/v1/transformations/dbt/summary`;
+- replace the Transformations placeholder with a live Phase 6.1 workbench;
+- preserve ingestion ownership in SkyCommand, orchestration ownership in Airflow, materialization ownership in the Studio pipeline engine, and analytical modelling ownership in dbt.
+
+Acceptance proof:
+
+- `docker compose -f .\infra\docker-compose.yml build dbt` builds the pinned dbt runtime;
+- `.\scripts\dbt.ps1 debug` resolves the Studio PostgreSQL target;
+- `.\scripts\dbt.ps1 build` completes with all three models and all fourteen data tests green;
+- `dbt_staging.stg_fed_funds_rate`, `dbt_intermediate.int_fed_funds_rate_changes`, and `dbt_mart.fct_fed_funds_rate_daily` exist and retain the 26,335-row proof grain;
+- the Transformations workbench reports 3/3 models and 3/3 layers ready;
 - local validation and GitHub checks remain green.

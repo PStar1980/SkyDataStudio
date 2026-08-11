@@ -1,10 +1,20 @@
 version: 2
 
 sources:
-  - name: skycommand_trusted
-    description: Read-only trusted assets produced and governed by SkyCommand ingestion.
+  - name: studio_curated
+    description: Studio-owned curated tables materialized by the replay-safe pipeline engine.
     database: skydata_studio
-    schema: skycommand_contract
+    schema: mart
     tables:
-      - name: ingestion_assets
-        description: Placeholder source contract for Phase 2 integration.
+      - name: fed_funds_rate
+        description: Curated Federal Funds Effective Rate table proven in Phase 4.3.
+        columns:
+          - name: observation_date
+            description: Business key for one daily observation.
+            data_tests:
+              - not_null
+              - unique
+          - name: rate
+            description: Federal Funds Effective Rate as NUMERIC(10,4).
+            data_tests:
+              - not_null

@@ -17,10 +17,13 @@ models:
   skydata_studio:
     staging:
       +materialized: view
-      +schema: staging
+      +schema: dbt_staging
+      +tags: ["phase6", "dff", "staging"]
     intermediate:
       +materialized: view
-      +schema: intermediate
+      +schema: dbt_intermediate
+      +tags: ["phase6", "dff", "intermediate"]
     marts:
       +materialized: table
-      +schema: marts
+      +schema: dbt_mart
+      +tags: ["phase6", "dff", "mart"]

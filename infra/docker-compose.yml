@@ -42,6 +42,27 @@ services:
       - skydata_studio_postgres:/var/lib/postgresql/data
       - ./db/migrations:/docker-entrypoint-initdb.d:ro
 
+  dbt:
+    build:
+      context: ./dbt
+      args:
+        DBT_CORE_VERSION: "1.12.0"
+        DBT_POSTGRES_VERSION: "1.11.0"
+    container_name: skydata-studio-dbt
+    profiles: ["dbt"]
+    working_dir: /usr/app
+    environment:
+      DBT_HOST: studio-postgres
+      DBT_PORT: "5432"
+      DBT_USER: skydata
+      DBT_PASSWORD: skydata
+      DBT_DBNAME: skydata_studio
+    volumes:
+      - ../transformations/dbt/skydata_studio:/usr/app
+    depends_on:
+      studio-postgres:
+        condition: service_healthy
+
   airflow-postgres:
     image: postgres:17
     container_name: skydata-studio-airflow-postgres

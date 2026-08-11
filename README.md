@@ -283,8 +283,8 @@ The public roadmap is intentionally compact so GitHub visitors can see progress 
 | Phase 2 | ✅ Complete | Read-only SkyCommand contract bridge, live asset discovery, compatibility, freshness, and quality evidence |
 | Phase 3 | ✅ Complete | Studio-owned metadata registry, governance, source-to-target mappings, target schemas, and lineage dependencies |
 | Phase 4 | ✅ Complete | Versioned ETL/ELT pipeline workbench, replay-safe local execution, structured run evidence, and idempotent curated-table materialization |
-| Phase 5 | 🔄 In Progress | Apache Airflow 3 durable batch orchestration, REST API v2 integration, DAG/run/task observability, schedules, backfills, and ingestion-complete triggers |
-| Phase 6 | ⏳ Planned | dbt transformation and modelling foundation with tested staging, intermediate, mart, and semantic layers |
+| Phase 5 | ✅ Complete | Apache Airflow 3 durable batch orchestration, REST API v2 integration, DAG/run/task observability, schedules, backfills, and ingestion-complete triggers |
+| Phase 6 | 🔄 In Progress | dbt transformation and modelling foundation with tested staging, intermediate, mart, and semantic layers |
 | Phase 7 | ⏳ Planned | Data quality, reconciliation, blocking policies, incidents, SLOs, and observability |
 | Phase 8 | ⏳ Planned | Asset/field/model/report lineage and downstream impact analysis |
 | Phase 9 | ⏳ Planned | Curated analytical marts, governed metrics, semantic delivery, and SkyWeb consumer contracts |
@@ -391,8 +391,8 @@ The repository currently includes:
 - a typed Airflow REST API v2 client plus `/orchestration/airflow` runtime, DAG-run, and task-instance observability;
 - a Phase 5.2 DFF Airflow batch DAG that calls the proven Studio engine through a replay-safe public API callback and safely reuses the Studio run on Airflow task retry;
 - a Phase 5.3 daily DFF timetable plus bounded Airflow REST API v2 backfill controls;
-- a Phase 5.4 native Airflow asset-event bridge from terminal successful SkyCommand FRED/DFF ingestion evidence;
-- a dbt project skeleton ready for Phase 6;
+- a completed Phase 5.4 native Airflow asset-event bridge from terminal successful SkyCommand FRED/DFF ingestion evidence, including duplicate-signal reuse;
+- a Phase 6.1 Dockerized dbt/Postgres runtime plus the first governed staging → intermediate → mart model chain;
 - backend/frontend validation, repository map, and compact handoff tooling.
 
-The active implementation target is **Phase 5: Apache Airflow integration**. Phase 5.1 established the isolated runtime and REST API boundary. Phase 5.2 proved end-to-end Airflow orchestration, Studio callback replay safety, and task-retry idempotency. Phase 5.3 completed time-based scheduling and controlled backfill windows. Phase 5.4 is the final Airflow proof: a native ingestion-complete asset event that triggers the same replay-safe DFF pipeline without a manual launch.
+The active implementation target is **Phase 6: dbt transformation and modelling**. Phase 5 is complete: manual Airflow launch, schedules, controlled backfills, task retry, and native ingestion-complete asset triggering all execute through the same replay-safe Studio pipeline contract. Phase 6.1 now establishes a Docker-isolated dbt/Postgres runtime and the first tested staging → intermediate → mart model chain over the proven Federal Funds Rate curated source.

@@ -5,7 +5,7 @@ const FALLBACK = {
   product: 'SkyData Studio',
   subtitle: 'Data Engineering Workbench',
   theme: 'Aurora Foundry',
-  current_phase: 'Phase 5.4 — Ingestion-Complete Event Trigger',
+  current_phase: 'Phase 6.1 — dbt Runtime and Layered Model Foundation',
   boundary: 'SkyData Studio starts after SkyCommand ingestion and publishes governed analytical products for downstream consumers.',
   capabilities: [],
 };
@@ -41,7 +41,7 @@ function StudioOverview() {
     <div className="page-stack">
       <section className="hero-panel">
         <div>
-          <span className="eyebrow">AURORA FOUNDRY · PHASE 5.4</span>
+          <span className="eyebrow">AURORA FOUNDRY · PHASE 6.1</span>
           <h1>Shape trusted data into analytical products.</h1>
           <p>{summary.boundary}</p>
           <div className="hero-actions">
@@ -61,7 +61,7 @@ function StudioOverview() {
 
       <section className="metric-grid">
         <article className="metric-card"><span>Platform API</span><strong>{apiState}</strong><small>FastAPI contract service</small></article>
-        <article className="metric-card"><span>Current Phase</span><strong>5.4</strong><small>Ingestion-complete asset events</small></article>
+        <article className="metric-card"><span>Current Phase</span><strong>6.1</strong><small>dbt layered model foundation</small></article>
         <article className="metric-card"><span>Pipeline Proof</span><strong>READY</strong><small>Curated mart materialization proven</small></article>
         <article className="metric-card"><span>Orchestrator</span><strong>Airflow 3</strong><small>Batch and asset workflows</small></article>
       </section>
@@ -94,7 +94,7 @@ function StudioOverview() {
             { code: 'METADATA_REGISTRY', name: 'Metadata Registry + Blueprints', description: 'Studio-owned assets, target schemas, ownership, source-to-target mappings, and lineage.', status: 'FOUNDATION', phase: 3 },
             { code: 'PIPELINE_WORKBENCH', name: 'ETL/ELT Pipeline Workbench', description: 'Versioned post-ingestion pipelines and structured run evidence.', status: 'READY', phase: 4 },
             { code: 'AIRFLOW', name: 'Apache Airflow Orchestration', description: 'DAGs, assets, schedules, retries, and backfills.', status: 'FOUNDATION', phase: 5 },
-            { code: 'DBT', name: 'dbt Transformation Layer', description: 'Tested staging, intermediate, mart, and semantic models.', status: 'SCAFFOLDED', phase: 6 },
+            { code: 'DBT', name: 'dbt Transformation Layer', description: 'Tested staging, intermediate, mart, and semantic models.', status: 'FOUNDATION', phase: 6 },
             { code: 'QUALITY_LINEAGE', name: 'Quality and Lineage', description: 'Trust evidence, dependencies, incidents, and impact analysis.', status: 'PLANNED', phase: 7 },
             { code: 'ANALYTICS_DELIVERY', name: 'Analytics Delivery', description: 'Governed products for SkyWeb Analytics and Power BI.', status: 'PLANNED', phase: 9 },
           ]).map((capability) => (
@@ -110,11 +110,11 @@ function StudioOverview() {
 
       <section className="two-column-grid">
         <article className="panel compact-panel">
-          <div className="panel-heading"><div><span className="eyebrow">CURRENT IMPLEMENTATION</span><h2>Ingestion-complete event trigger</h2></div><span className="phase-badge">PHASE 5.4</span></div>
+          <div className="panel-heading"><div><span className="eyebrow">CURRENT IMPLEMENTATION</span><h2>dbt layered model foundation</h2></div><span className="phase-badge">PHASE 6.1</span></div>
           <ol className="implementation-list">
-            <li><span>01</span><div><strong>SkyCommand completion evidence</strong><small>Resolve the latest terminal successful FRED/DFF ingestion run through the portable contract.</small></div></li>
-            <li><span>02</span><div><strong>Native Airflow asset event</strong><small>Push ingestion completion through REST API v2 instead of manually launching the DAG.</small></div></li>
-            <li><span>03</span><div><strong>Deduplicated orchestration</strong><small>Reuse an existing asset event when the same SkyCommand ingestion run is signalled twice.</small></div></li>
+            <li><span>01</span><div><strong>Dockerized dbt runtime</strong><small>Keep dbt isolated from the FastAPI application environment while targeting Studio PostgreSQL.</small></div></li>
+            <li><span>02</span><div><strong>Three governed layers</strong><small>Build staging, intermediate, and mart models from the proven Federal Funds Rate curated table.</small></div></li>
+            <li><span>03</span><div><strong>Tests as transformation evidence</strong><small>Assert keys, nullability, accepted values, and rate reasonableness before downstream delivery.</small></div></li>
           </ol>
         </article>
         <article className="panel compact-panel">

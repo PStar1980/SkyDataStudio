@@ -43,7 +43,7 @@ CAPABILITIES = [
         code="DBT",
         name="dbt Transformation Layer",
         description="Builds tested staging, intermediate, mart, and semantic data models.",
-        status="SCAFFOLDED",
+        status="FOUNDATION",
         phase=6,
     ),
     Capability(
@@ -68,8 +68,8 @@ ROADMAP = [
     RoadmapPhase(number=2, name="SkyCommand Data-Contract Bridge", status="COMPLETE"),
     RoadmapPhase(number=3, name="Data Catalogue and Engineering Metadata", status="COMPLETE"),
     RoadmapPhase(number=4, name="ETL/ELT Pipeline Workbench", status="COMPLETE"),
-    RoadmapPhase(number=5, name="Apache Airflow Integration", status="IN_PROGRESS"),
-    RoadmapPhase(number=6, name="dbt Transformation and Modelling", status="PLANNED"),
+    RoadmapPhase(number=5, name="Apache Airflow Integration", status="COMPLETE"),
+    RoadmapPhase(number=6, name="dbt Transformation and Modelling", status="IN_PROGRESS"),
     RoadmapPhase(number=7, name="Data Quality and Observability", status="PLANNED"),
     RoadmapPhase(number=8, name="Lineage and Impact Analysis", status="PLANNED"),
     RoadmapPhase(number=9, name="Analytical Marts and Semantic Delivery", status="PLANNED"),
@@ -83,7 +83,7 @@ def platform_summary() -> PlatformSummary:
         product="SkyData Studio",
         subtitle="Data Engineering Workbench",
         theme="Aurora Foundry",
-        current_phase="Phase 5.4 — Ingestion-Complete Event Trigger",
+        current_phase="Phase 6.1 — dbt Runtime and Layered Model Foundation",
         boundary=(
             "SkyData Studio starts after SkyCommand ingestion and publishes governed "
             "analytical products for SkyWeb Analytics, Power BI, and future consumers."

@@ -1,11 +1,15 @@
 version: 2
 
 models:
-  - name: stg_skycommand__ingestion_assets
-    description: Typed staging seam for SkyCommand trusted assets.
+  - name: stg_fed_funds_rate
+    description: Typed staging model over the curated Federal Funds Rate source table.
     columns:
-      - name: asset_code
-        description: Portable asset identifier.
-        tests:
+      - name: observation_date
+        description: Unique observation date.
+        data_tests:
           - not_null
           - unique
+      - name: rate
+        description: Federal Funds Effective Rate normalized to NUMERIC(10,4).
+        data_tests:
+          - not_null
