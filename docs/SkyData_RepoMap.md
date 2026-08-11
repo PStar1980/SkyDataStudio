@@ -151,6 +151,7 @@ SkyDataStudio/
 └── transformations/
     └── dbt/
         └── skydata_studio/
+            ├── .user.yml
             ├── dbt_project.yml
             ├── profiles.yml
             ├── profiles.yml.example
