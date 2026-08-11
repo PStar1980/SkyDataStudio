@@ -122,3 +122,63 @@ class AirflowBackfillCreateRequest(BaseModel):
 
 class AirflowBackfillCreateResponse(BaseModel):
     backfill: AirflowBackfillSummary
+
+
+class AirflowAssetSummary(BaseModel):
+    id: int
+    uri: str
+    name: str | None = None
+    group: str | None = None
+
+
+class AirflowAssetEventSummary(BaseModel):
+    id: int
+    asset_id: int
+    uri: str
+    timestamp: datetime | None = None
+    extra: dict[str, object] = Field(default_factory=dict)
+    created_dag_run_ids: list[str] = Field(default_factory=list)
+
+
+class AirflowIngestionSourceSummary(BaseModel):
+    ingestion_run_id: str
+    domain_code: str
+    source_code: str
+    status_code: str
+    terminal: bool
+    success_like: bool
+    selected_assets: list[str] = Field(default_factory=list)
+    started_at: datetime
+    completed_at: datetime | None = None
+
+
+class AirflowIngestionEventPreview(BaseModel):
+    dag_id: str
+    asset_uri: str
+    asset_registered: bool
+    eligible: bool
+    already_emitted: bool
+    ingestion_run: AirflowIngestionSourceSummary | None = None
+    event: AirflowAssetEventSummary | None = None
+    message: str
+
+
+class AirflowIngestionEventTriggerRequest(BaseModel):
+    ingestion_run_id: str | None = None
+    domain_code: str = Field(default="MACRO", min_length=1, max_length=80)
+    source_code: str = Field(default="FRED", min_length=1, max_length=80)
+    asset_code: str = Field(default="DFF", min_length=1, max_length=120)
+    pipeline_code: str = Field(
+        default="FED_FUNDS_RATE_PIPELINE",
+        min_length=1,
+        max_length=120,
+    )
+    version_number: int | None = Field(default=None, ge=1)
+
+
+class AirflowIngestionEventTriggerResponse(BaseModel):
+    dag_id: str
+    asset: AirflowAssetSummary
+    event: AirflowAssetEventSummary
+    ingestion_run: AirflowIngestionSourceSummary
+    reused: bool = False

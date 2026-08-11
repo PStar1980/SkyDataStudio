@@ -8,6 +8,7 @@ from skydata_contracts.skycommand import (
     CatalogueAssetResponse,
     CatalogueDomainList,
     CatalogueSourceList,
+    IngestionRunDetailResponse,
     IngestionRunList,
     QualityEventList,
     RejectionEventList,
@@ -61,6 +62,12 @@ class SkyCommandGateway(Protocol):
         limit: int = 25,
         offset: int = 0,
     ) -> IngestionRunList: ...
+
+    async def get_run(
+        self,
+        *,
+        ingestion_run_id: str | int,
+    ) -> IngestionRunDetailResponse: ...
 
     async def get_asset(
         self,

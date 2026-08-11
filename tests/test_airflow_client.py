@@ -278,3 +278,84 @@ def test_airflow_client_creates_and_lists_backfills() -> None:
         "pipeline_code": "FED_FUNDS_RATE_PIPELINE",
         "trigger_mode": "BACKFILL",
     }
+
+
+def test_airflow_client_reads_and_emits_asset_events() -> None:
+    posted_payloads: list[dict[str, object]] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        if request.url.path == "/auth/token":
+            return httpx.Response(200, json={"access_token": "dev-token"})
+        if request.url.path == "/api/v2/assets":
+            assert request.url.params["uri_pattern"] == "x-skycommand://ingestion/macro/dff"
+            return httpx.Response(
+                200,
+                json={
+                    "assets": [
+                        {
+                            "id": 44,
+                            "uri": "x-skycommand://ingestion/macro/dff",
+                            "name": "skycommand_dff_ingestion_complete",
+                            "group": "asset",
+                        }
+                    ],
+                    "total_entries": 1,
+                },
+            )
+        if request.url.path == "/api/v2/assets/events":
+            if request.method == "POST":
+                posted_payloads.append(json.loads(request.content.decode("utf-8")))
+                return httpx.Response(
+                    200,
+                    json={
+                        "id": 72,
+                        "asset_id": 44,
+                        "uri": "x-skycommand://ingestion/macro/dff",
+                        "extra": posted_payloads[-1]["extra"],
+                        "created_dagruns": [
+                            {"run_id": "asset__2026-08-10T17:03:00+00:00"}
+                        ],
+                        "timestamp": "2026-08-10T17:03:00Z",
+                    },
+                )
+            assert request.url.params["asset_id"] == "44"
+            return httpx.Response(
+                200,
+                json={
+                    "asset_events": [
+                        {
+                            "id": 71,
+                            "asset_id": 44,
+                            "uri": "x-skycommand://ingestion/macro/dff",
+                            "extra": {"skycommand_ingestion_run_id": "900"},
+                            "created_dagruns": [],
+                            "timestamp": "2026-08-10T16:00:00Z",
+                        }
+                    ],
+                    "total_entries": 1,
+                },
+            )
+        return httpx.Response(404)
+
+    client = AirflowClient(
+        api_base_url="http://airflow.test/api/v2",
+        auth_mode="simple-all-admins",
+        timeout_seconds=2,
+        transport=httpx.MockTransport(handler),
+    )
+
+    asset = client.asset_by_uri("x-skycommand://ingestion/macro/dff")
+    assert asset is not None
+    events = client.asset_events(asset.id)
+    created = client.create_asset_event(
+        asset.id,
+        extra={
+            "event_type": "SKYCOMMAND_INGESTION_COMPLETE",
+            "skycommand_ingestion_run_id": "901",
+        },
+    )
+
+    assert asset.id == 44
+    assert events[0].extra["skycommand_ingestion_run_id"] == "900"
+    assert created.created_dag_run_ids == ["asset__2026-08-10T17:03:00+00:00"]
+    assert posted_payloads[0]["asset_id"] == 44

@@ -120,7 +120,7 @@ function Sidebar({ mobileOpen, onClose }) {
         <span className="environment-dot" />
         <span>
           <strong>Development</strong>
-          <small>Phase 5.3 schedules + backfills</small>
+          <small>Phase 5.4 ingestion event trigger</small>
         </span>
       </div>
     </aside>

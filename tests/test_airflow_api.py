@@ -201,3 +201,140 @@ def test_airflow_backfill_endpoints_apply_controlled_policy(
     assert create_response.status_code == 201
     assert create_response.json()["backfill"]["reprocess_behavior"] == "none"
     assert oversized_response.status_code == 422
+
+
+def test_airflow_ingestion_event_endpoints_emit_and_reuse_asset_event(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from datetime import UTC, datetime
+
+    from skydata_contracts.skycommand import (
+        IngestionRunDetailItem,
+        IngestionRunDetailResponse,
+        IngestionRunList,
+        IngestionRunRecord,
+    )
+    from skydata_studio.integrations.skycommand.client import SkyCommandClient
+    from skydata_studio.schemas.airflow import AirflowAssetEventSummary, AirflowAssetSummary
+
+    run = IngestionRunRecord(
+        ingestionRunId=901,
+        domainCode="MACRO",
+        sourceCode="FRED",
+        modeCode="INCREMENTAL",
+        triggerCode="MANUAL",
+        statusCode="SUCCEEDED",
+        terminal=True,
+        successLike=True,
+        selectedAssets=["DFF"],
+        startedAt=datetime(2026, 8, 10, 17, 0, tzinfo=UTC),
+        completedAt=datetime(2026, 8, 10, 17, 1, tzinfo=UTC),
+    )
+    listing = IngestionRunList(
+        contractVersion="ingestion_run_summary.v1",
+        generatedAt=datetime(2026, 8, 10, 17, 2, tzinfo=UTC),
+        total=1,
+        items=[run],
+    )
+    detail = IngestionRunDetailResponse(
+        contractVersion="ingestion_run_summary.v1",
+        generatedAt=datetime(2026, 8, 10, 17, 2, tzinfo=UTC),
+        run=run,
+        items=[IngestionRunDetailItem(assetCode="DFF", outcomeCode="UNCHANGED")],
+    )
+    asset = AirflowAssetSummary(
+        id=44,
+        uri="x-skycommand://ingestion/macro/dff",
+        name="skycommand_dff_ingestion_complete",
+    )
+    emitted_events: list[AirflowAssetEventSummary] = []
+
+    async def fake_list_runs(
+        self: SkyCommandClient,
+        *,
+        domain_code: str | None = None,
+        source_code: str | None = None,
+        limit: int = 25,
+        offset: int = 0,
+    ) -> IngestionRunList:
+        assert domain_code == "MACRO"
+        assert source_code == "FRED"
+        assert limit == 50
+        assert offset == 0
+        return listing
+
+    async def fake_get_run(
+        self: SkyCommandClient,
+        *,
+        ingestion_run_id: str | int,
+    ) -> IngestionRunDetailResponse:
+        assert str(ingestion_run_id) == "901"
+        return detail
+
+    def fake_asset_by_uri(self: AirflowClient, uri: str) -> AirflowAssetSummary | None:
+        assert uri == "x-skycommand://ingestion/macro/dff"
+        return asset
+
+    def fake_asset_events(
+        self: AirflowClient,
+        asset_id: int,
+        *,
+        limit: int = 50,
+    ) -> list[AirflowAssetEventSummary]:
+        assert asset_id == 44
+        assert limit == 50
+        return list(emitted_events)
+
+    def fake_create_asset_event(
+        self: AirflowClient,
+        asset_id: int,
+        *,
+        extra: dict[str, object],
+    ) -> AirflowAssetEventSummary:
+        assert asset_id == 44
+        assert extra["event_type"] == "SKYCOMMAND_INGESTION_COMPLETE"
+        assert extra["skycommand_ingestion_run_id"] == "901"
+        event = AirflowAssetEventSummary(
+            id=72,
+            asset_id=44,
+            uri=asset.uri,
+            timestamp=datetime(2026, 8, 10, 17, 3, tzinfo=UTC),
+            extra=extra,
+            created_dag_run_ids=["asset__2026-08-10T17:03:00+00:00"],
+        )
+        emitted_events.append(event)
+        return event
+
+    monkeypatch.setattr(SkyCommandClient, "list_runs", fake_list_runs)
+    monkeypatch.setattr(SkyCommandClient, "get_run", fake_get_run)
+    monkeypatch.setattr(AirflowClient, "asset_by_uri", fake_asset_by_uri)
+    monkeypatch.setattr(AirflowClient, "asset_events", fake_asset_events)
+    monkeypatch.setattr(AirflowClient, "create_asset_event", fake_create_asset_event)
+
+    preview_response = client.get(
+        "/api/v1/integrations/airflow/dags/"
+        "skydata_studio_fed_funds_rate_pipeline/ingestion-events/latest"
+    )
+    create_response = client.post(
+        "/api/v1/integrations/airflow/dags/"
+        "skydata_studio_fed_funds_rate_pipeline/ingestion-events",
+        json={"ingestion_run_id": "901"},
+    )
+    reuse_response = client.post(
+        "/api/v1/integrations/airflow/dags/"
+        "skydata_studio_fed_funds_rate_pipeline/ingestion-events",
+        json={"ingestion_run_id": "901"},
+    )
+
+    assert preview_response.status_code == 200
+    assert preview_response.json()["eligible"] is True
+    assert preview_response.json()["already_emitted"] is False
+    assert preview_response.json()["ingestion_run"]["ingestion_run_id"] == "901"
+    assert create_response.status_code == 201
+    assert create_response.json()["reused"] is False
+    assert create_response.json()["event"]["created_dag_run_ids"] == [
+        "asset__2026-08-10T17:03:00+00:00"
+    ]
+    assert reuse_response.status_code == 201
+    assert reuse_response.json()["reused"] is True
+    assert len(emitted_events) == 1

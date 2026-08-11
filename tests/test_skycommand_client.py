@@ -159,3 +159,50 @@ async def test_skycommand_client_reads_portable_time_series_observations() -> No
     assert result.contract_version == "time_series_observations.v1"
     assert result.total == 2
     assert result.items[-1].observation_date.isoformat() == "2026-08-08"
+
+
+@pytest.mark.anyio
+async def test_skycommand_client_reads_ingestion_run_detail() -> None:
+    def handler(request: httpx.Request) -> httpx.Response:
+        assert request.url.path == "/api/ingestion/runs/901"
+        return httpx.Response(
+            200,
+            json={
+                "ok": True,
+                "contractVersion": "ingestion_run_summary.v1",
+                "generatedAt": "2026-08-10T17:02:00Z",
+                "run": {
+                    "ingestionRunId": 901,
+                    "domainCode": "MACRO",
+                    "sourceCode": "FRED",
+                    "modeCode": "INCREMENTAL",
+                    "triggerCode": "MANUAL",
+                    "statusCode": "SUCCEEDED",
+                    "terminal": True,
+                    "successLike": True,
+                    "selectedAssets": ["DFF"],
+                    "startedAt": "2026-08-10T17:00:00Z",
+                    "completedAt": "2026-08-10T17:01:00Z",
+                },
+                "items": [
+                    {
+                        "assetCode": "DFF",
+                        "outcomeCode": "UNCHANGED",
+                        "rows": {"unchanged": 1},
+                    }
+                ],
+            },
+        )
+
+    client = SkyCommandClient(
+        base_url="http://skycommand.local/api",
+        token="bridge-secret",
+        auth_mode="internal",
+        transport=httpx.MockTransport(handler),
+    )
+
+    detail = await client.get_run(ingestion_run_id=901)
+
+    assert detail.run.ingestion_run_id == 901
+    assert detail.run.success_like is True
+    assert detail.items[0].asset_code == "DFF"
