@@ -722,3 +722,58 @@ a { color: inherit; }
   .transformation-metric-grid { grid-template-columns: 1fr; }
 }
 .status-missing { color: var(--amber); background: rgba(243,189,85,0.08); }
+
+
+/* Phase 6.2 — dbt model catalogue and artifact evidence */
+.data-model-intro { display: flex; align-items: flex-end; justify-content: space-between; gap: 1.4rem; }
+.data-model-metric-grid { grid-template-columns: repeat(5,minmax(0,1fr)); }
+.data-model-flow-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 1rem; }
+.data-model-flow-card { position: relative; display: grid; gap: 0.72rem; min-height: 14rem; border: 1px solid rgba(154,131,255,0.2); border-radius: 0.86rem; padding: 1rem; background: linear-gradient(145deg,rgba(5,17,25,0.88),rgba(17,16,38,0.66)); }
+.data-model-flow-card > div { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
+.data-model-flow-card > div > span { color: var(--subtle); font-size: 0.58rem; font-weight: 850; letter-spacing: 0.08em; }
+.data-model-flow-card > strong { color: #f0efff; font-size: 0.94rem; overflow-wrap: anywhere; }
+.data-model-flow-card code { color: #c9c2ff; font-size: 0.66rem; overflow-wrap: anywhere; }
+.data-model-flow-card p { margin: 0; color: var(--muted); font-size: 0.7rem; line-height: 1.55; }
+.data-model-flow-card footer { display: flex; justify-content: space-between; gap: 0.7rem; margin-top: auto; color: var(--subtle); font-size: 0.62rem; }
+.data-model-flow-card > b { position: absolute; z-index: 2; top: 50%; right: -1.45rem; color: var(--violet); font-size: 1.15rem; }
+.data-model-empty { display: grid; gap: 0.45rem; border: 1px dashed rgba(243,189,85,0.28); border-radius: 0.78rem; padding: 1rem; color: var(--muted); background: rgba(243,189,85,0.04); }
+.data-model-empty strong { color: #e9d39d; }
+.data-model-empty code { color: var(--mint); }
+.data-model-table { min-width: 1260px; }
+.data-model-detail-drawer { width: min(920px,94vw); }
+.data-model-contract-card { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 0.65rem; }
+.data-model-contract-card > div { display: grid; gap: 0.28rem; border: 1px solid rgba(154,131,255,0.16); border-radius: 0.72rem; padding: 0.8rem; background: rgba(8,10,26,0.54); }
+.data-model-contract-card span { color: var(--subtle); font-size: 0.58rem; font-weight: 850; letter-spacing: 0.08em; }
+.data-model-contract-card strong { overflow-wrap: anywhere; color: #c9c2ff; font-size: 0.78rem; }
+.data-model-contract-card small { color: var(--muted); font-size: 0.62rem; }
+.data-model-tag-row { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.75rem; }
+.data-model-tag-row span { border: 1px solid rgba(154,131,255,0.2); border-radius: 999px; padding: 0.24rem 0.48rem; color: #c9c2ff; background: rgba(154,131,255,0.07); font-size: 0.58rem; }
+.data-model-lineage-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 0.7rem; }
+.data-model-lineage-grid > article { display: grid; align-content: start; gap: 0.5rem; border: 1px solid rgba(111,190,187,0.1); border-radius: 0.72rem; padding: 0.78rem; background: rgba(3,11,17,0.48); }
+.data-model-lineage-grid > article > span { color: var(--subtle); font-size: 0.58rem; font-weight: 850; letter-spacing: 0.08em; }
+.data-model-lineage-grid article > div { display: flex; align-items: center; justify-content: space-between; gap: 0.6rem; border-top: 1px solid rgba(111,190,187,0.08); padding-top: 0.48rem; }
+.data-model-lineage-grid strong { overflow-wrap: anywhere; color: var(--mint); font-size: 0.68rem; }
+.data-model-lineage-grid small { color: var(--muted); font-size: 0.6rem; }
+.data-model-column-list { display: grid; gap: 0.48rem; }
+.data-model-column-list article { display: grid; grid-template-columns: minmax(10rem,0.65fr) minmax(0,1.35fr); gap: 0.7rem; border: 1px solid rgba(111,190,187,0.08); border-radius: 0.62rem; padding: 0.66rem; background: rgba(3,11,17,0.42); }
+.data-model-column-list code { color: var(--mint); font-size: 0.66rem; }
+.data-model-column-list small { color: var(--muted); font-size: 0.62rem; line-height: 1.45; }
+.status-unknown { color: var(--subtle); background: rgba(111,190,187,0.06); }
+.status-staging, .status-intermediate, .status-mart { color: var(--violet); background: rgba(154,131,255,0.08); }
+
+@media (max-width: 1180px) {
+  .data-model-metric-grid { grid-template-columns: repeat(3,minmax(0,1fr)); }
+}
+
+@media (max-width: 860px) {
+  .data-model-intro { align-items: flex-start; flex-direction: column; }
+  .data-model-flow-grid,
+  .data-model-contract-card,
+  .data-model-lineage-grid { grid-template-columns: 1fr; }
+  .data-model-flow-card > b { display: none; }
+}
+
+@media (max-width: 640px) {
+  .data-model-metric-grid,
+  .data-model-column-list article { grid-template-columns: 1fr; }
+}

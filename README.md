@@ -4,7 +4,7 @@
 
 SkyData Studio is the post-ingestion data engineering application in the Sky ecosystem. It begins where SkyCommand's ingestion responsibility ends and prepares trusted data for analytical consumption by SkyWeb Analytics, Power BI, and future client-facing applications.
 
-**Current status:** Phases 0 through 4 are complete and Phase 5 is underway. The DFF reference pipeline reads SkyCommand through the governed observation contract, materializes the Studio-owned Federal Funds Rate Mart with replay-safe `MERGE` semantics, and preserves durable run/step evidence. **Phases 5.1–5.3 are complete:** Airflow owns the durable batch, daily schedule, controlled backfills, and replay-safe callback evidence. **Phase 5.4 is now in progress:** SkyCommand ingestion completion is promoted into a native Airflow asset event so the same DFF DAG can run from either time or data-arrival signals.
+**Current status:** Phases 0 through 5 are complete, and **Phase 6.1 is complete** with a Docker-isolated dbt/Postgres runtime, three tested staging → intermediate → mart models, 14 dbt data tests, and 3/3 model/layer readiness over the 26,335-row Federal Funds Rate proof. **Phase 6.2 is now in progress:** SkyData Studio reads dbt's generated manifest and run-result artifacts to expose a live Data Models catalogue with build, test, column, and direct dependency evidence.
 
 ---
 
@@ -143,6 +143,19 @@ Phase 5.3 turns the proven DFF DAG into a daily time-based workflow and adds con
 Phase 5.4 adds a native Airflow asset event at `x-skycommand://ingestion/macro/dff`. The DFF DAG keeps its daily timetable through an asset-or-time schedule. SkyData Studio resolves terminal successful FRED/DFF ingestion evidence through SkyCommand's read-only API, emits one Airflow asset event through REST API v2, and deduplicates repeated signals for the same ingestion run. Open `/orchestration/airflow` and use **Emit Ingestion Event** to run the proof.
 
 Open `/orchestration/backfills` after Airflow has reparsed the DAG. The DFF timetable should be visible there, together with the controlled backfill form and Airflow-owned backfill history. The first proof should use a one-day window and `max_active_runs = 1`.
+
+## Phase 6 quick start
+
+Phase 6 keeps dbt outside the FastAPI environment and runs it ephemerally through Docker Compose against Studio PostgreSQL. Build the runtime once, then use the helper for debug/build operations:
+
+```powershell
+docker compose -f .\infra\docker-compose.yml build dbt
+Unblock-File .\scripts\dbt.ps1  # only when Windows marks the trusted local helper as downloaded
+.\scripts\dbt.ps1 debug
+.\scripts\dbt.ps1 build
+```
+
+Phase 6.1 materializes the proven `stg_fed_funds_rate → int_fed_funds_rate_changes → fct_fed_funds_rate_daily` chain. Open `/workspace/transformations` for physical relation readiness and row-count proof. Phase 6.2 reads the generated `target/manifest.json` and `target/run_results.json` artifacts through `GET /api/v1/transformations/dbt/models`; open `/workspace/models` to inspect model layers, materializations, tests, columns, tags, and direct dependencies. Generated dbt artifacts remain ignored by Git and are refreshed by the next dbt build.
 
 ---
 
@@ -392,7 +405,8 @@ The repository currently includes:
 - a Phase 5.2 DFF Airflow batch DAG that calls the proven Studio engine through a replay-safe public API callback and safely reuses the Studio run on Airflow task retry;
 - a Phase 5.3 daily DFF timetable plus bounded Airflow REST API v2 backfill controls;
 - a completed Phase 5.4 native Airflow asset-event bridge from terminal successful SkyCommand FRED/DFF ingestion evidence, including duplicate-signal reuse;
-- a Phase 6.1 Dockerized dbt/Postgres runtime plus the first governed staging → intermediate → mart model chain;
+- a completed Phase 6.1 Dockerized dbt/Postgres runtime plus the first governed staging → intermediate → mart model chain with 14 green data tests;
+- a Phase 6.2 artifact-backed dbt model catalogue surface for logical model, column, test, build, and dependency evidence;
 - backend/frontend validation, repository map, and compact handoff tooling.
 
-The active implementation target is **Phase 6: dbt transformation and modelling**. Phase 5 is complete: manual Airflow launch, schedules, controlled backfills, task retry, and native ingestion-complete asset triggering all execute through the same replay-safe Studio pipeline contract. Phase 6.1 now establishes a Docker-isolated dbt/Postgres runtime and the first tested staging → intermediate → mart model chain over the proven Federal Funds Rate curated source.
+The active implementation target is **Phase 6.2 — dbt Model Catalogue and Artifact Evidence**. Phase 6.1 is complete: the isolated runtime, PostgreSQL connection, three-layer DFF model chain, 26,335-row grain, 14 data tests, Transformations API, and workbench readiness proof are green. Phase 6.2 now turns dbt's generated artifacts into the logical Data Models surface without duplicating dbt-owned metadata in Studio PostgreSQL.
