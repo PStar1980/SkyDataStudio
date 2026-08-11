@@ -176,6 +176,70 @@ SkyDataStudio/
             │   └── .gitkeep
             ├── snapshots/
             │   └── .gitkeep
+            ├── target/
+            │   ├── graph_summary.json
+            │   ├── graph.gpickle
+            │   ├── manifest.json
+            │   ├── osi_document.json
+            │   ├── partial_parse.msgpack
+            │   ├── run_results.json
+            │   ├── semantic_manifest.json
+            │   ├── compiled/
+            │   │   └── skydata_studio/
+            │   │       ├── models/
+            │   │       │   ├── intermediate/
+            │   │       │   │   ├── int_fed_funds_rate_changes.sql
+            │   │       │   │   └── schema.yml/
+            │   │       │   │       ├── not_null_int_fed_funds_rate_changes_observation_date.sql
+            │   │       │   │       ├── not_null_int_fed_funds_rate_changes_rate.sql
+            │   │       │   │       └── unique_int_fed_funds_rate_changes_observation_date.sql
+            │   │       │   ├── marts/
+            │   │       │   │   ├── fct_fed_funds_rate_daily.sql
+            │   │       │   │   └── schema.yml/
+            │   │       │   │       ├── accepted_values_fct_fed_funds__ce738edf7a8c271de47c966afcab8ce8.sql
+            │   │       │   │       ├── not_null_fct_fed_funds_rate_daily_observation_date.sql
+            │   │       │   │       ├── not_null_fct_fed_funds_rate_daily_rate.sql
+            │   │       │   │       └── unique_fct_fed_funds_rate_daily_observation_date.sql
+            │   │       │   └── staging/
+            │   │       │       ├── stg_fed_funds_rate.sql
+            │   │       │       ├── schema.yml/
+            │   │       │       │   ├── not_null_stg_fed_funds_rate_observation_date.sql
+            │   │       │       │   ├── not_null_stg_fed_funds_rate_rate.sql
+            │   │       │       │   └── unique_stg_fed_funds_rate_observation_date.sql
+            │   │       │       └── sources.yml/
+            │   │       │           ├── source_not_null_studio_curated_fed_funds_rate_observation_date.sql
+            │   │       │           ├── source_not_null_studio_curated_fed_funds_rate_rate.sql
+            │   │       │           └── source_unique_studio_curated_fed_funds_rate_observation_date.sql
+            │   │       └── tests/
+            │   │           └── assert_fed_funds_rate_reasonable.sql
+            │   └── run/
+            │       └── skydata_studio/
+            │           ├── models/
+            │           │   ├── intermediate/
+            │           │   │   ├── int_fed_funds_rate_changes.sql
+            │           │   │   └── schema.yml/
+            │           │   │       ├── not_null_int_fed_funds_rate_changes_observation_date.sql
+            │           │   │       ├── not_null_int_fed_funds_rate_changes_rate.sql
+            │           │   │       └── unique_int_fed_funds_rate_changes_observation_date.sql
+            │           │   ├── marts/
+            │           │   │   ├── fct_fed_funds_rate_daily.sql
+            │           │   │   └── schema.yml/
+            │           │   │       ├── accepted_values_fct_fed_funds__ce738edf7a8c271de47c966afcab8ce8.sql
+            │           │   │       ├── not_null_fct_fed_funds_rate_daily_observation_date.sql
+            │           │   │       ├── not_null_fct_fed_funds_rate_daily_rate.sql
+            │           │   │       └── unique_fct_fed_funds_rate_daily_observation_date.sql
+            │           │   └── staging/
+            │           │       ├── stg_fed_funds_rate.sql
+            │           │       ├── schema.yml/
+            │           │       │   ├── not_null_stg_fed_funds_rate_observation_date.sql
+            │           │       │   ├── not_null_stg_fed_funds_rate_rate.sql
+            │           │       │   └── unique_stg_fed_funds_rate_observation_date.sql
+            │           │       └── sources.yml/
+            │           │           ├── source_not_null_studio_curated_fed_funds_rate_observation_date.sql
+            │           │           ├── source_not_null_studio_curated_fed_funds_rate_rate.sql
+            │           │           └── source_unique_studio_curated_fed_funds_rate_observation_date.sql
+            │           └── tests/
+            │               └── assert_fed_funds_rate_reasonable.sql
             └── tests/
                 ├── .gitkeep
                 └── assert_fed_funds_rate_reasonable.sql
