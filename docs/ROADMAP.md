@@ -371,7 +371,7 @@ Closure evidence:
 
 ## Phase 6.1 — dbt Runtime and Layered Model Foundation
 
-**Status:** In progress.
+**Status:** Complete.
 
 Scope:
 
@@ -392,4 +392,37 @@ Acceptance proof:
 - `.\scripts\dbt.ps1 build` completes with all three models and all fourteen data tests green;
 - `dbt_staging.stg_fed_funds_rate`, `dbt_intermediate.int_fed_funds_rate_changes`, and `dbt_mart.fct_fed_funds_rate_daily` exist and retain the 26,335-row proof grain;
 - the Transformations workbench reports 3/3 models and 3/3 layers ready;
+- local validation and GitHub checks remain green.
+
+Closure evidence:
+
+- the dbt image builds with Git available inside the isolated Python 3.12 runtime;
+- `.\scripts\dbt.ps1 debug` resolves the `studio-postgres` target and reports all checks passed;
+- `.\scripts\dbt.ps1 build` completes 3 model builds plus 14 data tests with `PASS=17`, `WARN=0`, `ERROR=0`, and `SKIP=0`;
+- `dbt_staging.stg_fed_funds_rate`, `dbt_intermediate.int_fed_funds_rate_changes`, and `dbt_mart.fct_fed_funds_rate_daily` each retain the 26,335-row proof grain;
+- `/api/v1/transformations/dbt/summary` reports 3/3 models and 3/3 layers ready with all four source/model relations available;
+- the Transformations workbench displays the complete source → staging → intermediate → mart chain as READY;
+- the PowerShell helper no longer shadows the automatic `$args` variable, and the Windows `RemoteSigned` proof is documented by explicitly unblocking the trusted local helper when required;
+- local validation completes with 50 pytest tests, clean Ruff/mypy, zero npm vulnerabilities, clean ESLint, and a successful Vite production build.
+
+## Phase 6.2 — dbt Model Catalogue and Artifact Evidence
+
+**Status:** In progress.
+
+Scope:
+
+- treat dbt `manifest.json` and `run_results.json` as generated runtime evidence rather than duplicating dbt-owned metadata in Studio PostgreSQL;
+- expose model name, layer, physical relation, materialization, path, description, tags, documented columns, attached data-test count, and latest build status through a typed Studio API;
+- project direct upstream source/model dependencies and downstream model dependencies from the dbt manifest;
+- replace the Data Models placeholder with a live artifact-backed catalogue and model-inspection drawer;
+- preserve the Phase 6.1 Transformations page as physical-relation readiness evidence while Data Models becomes the logical dbt metadata surface;
+- keep generated dbt artifacts ignored by Git and require a local `dbt build` to refresh runtime evidence.
+
+Acceptance proof:
+
+- `GET /api/v1/transformations/dbt/models` reports `artifact_status=READY` after a successful dbt build;
+- the API discovers exactly 3 enabled Studio models, 1 declared source, and 14 data tests from the generated artifacts;
+- all three model build statuses resolve to READY from `run_results.json`;
+- the Data Models workbench displays the staging → intermediate → mart dependency chain and exposes model detail for tags, columns, tests, and direct lineage;
+- removing/cleaning the dbt target produces an explicit MISSING artifact state rather than stale or fabricated metadata;
 - local validation and GitHub checks remain green.

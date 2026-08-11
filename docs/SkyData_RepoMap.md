@@ -83,6 +83,7 @@ SkyDataStudio/
 │           ├── pages/
 │           │   ├── Airflow.jsx
 │           │   ├── DataAssets.jsx
+│           │   ├── DataModels.jsx
 │           │   ├── MetadataRegistry.jsx
 │           │   ├── PipelineRuns.jsx
 │           │   ├── Pipelines.jsx
