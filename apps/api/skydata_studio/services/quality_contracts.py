@@ -141,6 +141,10 @@ def evaluate_quality_contract(
         blocking_rule_count=blocking,
         missing_rule_count=missing,
         source_path=source_path,
+        evidence_invocation_id=evidence.invocation_id,
+        evidence_generated_at=evidence.generated_at,
+        slo_window_days=contract.slo.window_days,
+        slo_minimum_compliance_rate=contract.slo.minimum_compliance_rate,
         rules=rules,
     )
 

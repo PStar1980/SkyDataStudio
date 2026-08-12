@@ -95,7 +95,7 @@ Studio quality-contract evaluator ◀── Phase 7.1 latest dbt evidence
         └── PENDING
 ```
 
-The contract is versioned with application code and references target model, quality dimension, test kind, and column instead of dbt-generated test unique IDs. dbt still owns test definitions and execution. SkyCommand still owns its separate ingestion consumer contracts. The `/quality/contracts` workbench presents both boundaries together for visibility without collapsing their ownership. Phase 7.3 adds Studio-owned operational incident memory downstream of this policy seam; historical SLO calculation remains later work.
+The contract is versioned with application code and references target model, quality dimension, test kind, and column instead of dbt-generated test unique IDs. dbt still owns test definitions and execution. SkyCommand still owns its separate ingestion consumer contracts. The `/quality/contracts` workbench presents both boundaries together for visibility without collapsing their ownership. Phase 7.3 adds Studio-owned operational incident memory downstream of this policy seam. Phase 7.4 adds a source-controlled 30-day/99% reliability objective plus one idempotent `quality_slo_observation` per dbt invocation, turning reconciled quality evidence into historical SLO posture without claiming irregular local captures are continuous uptime.
 
 
 ### Durable quality incident boundary
@@ -210,3 +210,10 @@ Studio PostgreSQL: mart.fed_funds_rate_mart
 The materializer creates the target relation from registered Studio metadata when necessary and uses mapping business keys for matching. Existing rows with identical non-key values are counted as unchanged; changed values are updated; new business keys are inserted. Structured run evidence records read, transformed, inserted, updated, unchanged, rejected, published, and target-row counts.
 
 Replay reuse remains intentionally different from a forced physical rerun. `REUSE` returns the existing durable execution and performs no second mutation. `FORCE_NEW` creates a distinct run and re-executes the same `MERGE`, which provides the idempotency proof: unchanged source data must not duplicate target rows. The replay-key canonical input also includes the execution-engine version so a pre-materialization Phase 4.2 run cannot be reused after the Phase 4.3 boundary is enabled.
+
+
+### Quality reliability observations
+
+`quality_slo_observation` is Studio-owned operational evidence, not copied dbt metadata. Each row is keyed by quality-contract identity plus dbt invocation identity and records contract status, artifact/trust posture, pass rate, and active incident counts at capture time. The unique observation key makes repeated reconciliation safe: the same dbt invocation cannot be counted twice for the same contract version.
+
+The first reliability SLO is defined beside the quality contract rather than in application code: `window_days=30` and `minimum_compliance_rate=0.99`. The `/quality/reliability` workbench reports `MEETING`, `AT_RISK`, `BREACHED`, or `PENDING` from captured observations. This is explicitly an observation-based reliability measure; scheduled capture cadence and notification routing remain later operational integrations.

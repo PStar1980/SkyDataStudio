@@ -516,7 +516,7 @@ Closure evidence:
 
 ## Phase 7.3 — Durable Quality Incidents and Remediation Lifecycle
 
-**Status:** In progress.
+**Status:** Complete. Additive incident persistence, clean-evidence reconciliation, lifecycle proof, workbench proof, and local validation are green.
 
 Scope:
 
@@ -529,11 +529,36 @@ Scope:
 - add a Quality Incidents workbench while explicitly creating no fake incident when the current contract remains clean;
 - keep historical SLO calculation, notification routing, and cross-product lineage impact outside this slice.
 
+Closure evidence:
+
+- re-running `uv run python scripts/bootstrap_metadata.py` reported the Studio metadata schema ready against the existing PostgreSQL database;
+- reconciling the live COMPLIANT 5/5 Federal Funds Rate contract returned `created_count=0`, `reopened_count=0`, `resolved_count=0`, zero active incidents, and no synthetic failure record;
+- the Quality Incidents API and workbench both showed COMPLIANT/READY with 0 active, 0 blocking, 0 resolved, and an intentionally empty durable register;
+- backend lifecycle tests prove BLOCK → OPEN, operator acknowledgement, manual/PASS-driven resolution, and recurrence → REOPENED with occurrence history;
+- a Ruff import-order finding in the new lifecycle test was auto-fixed, after which final validation passed Ruff, mypy across 53 source files, 68 pytest tests, npm audit with zero vulnerabilities, ESLint, and Vite production build.
+
+
+
+## Phase 7.4 — Quality SLO and Reliability History
+
+**Status:** In progress.
+
+Scope:
+
+- extend the source-controlled Federal Funds Rate quality contract with a 30-day reliability window and 99% minimum compliant-observation target;
+- persist `quality_slo_observation` as Studio-owned operational history while leaving dbt test definitions and contract rules at their existing authorities;
+- key observations by contract version plus dbt invocation identity so repeated reconciliation of identical evidence is idempotent;
+- capture contract status, artifact/trust posture, pass rate, and active/blocking/warning incident totals for each observed evidence invocation;
+- compute rolling `MEETING`, `AT_RISK`, `BREACHED`, or `PENDING` posture, compliance rate, outcome counts, and current compliant streak;
+- expose `GET /api/v1/quality/reliability/summary` and `POST /api/v1/quality/reliability/capture`;
+- make normal incident reconciliation capture reliability evidence automatically, while the dedicated capture endpoint remains a self-contained workbench action;
+- add a Quality Reliability workbench and keep scheduled capture cadence, notification routing, and continuous-uptime claims outside this slice.
+
 Acceptance proof:
 
-- re-running `uv run python scripts/bootstrap_metadata.py` creates the additive incident and event tables in existing Studio PostgreSQL;
-- reconciling the current COMPLIANT 5/5 Federal Funds Rate contract returns zero active incidents and creates no synthetic failure record;
-- backend lifecycle tests prove BLOCK → OPEN, operator acknowledgement, manual/PASS-driven resolution, and recurrence → REOPENED with occurrence history;
-- the Quality Incidents workbench shows current contract state, active/blocking/resolved totals, the durable register, lifecycle history, and acknowledgement/resolution controls;
-- local validation remains green with 68 pytest tests plus Ruff, mypy, npm audit, ESLint, and Vite build.
-
+- re-running the idempotent metadata bootstrap creates `quality_slo_observation` in existing Studio PostgreSQL;
+- the first capture of the current clean dbt invocation creates exactly one observation; repeating capture against the same invocation reports `observation_created=false` and leaves history unchanged;
+- the live reliability summary reports `MEETING`, a 30-day window, 99% target, 100% observed compliance, 1 compliant observation, 0 blocked observations, and a clean streak of 1;
+- the Reliability workbench presents the SLO target, current contract state, rolling posture, and invocation-level observation history;
+- backend tests prove idempotent capture, clean SLO success, blocking-observation breach, and pending-before-first-capture behavior;
+- local validation remains green with 72 pytest tests plus Ruff, mypy, npm audit, ESLint, and Vite build.

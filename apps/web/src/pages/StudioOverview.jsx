@@ -5,7 +5,7 @@ const FALLBACK = {
   product: 'SkyData Studio',
   subtitle: 'Data Engineering Workbench',
   theme: 'Aurora Foundry',
-  current_phase: 'Phase 7.3 — Durable Quality Incidents and Remediation Lifecycle',
+  current_phase: 'Phase 7.4 — Quality SLO and Reliability History',
   boundary: 'SkyData Studio starts after SkyCommand ingestion and publishes governed analytical products for downstream consumers.',
   capabilities: [],
 };
@@ -41,7 +41,7 @@ function StudioOverview() {
     <div className="page-stack">
       <section className="hero-panel">
         <div>
-          <span className="eyebrow">AURORA FOUNDRY · PHASE 7.3</span>
+          <span className="eyebrow">AURORA FOUNDRY · PHASE 7.4</span>
           <h1>Shape trusted data into analytical products.</h1>
           <p>{summary.boundary}</p>
           <div className="hero-actions">
@@ -61,7 +61,7 @@ function StudioOverview() {
 
       <section className="metric-grid">
         <article className="metric-card"><span>Platform API</span><strong>{apiState}</strong><small>FastAPI contract service</small></article>
-        <article className="metric-card"><span>Current Phase</span><strong>7.3</strong><small>durable quality incidents + remediation</small></article>
+        <article className="metric-card"><span>Current Phase</span><strong>7.4</strong><small>quality SLO + reliability history</small></article>
         <article className="metric-card"><span>Pipeline Proof</span><strong>READY</strong><small>Curated mart materialization proven</small></article>
         <article className="metric-card"><span>Orchestrator</span><strong>Airflow 3</strong><small>Batch and asset workflows</small></article>
       </section>
@@ -110,11 +110,11 @@ function StudioOverview() {
 
       <section className="two-column-grid">
         <article className="panel compact-panel">
-          <div className="panel-heading"><div><span className="eyebrow">CURRENT IMPLEMENTATION</span><h2>durable quality incidents and remediation lifecycle</h2></div><span className="phase-badge">PHASE 7.3</span></div>
+          <div className="panel-heading"><div><span className="eyebrow">CURRENT IMPLEMENTATION</span><h2>quality SLO and reliability history</h2></div><span className="phase-badge">PHASE 7.4</span></div>
           <ol className="implementation-list">
-            <li><span>01</span><div><strong>Evidence-driven incident creation</strong><small>Persist only real warning, blocking, or missing contract outcomes; passing evidence creates no fake incident.</small></div></li>
-            <li><span>02</span><div><strong>Durable remediation lifecycle</strong><small>Preserve acknowledgement, operator ownership, resolution notes, timestamps, and event history in Studio PostgreSQL.</small></div></li>
-            <li><span>03</span><div><strong>Automatic recovery and recurrence</strong><small>Returning PASS evidence resolves active incidents; a later failure reopens the same durable record as another occurrence.</small></div></li>
+            <li><span>01</span><div><strong>Source-controlled SLO policy</strong><small>The quality contract owns a 30-day, 99% consumer-readiness target alongside its blocking rules.</small></div></li>
+            <li><span>02</span><div><strong>Idempotent reliability observations</strong><small>Each dbt invocation contributes at most one durable SLO observation, so repeated reconciliation cannot inflate history.</small></div></li>
+            <li><span>03</span><div><strong>Observable reliability posture</strong><small>Window compliance, current streak, blocked observations, and incident counts become a dedicated operational surface.</small></div></li>
           </ol>
         </article>
         <article className="panel compact-panel">

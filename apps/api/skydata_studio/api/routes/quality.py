@@ -9,6 +9,8 @@ from skydata_studio.schemas.quality import (
     QualityIncidentRead,
     QualityIncidentReconcileResult,
     QualityIncidentSummary,
+    QualityReliabilityCaptureResult,
+    QualityReliabilitySummary,
 )
 from skydata_studio.services.dbt_quality import dbt_quality_summary
 from skydata_studio.services.quality_contracts import quality_contract_summary
@@ -19,6 +21,10 @@ from skydata_studio.services.quality_incidents import (
     quality_incident_summary,
     reconcile_quality_incidents,
     resolve_quality_incident,
+)
+from skydata_studio.services.quality_reliability import (
+    capture_quality_reliability_observation,
+    quality_reliability_summary,
 )
 
 router = APIRouter()
@@ -35,7 +41,7 @@ def _incident_storage_unavailable() -> HTTPException:
     return HTTPException(
         status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
         detail=(
-            "SkyData Studio quality incident storage is unavailable. Start studio-postgres "
+            "SkyData Studio quality operational storage is unavailable. Start studio-postgres "
             "and run uv run python scripts/bootstrap_metadata.py."
         ),
     )
@@ -80,7 +86,14 @@ def incident_summary(session: SessionDependency) -> QualityIncidentSummary:
 @router.post("/incidents/reconcile", response_model=QualityIncidentReconcileResult)
 def incident_reconcile(session: SessionDependency) -> QualityIncidentReconcileResult:
     try:
-        return reconcile_quality_incidents(session)
+        contract = quality_contract_summary()
+        result = reconcile_quality_incidents(session, contract=contract)
+        observation_created = capture_quality_reliability_observation(
+            session, contract=contract, incidents=result.summary
+        )
+        return result.model_copy(
+            update={"reliability_observation_created": observation_created}
+        )
     except SQLAlchemyError as error:
         session.rollback()
         raise _incident_storage_unavailable() from error
@@ -88,6 +101,44 @@ def incident_reconcile(session: SessionDependency) -> QualityIncidentReconcileRe
         session.rollback()
         raise _artifact_unavailable(
             "SkyData Studio could not reconcile durable incidents from current quality evidence."
+        ) from error
+
+
+@router.get("/reliability/summary", response_model=QualityReliabilitySummary)
+def reliability_summary(session: SessionDependency) -> QualityReliabilitySummary:
+    try:
+        return quality_reliability_summary(session)
+    except SQLAlchemyError as error:
+        raise _incident_storage_unavailable() from error
+    except (OSError, ValueError, TypeError) as error:
+        raise _artifact_unavailable(
+            "SkyData Studio could not evaluate quality reliability history. "
+            "Run .\\scripts\\dbt.ps1 build, reconcile quality evidence, and retry."
+        ) from error
+
+
+@router.post("/reliability/capture", response_model=QualityReliabilityCaptureResult)
+def reliability_capture(session: SessionDependency) -> QualityReliabilityCaptureResult:
+    try:
+        contract = quality_contract_summary()
+        incident_result = reconcile_quality_incidents(session, contract=contract)
+        observation_created = capture_quality_reliability_observation(
+            session, contract=contract, incidents=incident_result.summary
+        )
+        return QualityReliabilityCaptureResult(
+            observation_created=observation_created,
+            incident_created_count=incident_result.created_count,
+            incident_reopened_count=incident_result.reopened_count,
+            incident_resolved_count=incident_result.resolved_count,
+            summary=quality_reliability_summary(session, contract=contract),
+        )
+    except SQLAlchemyError as error:
+        session.rollback()
+        raise _incident_storage_unavailable() from error
+    except (OSError, ValueError, TypeError) as error:
+        session.rollback()
+        raise _artifact_unavailable(
+            "SkyData Studio could not capture the latest quality reliability observation."
         ) from error
 
 

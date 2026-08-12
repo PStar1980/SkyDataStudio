@@ -54,6 +54,11 @@ class DbtQualitySummary(BaseModel):
     checks: list[DbtQualityCheckSummary]
 
 
+class QualitySloDefinition(BaseModel):
+    window_days: int = Field(default=30, ge=1, le=365)
+    minimum_compliance_rate: float = Field(default=0.99, ge=0.0, le=1.0)
+
+
 class QualityContractRuleDefinition(BaseModel):
     code: str
     label: str
@@ -72,6 +77,7 @@ class QualityContractDefinition(BaseModel):
     layer: Literal["STAGING", "INTERMEDIATE", "MART"]
     enforcement_mode: Literal["BLOCK", "ADVISORY"]
     minimum_pass_rate: float = Field(ge=0.0, le=1.0)
+    slo: QualitySloDefinition = Field(default_factory=QualitySloDefinition)
     rules: list[QualityContractRuleDefinition]
 
 
@@ -110,6 +116,10 @@ class QualityContractSummary(BaseModel):
     blocking_rule_count: int = Field(ge=0)
     missing_rule_count: int = Field(ge=0)
     source_path: str
+    evidence_invocation_id: str | None = None
+    evidence_generated_at: str | None = None
+    slo_window_days: int = Field(default=30, ge=1, le=365)
+    slo_minimum_compliance_rate: float = Field(default=0.99, ge=0.0, le=1.0)
     rules: list[QualityContractRuleEvaluation]
 
 
@@ -186,4 +196,57 @@ class QualityIncidentReconcileResult(BaseModel):
     created_count: int = Field(ge=0)
     reopened_count: int = Field(ge=0)
     resolved_count: int = Field(ge=0)
+    reliability_observation_created: bool = False
     summary: QualityIncidentSummary
+
+
+QualityReliabilityStatus = Literal["MEETING", "AT_RISK", "BREACHED", "PENDING"]
+
+
+class QualityReliabilityObservationRead(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: str
+    contract_code: str
+    contract_version: str
+    evidence_invocation_id: str | None = None
+    evidence_generated_at: datetime | None = None
+    contract_status: Literal["COMPLIANT", "DEGRADED", "BLOCKED", "PENDING"]
+    artifact_status: Literal["READY", "PENDING", "MISSING"]
+    evidence_trust_posture: Literal["TRUSTED", "DEGRADED", "BLOCKED", "PENDING"]
+    pass_rate: float = Field(ge=0.0, le=1.0)
+    active_incident_count: int = Field(ge=0)
+    blocking_active_incident_count: int = Field(ge=0)
+    warning_active_incident_count: int = Field(ge=0)
+    captured_at: datetime
+
+
+class QualityReliabilitySummary(BaseModel):
+    project_name: str = "skydata_studio"
+    phase: str = "Phase 7.4 — Quality SLO and Reliability History"
+    contract_code: str
+    contract_version: str
+    current_contract_status: Literal["COMPLIANT", "DEGRADED", "BLOCKED", "PENDING"]
+    reliability_status: QualityReliabilityStatus
+    window_days: int = Field(ge=1, le=365)
+    minimum_compliance_rate: float = Field(ge=0.0, le=1.0)
+    observed_compliance_rate: float = Field(ge=0.0, le=1.0)
+    observation_count: int = Field(ge=0)
+    compliant_count: int = Field(ge=0)
+    degraded_count: int = Field(ge=0)
+    blocked_count: int = Field(ge=0)
+    pending_count: int = Field(ge=0)
+    current_compliant_streak: int = Field(ge=0)
+    window_start: datetime
+    window_end: datetime
+    observations: list[QualityReliabilityObservationRead]
+
+
+class QualityReliabilityCaptureResult(BaseModel):
+    project_name: str = "skydata_studio"
+    phase: str = "Phase 7.4 — Quality SLO and Reliability History"
+    observation_created: bool
+    incident_created_count: int = Field(ge=0)
+    incident_reopened_count: int = Field(ge=0)
+    incident_resolved_count: int = Field(ge=0)
+    summary: QualityReliabilitySummary
