@@ -437,7 +437,7 @@ Closure evidence:
 
 ## Phase 6.3 — dbt Semantic Model and Governed Metric Foundation
 
-**Status:** In progress.
+**Status:** Complete. Semantic parsing, MetricFlow time-spine support, artifact projection, validation, and the workbench proof are green.
 
 Scope:
 
@@ -458,4 +458,35 @@ Acceptance proof:
 - `GET /api/v1/transformations/dbt/semantic` reports `artifact_status=READY`, 1 semantic model, 4 metrics, 1 entity, and the expected dimensions;
 - the Semantic Layer workbench displays the governed model, primary entity, dimensions, and all four metrics from the generated artifact evidence;
 - `dbt_mart.fct_fed_funds_rate_daily` retains 26,335 rows, `dbt_mart.time_spine_daily` exists at DAY granularity, and the business-model Data Models workbench remains 3/3 ready because semantic utility models are excluded from that catalogue;
+- local validation and GitHub checks remain green.
+
+Closure evidence:
+
+- `./scripts/dbt.ps1 build` discovers 4 models, 14 data tests, 1 source, 4 metrics, and 1 semantic model, then completes with `PASS=18`, `WARN=0`, `ERROR=0`, and `SKIP=0`;
+- the semantic endpoint reports `artifact_status=READY`, 1 semantic model, 4 governed metrics, 1 primary entity, and 4 dimensions;
+- the Data Models workbench remains 3/3 READY while the dedicated `time_spine_daily` semantic utility is excluded from the business-model catalogue;
+- the Semantic Layer workbench renders the governed model, entity, dimensions, and all four metric definitions from dbt artifacts;
+- local validation completes with 57 pytest tests, clean Ruff/mypy, zero npm vulnerabilities, clean ESLint, and a successful Vite production build.
+
+## Phase 7.1 — dbt Quality Evidence and Trust Posture Foundation
+
+**Status:** In progress.
+
+Scope:
+
+- keep dbt as the single authority for test definitions and execution outcomes;
+- join test metadata from `target/manifest.json` with latest statuses, failures, messages, and timings from `target/run_results.json`;
+- classify checks into completeness, uniqueness, validity, referential-integrity, business-rule, and other quality dimensions;
+- resolve every check to its owning source/model, engineering layer, column when applicable, severity, and latest result;
+- compute one latest-run trust posture: `TRUSTED`, `DEGRADED`, `BLOCKED`, or `PENDING`;
+- expose the evidence through `GET /api/v1/quality/dbt/summary`;
+- replace the Data Quality placeholder with an artifact-backed quality workbench and layer coverage view;
+- keep Phase 7.1 observational: durable incidents, blocking policies, reconciliation rules, acknowledgements, and SLOs remain later Phase 7 slices.
+
+Acceptance proof:
+
+- the quality API reports `artifact_status=READY`, `trust_posture=TRUSTED`, 14 checks, 14 passes, 0 warnings, 0 failures, 0 errors, and the expected 3 source / 11 model split after the proven dbt build;
+- the workbench displays SOURCE 3/3, STAGING 3/3, INTERMEDIATE 3/3, and MART 5/5 latest checks passing;
+- generic and singular tests preserve their quality dimension, target, layer, severity, runtime, and failure evidence;
+- missing run-results evidence produces `PENDING` rather than pretending the tests are green;
 - local validation and GitHub checks remain green.

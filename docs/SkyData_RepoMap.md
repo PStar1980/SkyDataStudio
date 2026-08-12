@@ -25,6 +25,7 @@ SkyDataStudio/
 │   │       │       ├── pipeline_runs.py
 │   │       │       ├── pipelines.py
 │   │       │       ├── platform.py
+│   │       │       ├── quality.py
 │   │       │       └── skycommand.py
 │   │       ├── core/
 │   │       │   ├── __init__.py
@@ -55,12 +56,14 @@ SkyDataStudio/
 │   │       │   ├── execution.py
 │   │       │   ├── metadata.py
 │   │       │   ├── pipelines.py
-│   │       │   └── platform.py
+│   │       │   ├── platform.py
+│   │       │   └── quality.py
 │   │       └── services/
 │   │           ├── __init__.py
 │   │           ├── asset_detail.py
 │   │           ├── asset_workspace.py
 │   │           ├── contract_compatibility.py
+│   │           ├── dbt_quality.py
 │   │           ├── dbt_transformations.py
 │   │           ├── metadata_registry.py
 │   │           ├── pipeline_execution.py
@@ -84,6 +87,7 @@ SkyDataStudio/
 │           │   ├── Airflow.jsx
 │           │   ├── DataAssets.jsx
 │           │   ├── DataModels.jsx
+│           │   ├── DataQuality.jsx
 │           │   ├── MetadataRegistry.jsx
 │           │   ├── PipelineRuns.jsx
 │           │   ├── Pipelines.jsx
@@ -147,6 +151,7 @@ SkyDataStudio/
 │   ├── test_pipeline_registry.py
 │   ├── test_platform.py
 │   ├── test_quality_contracts.py
+│   ├── test_quality.py
 │   ├── test_skycommand_client.py
 │   ├── test_skycommand_contracts.py
 │   └── test_validation_environment.py

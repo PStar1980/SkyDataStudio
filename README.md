@@ -4,7 +4,7 @@
 
 SkyData Studio is the post-ingestion data engineering application in the Sky ecosystem. It begins where SkyCommand's ingestion responsibility ends and prepares trusted data for analytical consumption by SkyWeb Analytics, Power BI, and future client-facing applications.
 
-**Current status:** Phases 0 through 5 are complete, **Phase 6.1 is complete** with a Docker-isolated dbt/Postgres runtime and the proven three-layer Federal Funds Rate model chain, and **Phase 6.2 is complete** with an artifact-backed Data Models catalogue reporting 3/3 models ready, 1 source, and 14 data tests. **Phase 6.3 is now in progress:** the governed mart becomes SkyData Studio's first dbt semantic model, with a stable entity, reusable dimensions, and four governed metrics projected from dbt artifacts.
+**Current status:** Phases 0 through 6 are complete. **Phase 6.3 closed green** with one governed semantic model, four metrics, one DAY-grain MetricFlow time spine, and 18/18 dbt build nodes passing. **Phase 7.1 is now in progress:** dbt test definitions and latest run outcomes become an artifact-backed Data Quality trust surface.
 
 ---
 
@@ -157,6 +157,10 @@ Unblock-File .\scripts\dbt.ps1  # only when Windows marks the trusted local help
 
 Phase 6.1 materializes the proven `stg_fed_funds_rate → int_fed_funds_rate_changes → fct_fed_funds_rate_daily` chain. Open `/workspace/transformations` for physical relation readiness and row-count proof. Phase 6.2 reads the generated `target/manifest.json` and `target/run_results.json` artifacts through `GET /api/v1/transformations/dbt/models`; open `/workspace/models` to inspect model layers, materializations, tests, columns, tags, and direct dependencies. Phase 6.3 adds model-embedded semantic definitions to the governed mart, a dedicated DAY-grain MetricFlow time spine, and projects semantic evidence through `GET /api/v1/transformations/dbt/semantic`; open `/delivery/semantic` to inspect the semantic model, primary entity, dimensions, and governed metrics. Generated dbt artifacts remain ignored by Git and are refreshed by the next dbt build.
 
+## Phase 7.1 quick start
+
+Phase 7.1 keeps dbt as the test-definition and execution authority, then joins `manifest.json` test metadata with `run_results.json` outcomes through `GET /api/v1/quality/dbt/summary`. Open `/quality/checks` to inspect the latest trust posture, layer coverage, test dimensions, severity, failures, and runtime evidence. This first quality slice is observational only; persistent incidents, blocking policies, reconciliation rules, and SLOs remain later Phase 7 boundaries.
+
 ---
 
 ## Validation contract
@@ -297,8 +301,8 @@ The public roadmap is intentionally compact so GitHub visitors can see progress 
 | Phase 3 | ✅ Complete | Studio-owned metadata registry, governance, source-to-target mappings, target schemas, and lineage dependencies |
 | Phase 4 | ✅ Complete | Versioned ETL/ELT pipeline workbench, replay-safe local execution, structured run evidence, and idempotent curated-table materialization |
 | Phase 5 | ✅ Complete | Apache Airflow 3 durable batch orchestration, REST API v2 integration, DAG/run/task observability, schedules, backfills, and ingestion-complete triggers |
-| Phase 6 | 🔄 In Progress | dbt transformation and modelling foundation with tested staging, intermediate, mart, and semantic layers |
-| Phase 7 | ⏳ Planned | Data quality, reconciliation, blocking policies, incidents, SLOs, and observability |
+| Phase 6 | ✅ Complete | dbt transformation and modelling foundation with tested staging, intermediate, mart, and semantic layers |
+| Phase 7 | 🔄 In Progress | Data quality, reconciliation, blocking policies, incidents, SLOs, and observability |
 | Phase 8 | ⏳ Planned | Asset/field/model/report lineage and downstream impact analysis |
 | Phase 9 | ⏳ Planned | Curated analytical marts, governed metrics, semantic delivery, and SkyWeb consumer contracts |
 | Phase 10 | ⏳ Planned | Power BI semantic models, refresh strategy, reporting inventory, and governed executive delivery |
@@ -407,7 +411,8 @@ The repository currently includes:
 - a completed Phase 5.4 native Airflow asset-event bridge from terminal successful SkyCommand FRED/DFF ingestion evidence, including duplicate-signal reuse;
 - a completed Phase 6.1 Dockerized dbt/Postgres runtime plus the first governed staging → intermediate → mart model chain with 14 green data tests;
 - a completed Phase 6.2 artifact-backed dbt model catalogue surface for logical model, column, test, build, and dependency evidence;
-- a Phase 6.3 model-embedded dbt semantic definition surface with one governed semantic model, reusable dimensions, and four governed metrics;
+- a completed Phase 6.3 model-embedded dbt semantic definition surface with one governed semantic model, one stable entity, four dimensions, four governed metrics, and a DAY-grain MetricFlow time spine;
+- a Phase 7.1 artifact-backed Data Quality surface that joins dbt test definitions to latest run outcomes and computes a consumer-facing trust posture;
 - backend/frontend validation, repository map, and compact handoff tooling.
 
-The active implementation target is **Phase 6.3 — dbt Semantic Model and Governed Metric Foundation**. Phase 6.1 is complete: the isolated runtime, PostgreSQL connection, three-layer DFF model chain, 26,335-row grain, 14 data tests, Transformations API, and workbench readiness proof are green. Phase 6.2 is also complete: dbt's generated artifacts now drive a 3/3-ready logical Data Models catalogue without duplicating dbt-owned metadata in Studio PostgreSQL. Phase 6.3 extends that same single-authority pattern into semantic metadata: one mart-owned semantic model, one stable primary entity, reusable dimensions, four governed metrics, and one dedicated DAY-grain MetricFlow time spine surfaced through artifact evidence.
+The active implementation target is **Phase 7.1 — dbt Quality Evidence and Trust Posture Foundation**. Phase 6 is complete: the isolated runtime, physical model chain, artifact-backed catalogue, semantic model, governed metrics, time spine, and 18/18 dbt build proof are green. Phase 7.1 now turns the same dbt artifacts into quality evidence without creating another test metadata authority inside Studio.
