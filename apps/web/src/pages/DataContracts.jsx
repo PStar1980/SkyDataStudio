@@ -186,10 +186,10 @@ function DataContracts() {
           </ol>
         </article>
         <article className="panel compact-panel">
-          <div className="panel-heading"><div><span className="eyebrow">BOUNDARY</span><h2>Gate now; incidents next</h2></div><span className="rule-mark">▤</span></div>
+          <div className="panel-heading"><div><span className="eyebrow">BOUNDARY</span><h2>Gate established; incidents now durable</h2></div><span className="rule-mark">▤</span></div>
           <p className="rule-copy">
-            Phase 7.2 evaluates policy but does not persist incident lifecycle. Durable incidents,
-            acknowledgement, remediation ownership, and historical SLO evidence remain later slices.
+            Phase 7.2 established the policy gate. Phase 7.3 now persists incident lifecycle,
+            acknowledgement, remediation ownership, recurrence, and evidence-driven resolution; historical SLOs remain later work.
           </p>
           <div className="rule-footer"><span>Code as contract</span><span>Artifact evidence</span><span>No duplicated dbt authority</span></div>
         </article>

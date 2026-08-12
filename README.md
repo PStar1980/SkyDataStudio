@@ -4,7 +4,7 @@
 
 SkyData Studio is the post-ingestion data engineering application in the Sky ecosystem. It begins where SkyCommand's ingestion responsibility ends and prepares trusted data for analytical consumption by SkyWeb Analytics, Power BI, and future client-facing applications.
 
-**Current status:** Phases 0 through 6 are complete. **Phase 7.1 closed green** with 14/14 dbt checks passing, a TRUSTED latest-run posture, layer-aware quality evidence, and 60 local tests passing. **Phase 7.2 is now in progress:** source-controlled quality contracts turn latest dbt evidence into explicit consumer gates while the Contracts workbench keeps SkyCommand boundary compatibility visible.
+**Current status:** Phases 0 through 6 are complete. **Phase 7.1 and Phase 7.2 are closed green:** latest dbt quality evidence is TRUSTED at 14/14, the Federal Funds Rate consumer gate is COMPLIANT at 5/5 and 100%, all five SkyCommand boundary contracts remain compatible, and the final Phase 7.2 local validation passed 64 tests. **Phase 7.3 is now in progress:** real non-passing contract outcomes become durable Studio-owned incidents with acknowledgement, ownership, resolution, recurrence, and lifecycle history.
 
 ---
 
@@ -171,7 +171,28 @@ Core endpoint:
 GET /api/v1/quality/contracts/summary
 ```
 
-Open `/quality/contracts` to inspect the mart gate and the existing SkyCommand consumer compatibility boundary together. The Federal Funds Rate proof requires five passing MART checks and a 100% pass rate. A missing or non-passing required rule blocks the contract; missing latest run evidence leaves it `PENDING`. Durable incident lifecycle remains a later Phase 7 slice.
+Open `/quality/contracts` to inspect the mart gate and the existing SkyCommand consumer compatibility boundary together. The Federal Funds Rate proof requires five passing MART checks and a 100% pass rate. A missing or non-passing required rule blocks the contract; missing latest run evidence leaves it `PENDING`. Phase 7.2 closed with the live gate COMPLIANT at 5/5 and all five SkyCommand consumer contracts COMPATIBLE.
+
+
+## Phase 7.3 quick start
+
+Phase 7.3 adds Studio-owned runtime persistence for quality incidents without copying dbt test definitions or source-controlled contract policy. Re-run the idempotent PostgreSQL bootstrap so the two incident tables are created:
+
+```powershell
+docker compose -f .\infra\docker-compose.yml up -d studio-postgres
+uv run python .\scripts\bootstrap_metadata.py
+```
+
+Then reconcile the current contract evidence into the durable register:
+
+```text
+GET  /api/v1/quality/incidents/summary
+POST /api/v1/quality/incidents/reconcile
+POST /api/v1/quality/incidents/{incidentId}/acknowledge
+POST /api/v1/quality/incidents/{incidentId}/resolve
+```
+
+Open `/quality/incidents`. A clean 5/5 contract intentionally creates **zero** incidents. `WARN`, `BLOCK`, or `MISSING` rule outcomes create one durable incident per contract rule; operators can acknowledge and manually resolve it, PASS evidence auto-resolves it, and a later recurrence reopens the same record while preserving event history. Manual resolution is not a waiver: reconciliation reopens an incident if failing evidence remains.
 
 ---
 

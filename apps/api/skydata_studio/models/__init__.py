@@ -18,6 +18,7 @@ from skydata_studio.models.pipeline import (
     PipelineStepRun,
     PipelineVersion,
 )
+from skydata_studio.models.quality import QualityIncident, QualityIncidentEvent
 
 __all__ = [
     "MetadataAsset",
@@ -36,4 +37,6 @@ __all__ = [
     "PipelineStepDependency",
     "PipelineStepRun",
     "PipelineVersion",
+    "QualityIncident",
+    "QualityIncidentEvent",
 ]

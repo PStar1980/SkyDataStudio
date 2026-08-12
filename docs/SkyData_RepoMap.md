@@ -47,7 +47,8 @@ SkyDataStudio/
 │   │       ├── models/
 │   │       │   ├── __init__.py
 │   │       │   ├── metadata.py
-│   │       │   └── pipeline.py
+│   │       │   ├── pipeline.py
+│   │       │   └── quality.py
 │   │       ├── schemas/
 │   │       │   ├── __init__.py
 │   │       │   ├── airflow.py
@@ -68,7 +69,8 @@ SkyDataStudio/
 │   │           ├── metadata_registry.py
 │   │           ├── pipeline_execution.py
 │   │           ├── pipeline_registry.py
-│   │           └── quality_contracts.py
+│   │           ├── quality_contracts.py
+│   │           └── quality_incidents.py
 │   └── web/
 │       ├── eslint.config.js
 │       ├── index.html
@@ -94,6 +96,7 @@ SkyDataStudio/
 │           │   ├── PipelineRuns.jsx
 │           │   ├── Pipelines.jsx
 │           │   ├── PlaceholderPage.jsx
+│           │   ├── QualityIncidents.jsx
 │           │   ├── SchedulesBackfills.jsx
 │           │   ├── SemanticLayer.jsx
 │           │   ├── SourceMappings.jsx
@@ -120,7 +123,8 @@ SkyDataStudio/
 │   │       ├── 0001_metadata_registry.sql
 │   │       ├── 0002_source_target_mapping.sql
 │   │       ├── 0003_pipeline_definition.sql
-│   │       └── 0004_pipeline_execution.sql
+│   │       ├── 0004_pipeline_execution.sql
+│   │       └── 0005_quality_incident.sql
 │   └── dbt/
 │       └── Dockerfile
 ├── orchestration/
@@ -157,6 +161,7 @@ SkyDataStudio/
 │   ├── test_platform.py
 │   ├── test_quality_contracts.py
 │   ├── test_quality_gate_contracts.py
+│   ├── test_quality_incidents.py
 │   ├── test_quality.py
 │   ├── test_skycommand_client.py
 │   ├── test_skycommand_contracts.py
