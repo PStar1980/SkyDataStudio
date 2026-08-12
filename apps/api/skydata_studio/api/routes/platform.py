@@ -49,14 +49,20 @@ CAPABILITIES = [
     Capability(
         code="QUALITY_LINEAGE",
         name="Data Quality and Reliability",
-        description="Explains trust, contract gates, incidents, remediation, and reliability history.",
+        description=(
+            "Explains trust, contract gates, incidents, remediation, "
+            "and reliability history."
+        ),
         status="READY",
         phase=7,
     ),
     Capability(
         code="LINEAGE_IMPACT",
         name="Lineage and Impact Analysis",
-        description="Stitches metadata mappings, dbt dependencies, semantic models, and metrics into one impact graph.",
+        description=(
+            "Stitches metadata mappings, dbt dependencies, semantic models, "
+            "and metrics into one impact graph."
+        ),
         status="FOUNDATION",
         phase=8,
     ),
