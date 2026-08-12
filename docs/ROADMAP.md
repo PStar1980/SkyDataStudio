@@ -470,7 +470,7 @@ Closure evidence:
 
 ## Phase 7.1 — dbt Quality Evidence and Trust Posture Foundation
 
-**Status:** In progress.
+**Status:** Complete. Artifact projection, trust posture, workbench proof, strict typing, and local validation are green.
 
 Scope:
 
@@ -483,10 +483,32 @@ Scope:
 - replace the Data Quality placeholder with an artifact-backed quality workbench and layer coverage view;
 - keep Phase 7.1 observational: durable incidents, blocking policies, reconciliation rules, acknowledgements, and SLOs remain later Phase 7 slices.
 
+Closure evidence:
+
+- the quality API reports `artifact_status=READY`, `trust_posture=TRUSTED`, 14 checks, 14 passes, 0 warnings, 0 failures, 0 errors, and the expected 3 source / 11 model split;
+- the Data Quality workbench shows TRUSTED with 14 checks, 14 passes, 0 blocking results, and SOURCE 3/3, STAGING 3/3, INTERMEDIATE 3/3, MART 5/5 coverage;
+- generic and singular test rows preserve quality dimension, target, layer, column, severity, runtime, path, and result evidence;
+- strict mypy typing for normalized quality status is green after replacing an `Any` return with a typed `QualityStatus` lookup;
+- Ruff import organization, mypy, 60 pytest tests, npm audit, ESLint, and Vite production build all pass in the final local validation.
+
+## Phase 7.2 — Quality Contract Gate and Consumer Compatibility Workbench
+
+**Status:** In progress.
+
+Scope:
+
+- add a source-controlled quality-contract boundary under `contracts/quality` rather than persisting duplicate dbt test metadata;
+- define the first governed mart contract for `fct_fed_funds_rate_daily` with stable selectors for completeness, uniqueness, validity, and business-rule evidence;
+- require a 100% pass rate across five consumer-critical MART rules using `BLOCK` enforcement;
+- evaluate contract selectors against the latest Phase 7.1 dbt quality evidence and classify the gate as `COMPLIANT`, `DEGRADED`, `BLOCKED`, or `PENDING`;
+- expose the evaluation through `GET /api/v1/quality/contracts/summary`;
+- replace the Contracts placeholder with a workbench that shows both Studio-owned quality policy and existing SkyCommand consumer contract compatibility;
+- keep durable incidents, acknowledgement/remediation ownership, historical SLOs, and reconciliation state outside this slice.
+
 Acceptance proof:
 
-- the quality API reports `artifact_status=READY`, `trust_posture=TRUSTED`, 14 checks, 14 passes, 0 warnings, 0 failures, 0 errors, and the expected 3 source / 11 model split after the proven dbt build;
-- the workbench displays SOURCE 3/3, STAGING 3/3, INTERMEDIATE 3/3, and MART 5/5 latest checks passing;
-- generic and singular tests preserve their quality dimension, target, layer, severity, runtime, and failure evidence;
-- missing run-results evidence produces `PENDING` rather than pretending the tests are green;
-- local validation and GitHub checks remain green.
+- the quality-contract API reports the Federal Funds Rate contract as `COMPLIANT`, with 5/5 required rules satisfied and a 100% pass rate against the current 14/14 dbt quality evidence;
+- the five rules resolve to MART observation-date completeness, rate completeness, observation-date uniqueness, rate-direction validity, and the singular rate-reasonableness assertion;
+- the Contracts workbench displays the quality gate plus all five SkyCommand consumer boundary contracts without merging ownership between the two systems;
+- missing latest dbt evidence returns `PENDING`, while a missing or non-passing required selector blocks the contract under `BLOCK` enforcement;
+- local validation remains green with 64 pytest tests plus Ruff, mypy, npm audit, ESLint, and Vite build.

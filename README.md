@@ -4,7 +4,7 @@
 
 SkyData Studio is the post-ingestion data engineering application in the Sky ecosystem. It begins where SkyCommand's ingestion responsibility ends and prepares trusted data for analytical consumption by SkyWeb Analytics, Power BI, and future client-facing applications.
 
-**Current status:** Phases 0 through 6 are complete. **Phase 6.3 closed green** with one governed semantic model, four metrics, one DAY-grain MetricFlow time spine, and 18/18 dbt build nodes passing. **Phase 7.1 is now in progress:** dbt test definitions and latest run outcomes become an artifact-backed Data Quality trust surface.
+**Current status:** Phases 0 through 6 are complete. **Phase 7.1 closed green** with 14/14 dbt checks passing, a TRUSTED latest-run posture, layer-aware quality evidence, and 60 local tests passing. **Phase 7.2 is now in progress:** source-controlled quality contracts turn latest dbt evidence into explicit consumer gates while the Contracts workbench keeps SkyCommand boundary compatibility visible.
 
 ---
 
@@ -160,6 +160,18 @@ Phase 6.1 materializes the proven `stg_fed_funds_rate → int_fed_funds_rate_cha
 ## Phase 7.1 quick start
 
 Phase 7.1 keeps dbt as the test-definition and execution authority, then joins `manifest.json` test metadata with `run_results.json` outcomes through `GET /api/v1/quality/dbt/summary`. Open `/quality/checks` to inspect the latest trust posture, layer coverage, test dimensions, severity, failures, and runtime evidence. This first quality slice is observational only; persistent incidents, blocking policies, reconciliation rules, and SLOs remain later Phase 7 boundaries.
+
+## Phase 7.2 quick start
+
+Phase 7.2 adds the first source-controlled consumer quality gate under `contracts/quality/fed_funds_rate_daily.v1.json`. The policy does not copy dbt test definitions; instead, stable selectors such as target model, quality dimension, test kind, and column are evaluated against the latest Phase 7.1 dbt evidence.
+
+Core endpoint:
+
+```text
+GET /api/v1/quality/contracts/summary
+```
+
+Open `/quality/contracts` to inspect the mart gate and the existing SkyCommand consumer compatibility boundary together. The Federal Funds Rate proof requires five passing MART checks and a 100% pass rate. A missing or non-passing required rule blocks the contract; missing latest run evidence leaves it `PENDING`. Durable incident lifecycle remains a later Phase 7 slice.
 
 ---
 
