@@ -16,6 +16,7 @@ import SemanticLayer from './pages/SemanticLayer.jsx';
 import DataQuality from './pages/DataQuality.jsx';
 import DataContracts from './pages/DataContracts.jsx';
 import QualityIncidents from './pages/QualityIncidents.jsx';
+import QualityReliability from './pages/QualityReliability.jsx';
 import PlaceholderPage from './pages/PlaceholderPage.jsx';
 
 const PAGE_META = {
@@ -32,6 +33,7 @@ const PAGE_META = {
   '/quality/checks': ['Data Quality', 'Tests, coverage, and trust evidence'],
   '/quality/contracts': ['Contracts', 'Quality gates and consumer compatibility'],
   '/quality/incidents': ['Quality Incidents', 'Durable failures, ownership, and remediation history'],
+  '/quality/reliability': ['Reliability', 'Quality SLO, observation history, and consumer-readiness posture'],
   '/quality/lineage': ['Lineage', 'Upstream, downstream, and change impact'],
   '/delivery/marts': ['Analytical Marts', 'Curated consumer-ready facts and dimensions'],
   '/delivery/semantic': ['Semantic Layer', 'Governed metrics and business definitions'],
@@ -76,6 +78,7 @@ function App() {
           <Route path="/quality/checks" element={<DataQuality />} />
           <Route path="/quality/contracts" element={<DataContracts />} />
           <Route path="/quality/incidents" element={<QualityIncidents />} />
+          <Route path="/quality/reliability" element={<QualityReliability />} />
           <Route path="/orchestration/airflow" element={<Airflow />} />
           <Route path="/orchestration/runs" element={<PipelineRuns />} />
           <Route path="/orchestration/backfills" element={<SchedulesBackfills />} />
@@ -95,6 +98,7 @@ function App() {
               '/quality/checks',
               '/quality/contracts',
               '/quality/incidents',
+              '/quality/reliability',
             ].includes(path))
             .map(([path, [title, subtitle]]) => (
               <Route

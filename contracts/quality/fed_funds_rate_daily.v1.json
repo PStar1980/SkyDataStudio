@@ -1,12 +1,16 @@
 {
   "code": "FED_FUNDS_RATE_DAILY_QUALITY",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "name": "Federal Funds Rate Daily Quality Contract",
   "description": "Source-controlled consumer gate for the governed Federal Funds Rate daily mart.",
   "target_name": "fct_fed_funds_rate_daily",
   "layer": "MART",
   "enforcement_mode": "BLOCK",
   "minimum_pass_rate": 1.0,
+  "slo": {
+    "window_days": 30,
+    "minimum_compliance_rate": 0.99
+  },
   "rules": [
     {
       "code": "OBSERVATION_DATE_REQUIRED",

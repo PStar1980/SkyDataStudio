@@ -4,7 +4,7 @@
 
 SkyData Studio is the post-ingestion data engineering application in the Sky ecosystem. It begins where SkyCommand's ingestion responsibility ends and prepares trusted data for analytical consumption by SkyWeb Analytics, Power BI, and future client-facing applications.
 
-**Current status:** Phases 0 through 6 are complete. **Phase 7.1 and Phase 7.2 are closed green:** latest dbt quality evidence is TRUSTED at 14/14, the Federal Funds Rate consumer gate is COMPLIANT at 5/5 and 100%, all five SkyCommand boundary contracts remain compatible, and the final Phase 7.2 local validation passed 64 tests. **Phase 7.3 is now in progress:** real non-passing contract outcomes become durable Studio-owned incidents with acknowledgement, ownership, resolution, recurrence, and lifecycle history.
+**Current status:** Phases 0 through 6 are complete. **Phase 7.1 through Phase 7.3 are closed green:** dbt quality evidence is TRUSTED at 14/14, the Federal Funds Rate consumer gate is COMPLIANT at 5/5 and 100%, durable incident reconciliation correctly creates no synthetic failure for clean evidence, and the final Phase 7.3 local validation passed 68 tests. **Phase 7.4 is now in progress:** source-controlled reliability objectives and idempotent evidence observations turn point-in-time quality gates into measurable historical SLO posture.
 
 ---
 
@@ -196,6 +196,34 @@ Open `/quality/incidents`. A clean 5/5 contract intentionally creates **zero** i
 
 ---
 
+## Phase 7.4 quick start
+
+Phase 7.4 adds an observation-backed quality SLO without pretending local captures are continuous uptime. The Federal Funds Rate quality contract now owns a 30-day, 99% minimum compliant-observation target. Re-run the idempotent metadata bootstrap so `quality_slo_observation` exists:
+
+```powershell
+docker compose -f .\infra\docker-compose.yml up -d studio-postgres
+uv run python .\scripts\bootstrap_metadata.py
+```
+
+Capture the latest quality evidence. This also reconciles durable incidents first, then writes **at most one** reliability observation for the current dbt invocation:
+
+```powershell
+Invoke-RestMethod `
+  -Method Post `
+  "http://localhost:8100/api/v1/quality/reliability/capture" |
+  ConvertTo-Json -Depth 12
+```
+
+With the current clean Federal Funds Rate evidence, the first capture should report `observation_created=true`; repeating the same capture should return `false` because the dbt invocation is already represented. Inspect the rolling posture with:
+
+```powershell
+Invoke-RestMethod `
+  "http://localhost:8100/api/v1/quality/reliability/summary" |
+  ConvertTo-Json -Depth 12
+```
+
+The first clean proof should show `MEETING`, 100% observed compliance, a 99% target, one observation, zero blocked observations, and a compliant streak of one. Open **Quality & Lineage → Reliability** for the same evidence in the workbench.
+
 ## Validation contract
 
 Run the complete local validation suite before every SkyData Studio development promotion:
@@ -306,6 +334,8 @@ Orchestration
 Quality & Lineage
   ├─ Data Quality
   ├─ Contracts
+  ├─ Quality Incidents
+  ├─ Reliability
   └─ Lineage
 
 Analytics Delivery

@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import UTC, datetime
 from uuid import uuid4
 
-from sqlalchemy import DateTime, ForeignKey, Integer, String, Text
+from sqlalchemy import DateTime, Float, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from skydata_studio.db.base import Base
@@ -73,3 +73,24 @@ class QualityIncidentEvent(Base):
     )
 
     incident: Mapped[QualityIncident] = relationship(back_populates="events")
+
+
+class QualitySloObservation(Base):
+    __tablename__ = "quality_slo_observation"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
+    observation_key: Mapped[str] = mapped_column(String(420), unique=True, index=True)
+    contract_code: Mapped[str] = mapped_column(String(160), index=True)
+    contract_version: Mapped[str] = mapped_column(String(40))
+    evidence_invocation_id: Mapped[str | None] = mapped_column(String(160), index=True)
+    evidence_generated_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    contract_status: Mapped[str] = mapped_column(String(40), index=True)
+    artifact_status: Mapped[str] = mapped_column(String(40), index=True)
+    evidence_trust_posture: Mapped[str] = mapped_column(String(40), index=True)
+    pass_rate: Mapped[float] = mapped_column(Float, nullable=False)
+    active_incident_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    blocking_active_incident_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    warning_active_incident_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    captured_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=_utc_now, nullable=False, index=True
+    )

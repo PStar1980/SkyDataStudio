@@ -15,3 +15,7 @@ A quality contract declares the evidence a downstream consumer requires from the
 - the singular Federal Funds Rate reasonableness rule.
 
 The contract uses `BLOCK` enforcement and requires a 100% pass rate. The contract definition is versioned in source control; latest execution evidence still comes from dbt `manifest.json` plus `run_results.json`.
+
+## Reliability objective
+
+The governed Federal Funds Rate daily contract also carries a Phase 7.4 SLO policy: a 30-day observation window with a 99% minimum compliant-observation rate. Studio persists one SLO observation per dbt invocation, so repeated reconciliation of identical evidence cannot inflate reliability history.
