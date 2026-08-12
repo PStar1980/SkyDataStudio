@@ -181,13 +181,13 @@ function DataQuality() {
           </ol>
         </article>
         <article className="panel compact-panel">
-          <div className="panel-heading"><div><span className="eyebrow">BOUNDARY</span><h2>Evidence first; incidents later</h2></div><span className="rule-mark">✓</span></div>
+          <div className="panel-heading"><div><span className="eyebrow">BOUNDARY</span><h2>Evidence first; incidents downstream</h2></div><span className="rule-mark">✓</span></div>
           <p className="rule-copy">
-            Phase 7.1 is observational. dbt remains the test-definition and execution authority;
-            Studio projects the latest evidence. Persistent incidents, blocking policies, SLOs,
-            reconciliation rules, and acknowledgements belong to later Phase 7 slices.
+            Phase 7.1 remains the observational evidence seam. Phase 7.2 consumes it as policy,
+            and Phase 7.3 now persists operational incidents downstream without changing dbt's
+            ownership of test definitions or execution.
           </p>
-          <div className="rule-footer"><span>One authority</span><span>Latest-run evidence</span><span>No fake incidents</span></div>
+          <div className="rule-footer"><span>One test authority</span><span>Latest-run evidence</span><span>Downstream incident memory</span></div>
         </article>
       </section>
     </div>

@@ -493,7 +493,7 @@ Closure evidence:
 
 ## Phase 7.2 — Quality Contract Gate and Consumer Compatibility Workbench
 
-**Status:** In progress.
+**Status:** Complete. Source-controlled gate evaluation, consumer compatibility, workbench proof, React lint cleanup, and local validation are green.
 
 Scope:
 
@@ -505,10 +505,35 @@ Scope:
 - replace the Contracts placeholder with a workbench that shows both Studio-owned quality policy and existing SkyCommand consumer contract compatibility;
 - keep durable incidents, acknowledgement/remediation ownership, historical SLOs, and reconciliation state outside this slice.
 
+Closure evidence:
+
+- the live quality-contract API reports `COMPLIANT`, 5/5 required rules satisfied, 100% pass rate, 0 blocking rules, 0 missing rules, and READY/TRUSTED underlying dbt evidence;
+- the five rules resolve to MART observation-date completeness, rate completeness, observation-date uniqueness, rate-direction validity, and the singular rate-reasonableness assertion;
+- the Contracts workbench displays all five quality rules as PASS and all five SkyCommand consumer boundary contracts as COMPATIBLE without merging ownership between the two systems;
+- missing latest dbt evidence remains `PENDING`, while a missing or non-passing required selector blocks the contract under `BLOCK` enforcement;
+- the React initial-fetch pattern was aligned with the rest of Studio so `react-hooks/set-state-in-effect` remains green;
+- final local validation passes Ruff, mypy across 51 source files, 64 pytest tests, npm audit with zero vulnerabilities, ESLint, and Vite production build.
+
+## Phase 7.3 — Durable Quality Incidents and Remediation Lifecycle
+
+**Status:** In progress.
+
+Scope:
+
+- add Studio-owned `quality_incident` and `quality_incident_event` persistence while keeping dbt and source-controlled quality contracts as the upstream evidence/policy authorities;
+- reconcile `WARN`, `BLOCK`, and `MISSING` contract-rule outcomes into one durable incident per contract rule;
+- preserve OPEN, ACKNOWLEDGED, RESOLVED, and REOPENED lifecycle evidence with operator identity, notes, timestamps, and occurrence count;
+- auto-resolve active incidents when the corresponding rule returns to PASS;
+- reopen a resolved incident when failing evidence returns, rather than creating duplicate incident rows;
+- expose summary, reconciliation, acknowledgement, and manual-resolution APIs under `/api/v1/quality/incidents`;
+- add a Quality Incidents workbench while explicitly creating no fake incident when the current contract remains clean;
+- keep historical SLO calculation, notification routing, and cross-product lineage impact outside this slice.
+
 Acceptance proof:
 
-- the quality-contract API reports the Federal Funds Rate contract as `COMPLIANT`, with 5/5 required rules satisfied and a 100% pass rate against the current 14/14 dbt quality evidence;
-- the five rules resolve to MART observation-date completeness, rate completeness, observation-date uniqueness, rate-direction validity, and the singular rate-reasonableness assertion;
-- the Contracts workbench displays the quality gate plus all five SkyCommand consumer boundary contracts without merging ownership between the two systems;
-- missing latest dbt evidence returns `PENDING`, while a missing or non-passing required selector blocks the contract under `BLOCK` enforcement;
-- local validation remains green with 64 pytest tests plus Ruff, mypy, npm audit, ESLint, and Vite build.
+- re-running `uv run python scripts/bootstrap_metadata.py` creates the additive incident and event tables in existing Studio PostgreSQL;
+- reconciling the current COMPLIANT 5/5 Federal Funds Rate contract returns zero active incidents and creates no synthetic failure record;
+- backend lifecycle tests prove BLOCK → OPEN, operator acknowledgement, manual/PASS-driven resolution, and recurrence → REOPENED with occurrence history;
+- the Quality Incidents workbench shows current contract state, active/blocking/resolved totals, the durable register, lifecycle history, and acknowledgement/resolution controls;
+- local validation remains green with 68 pytest tests plus Ruff, mypy, npm audit, ESLint, and Vite build.
+

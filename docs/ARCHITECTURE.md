@@ -95,7 +95,38 @@ Studio quality-contract evaluator ◀── Phase 7.1 latest dbt evidence
         └── PENDING
 ```
 
-The contract is versioned with application code and references target model, quality dimension, test kind, and column instead of dbt-generated test unique IDs. dbt still owns test definitions and execution. SkyCommand still owns its separate ingestion consumer contracts. The `/quality/contracts` workbench presents both boundaries together for visibility without collapsing their ownership. Durable incidents, acknowledgements, remediation ownership, reconciliation state, and SLO history require Studio-owned runtime evidence and remain later Phase 7 slices.
+The contract is versioned with application code and references target model, quality dimension, test kind, and column instead of dbt-generated test unique IDs. dbt still owns test definitions and execution. SkyCommand still owns its separate ingestion consumer contracts. The `/quality/contracts` workbench presents both boundaries together for visibility without collapsing their ownership. Phase 7.3 adds Studio-owned operational incident memory downstream of this policy seam; historical SLO calculation remains later work.
+
+
+### Durable quality incident boundary
+
+```text
+dbt test evidence + source-controlled quality contract
+                    │
+                    ▼
+            Phase 7.2 gate evaluator
+                    │ rule outcome
+       ┌────────────┼─────────────┐
+       │            │             │
+      PASS         WARN      BLOCK / MISSING
+       │            │             │
+       │            └──────┬──────┘
+       │                   ▼
+       │          quality_incident
+       │                   │
+       │          quality_incident_event
+       │                   │
+       │        OPEN → ACKNOWLEDGED
+       │                   │
+       └───────────────→ RESOLVED
+                           │
+                    failure returns
+                           ▼
+                        REOPENED
+```
+
+The incident key is stable at `contract_code + rule_code`, so repeated reconciliation does not create duplicates. A clean PASS does not create an incident. An active incident is resolved automatically when PASS evidence returns; a manually resolved incident is reopened if the same rule is still failing on the next reconciliation. This keeps policy, test execution, and operational memory as three distinct authorities.
+
 
 ## Product blueprint and mapping boundary
 

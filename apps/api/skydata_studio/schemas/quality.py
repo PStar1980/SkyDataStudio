@@ -1,6 +1,7 @@
+from datetime import datetime
 from typing import Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 QualityDimension = Literal[
     "COMPLETENESS",
@@ -110,3 +111,79 @@ class QualityContractSummary(BaseModel):
     missing_rule_count: int = Field(ge=0)
     source_path: str
     rules: list[QualityContractRuleEvaluation]
+
+
+QualityIncidentStatus = Literal["OPEN", "ACKNOWLEDGED", "RESOLVED"]
+QualityIncidentSeverity = Literal["WARNING", "BLOCKING"]
+QualityIncidentEventType = Literal["OPENED", "REOPENED", "ACKNOWLEDGED", "RESOLVED"]
+
+
+class QualityIncidentEventRead(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: str
+    event_type: QualityIncidentEventType
+    actor: str | None = None
+    note: str | None = None
+    evidence_outcome: Literal["PASS", "WARN", "BLOCK", "MISSING"] | None = None
+    created_at: datetime
+
+
+class QualityIncidentRead(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: str
+    incident_key: str
+    contract_code: str
+    contract_version: str
+    rule_code: str
+    rule_label: str
+    target_name: str
+    layer: Literal["STAGING", "INTERMEDIATE", "MART"]
+    quality_dimension: QualityDimension
+    severity: QualityIncidentSeverity
+    status: QualityIncidentStatus
+    evidence_outcome: Literal["WARN", "BLOCK", "MISSING"]
+    matched_check_name: str | None = None
+    matched_status: QualityStatus | None = None
+    message: str
+    occurrence_count: int = Field(ge=1)
+    first_detected_at: datetime
+    last_detected_at: datetime
+    acknowledged_at: datetime | None = None
+    acknowledged_by: str | None = None
+    resolved_at: datetime | None = None
+    resolution_note: str | None = None
+    created_at: datetime
+    updated_at: datetime
+    events: list[QualityIncidentEventRead]
+
+
+class QualityIncidentAction(BaseModel):
+    actor: str = Field(min_length=1, max_length=160)
+    note: str | None = Field(default=None, max_length=2000)
+
+
+class QualityIncidentSummary(BaseModel):
+    project_name: str = "skydata_studio"
+    phase: str = "Phase 7.3 — Durable Quality Incidents and Remediation Lifecycle"
+    contract_code: str
+    contract_status: Literal["COMPLIANT", "DEGRADED", "BLOCKED", "PENDING"]
+    artifact_status: Literal["READY", "PENDING", "MISSING"]
+    total_count: int = Field(ge=0)
+    active_count: int = Field(ge=0)
+    open_count: int = Field(ge=0)
+    acknowledged_count: int = Field(ge=0)
+    resolved_count: int = Field(ge=0)
+    blocking_active_count: int = Field(ge=0)
+    warning_active_count: int = Field(ge=0)
+    incidents: list[QualityIncidentRead]
+
+
+class QualityIncidentReconcileResult(BaseModel):
+    project_name: str = "skydata_studio"
+    phase: str = "Phase 7.3 — Durable Quality Incidents and Remediation Lifecycle"
+    created_count: int = Field(ge=0)
+    reopened_count: int = Field(ge=0)
+    resolved_count: int = Field(ge=0)
+    summary: QualityIncidentSummary

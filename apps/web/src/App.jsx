@@ -15,6 +15,7 @@ import DataModels from './pages/DataModels.jsx';
 import SemanticLayer from './pages/SemanticLayer.jsx';
 import DataQuality from './pages/DataQuality.jsx';
 import DataContracts from './pages/DataContracts.jsx';
+import QualityIncidents from './pages/QualityIncidents.jsx';
 import PlaceholderPage from './pages/PlaceholderPage.jsx';
 
 const PAGE_META = {
@@ -28,8 +29,9 @@ const PAGE_META = {
   '/orchestration/airflow': ['Apache Airflow', 'DAG, asset, scheduler, and executor observability'],
   '/orchestration/runs': ['Pipeline Runs', 'Durable batch execution evidence'],
   '/orchestration/backfills': ['Schedules & Backfills', 'Time, asset, and replay controls'],
-  '/quality/checks': ['Data Quality', 'Tests, incidents, policies, and trust evidence'],
+  '/quality/checks': ['Data Quality', 'Tests, coverage, and trust evidence'],
   '/quality/contracts': ['Contracts', 'Quality gates and consumer compatibility'],
+  '/quality/incidents': ['Quality Incidents', 'Durable failures, ownership, and remediation history'],
   '/quality/lineage': ['Lineage', 'Upstream, downstream, and change impact'],
   '/delivery/marts': ['Analytical Marts', 'Curated consumer-ready facts and dimensions'],
   '/delivery/semantic': ['Semantic Layer', 'Governed metrics and business definitions'],
@@ -73,6 +75,7 @@ function App() {
           <Route path="/delivery/semantic" element={<SemanticLayer />} />
           <Route path="/quality/checks" element={<DataQuality />} />
           <Route path="/quality/contracts" element={<DataContracts />} />
+          <Route path="/quality/incidents" element={<QualityIncidents />} />
           <Route path="/orchestration/airflow" element={<Airflow />} />
           <Route path="/orchestration/runs" element={<PipelineRuns />} />
           <Route path="/orchestration/backfills" element={<SchedulesBackfills />} />
@@ -91,6 +94,7 @@ function App() {
               '/delivery/semantic',
               '/quality/checks',
               '/quality/contracts',
+              '/quality/incidents',
             ].includes(path))
             .map(([path, [title, subtitle]]) => (
               <Route

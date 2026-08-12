@@ -35,6 +35,7 @@ const GROUPS = [
     items: [
       { label: 'Data Quality', to: '/quality/checks', icon: '✓' },
       { label: 'Contracts', to: '/quality/contracts', icon: '▤' },
+      { label: 'Quality Incidents', to: '/quality/incidents', icon: '!' },
       { label: 'Lineage', to: '/quality/lineage', icon: '⌁' },
     ],
   },
@@ -120,7 +121,7 @@ function Sidebar({ mobileOpen, onClose }) {
         <span className="environment-dot" />
         <span>
           <strong>Development</strong>
-          <small>Phase 7.2 quality contract gates</small>
+          <small>Phase 7.3 durable quality incidents</small>
         </span>
       </div>
     </aside>
