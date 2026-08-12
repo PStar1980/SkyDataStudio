@@ -54,28 +54,41 @@ function DataContracts() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  const load = useCallback(async (signal) => {
+  const load = useCallback(async () => {
     setLoading(true);
     setError('');
     try {
       const [qualityPayload, compatibilityPayload] = await Promise.all([
-        getJson('/api/v1/quality/contracts/summary', { signal }),
-        getJson('/api/v1/integrations/skycommand/contracts/compatibility', { signal }),
+        getJson('/api/v1/quality/contracts/summary'),
+        getJson('/api/v1/integrations/skycommand/contracts/compatibility'),
       ]);
       setQualityContract(qualityPayload);
       setCompatibility(compatibilityPayload);
     } catch (requestError) {
-      if (requestError.name !== 'AbortError') setError(requestError.message);
+      setError(requestError.message);
     } finally {
-      if (!signal?.aborted) setLoading(false);
+      setLoading(false);
     }
   }, []);
 
   useEffect(() => {
     const controller = new AbortController();
-    load(controller.signal);
+    Promise.all([
+      getJson('/api/v1/quality/contracts/summary', { signal: controller.signal }),
+      getJson('/api/v1/integrations/skycommand/contracts/compatibility', { signal: controller.signal }),
+    ])
+      .then(([qualityPayload, compatibilityPayload]) => {
+        setQualityContract(qualityPayload);
+        setCompatibility(compatibilityPayload);
+      })
+      .catch((requestError) => {
+        if (requestError.name !== 'AbortError') setError(requestError.message);
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setLoading(false);
+      });
     return () => controller.abort();
-  }, [load]);
+  }, []);
 
   const compatibilityTotal = compatibility.compatible + compatibility.incompatible + compatibility.missing;
 
