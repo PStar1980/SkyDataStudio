@@ -4,6 +4,8 @@ from typing import Any, Literal, cast
 
 from skydata_studio.schemas.quality import DbtQualityCheckSummary, DbtQualitySummary
 
+QualityStatus = Literal["PASS", "WARN", "FAIL", "ERROR", "SKIP", "UNKNOWN"]
+
 
 def _default_dbt_target_dir() -> Path:
     repository_root = Path(__file__).resolve().parents[4]
@@ -95,11 +97,9 @@ def _run_result_index(run_results: dict[str, Any]) -> dict[str, dict[str, Any]]:
     }
 
 
-def _status(result: dict[str, Any] | None) -> Literal[
-    "PASS", "WARN", "FAIL", "ERROR", "SKIP", "UNKNOWN"
-]:
+def _status(result: dict[str, Any] | None) -> QualityStatus:
     raw = str(result.get("status") if result else "").lower()
-    mapping = {
+    mapping: dict[str, QualityStatus] = {
         "pass": "PASS",
         "success": "PASS",
         "warn": "WARN",
@@ -109,7 +109,7 @@ def _status(result: dict[str, Any] | None) -> Literal[
         "skipped": "SKIP",
         "skip": "SKIP",
     }
-    return cast(Any, mapping.get(raw, "UNKNOWN"))
+    return mapping.get(raw, "UNKNOWN")
 
 
 def _severity(test_node: dict[str, Any]) -> Literal["ERROR", "WARN"]:
