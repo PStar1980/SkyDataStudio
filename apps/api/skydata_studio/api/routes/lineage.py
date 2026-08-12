@@ -1,0 +1,42 @@
+from typing import Annotated
+
+from fastapi import APIRouter, HTTPException, Query, status
+from sqlalchemy.exc import SQLAlchemyError
+
+from skydata_studio.db.session import SessionDependency
+from skydata_studio.schemas.lineage import LineageImpactSummary, LineageSummary
+from skydata_studio.services.lineage import lineage_impact, lineage_summary
+
+router = APIRouter()
+
+
+def _unavailable(_error: Exception) -> HTTPException:
+    return HTTPException(
+        status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+        detail=(
+            "SkyData Studio could not compose cross-layer lineage. Ensure Studio PostgreSQL "
+            "is available and run .\\scripts\\dbt.ps1 build so dbt artifacts are current."
+        ),
+    )
+
+
+@router.get("/summary", response_model=LineageSummary)
+def lineage_graph(
+    session: SessionDependency,
+    focus_node_id: Annotated[str | None, Query(alias="focusNodeId")] = None,
+) -> LineageSummary:
+    try:
+        return lineage_summary(session, focus_node_id=focus_node_id)
+    except (SQLAlchemyError, OSError, ValueError, TypeError) as error:
+        raise _unavailable(error) from error
+
+
+@router.get("/impact", response_model=LineageImpactSummary)
+def lineage_node_impact(
+    session: SessionDependency,
+    node_id: Annotated[str, Query(alias="nodeId", min_length=1)],
+) -> LineageImpactSummary:
+    try:
+        return lineage_impact(session, node_id)
+    except (SQLAlchemyError, OSError, ValueError, TypeError) as error:
+        raise _unavailable(error) from error

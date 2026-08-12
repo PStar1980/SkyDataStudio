@@ -127,6 +127,28 @@ dbt test evidence + source-controlled quality contract
 
 The incident key is stable at `contract_code + rule_code`, so repeated reconciliation does not create duplicates. A clean PASS does not create an incident. An active incident is resolved automatically when PASS evidence returns; a manually resolved incident is reopened if the same rule is still failing on the next reconciliation. This keeps policy, test execution, and operational memory as three distinct authorities.
 
+## Phase 8.1 federated lineage boundary
+
+Phase 8.1 does not introduce a new lineage database. Instead, Studio composes one read model from the authorities that already own dependency evidence:
+
+```text
+Studio metadata mapping             dbt artifacts                 semantic artifacts
+DFF → FED_FUNDS_RATE_MART    →   fed_funds_rate source    →   fed_funds_rate_daily
+                                      │                              │
+                                      ▼                              ├─ average rate
+                                stg_fed_funds_rate                   ├─ minimum rate
+                                      │                              ├─ maximum rate
+                                      ▼                              └─ observation count
+                           int_fed_funds_rate_changes
+                                      │
+                                      ▼
+                            fct_fed_funds_rate_daily
+```
+
+The bridge from the Studio curated asset to the dbt source is a read-time seam. Metadata mappings remain Studio-owned; dbt `manifest.json` remains the transformation dependency authority; semantic definitions remain dbt-owned. The lineage service normalizes those identifiers into directed nodes and edges and uses a downstream breadth-first traversal for impact radius. No graph rows are persisted in Phase 8.1.
+
+This first slice answers asset/model/semantic/metric impact. Field mappings, quality/incident overlays, pipeline/Airflow execution impact, and report/Power BI consumers remain later Phase 8 boundaries.
+
 
 ## Product blueprint and mapping boundary
 

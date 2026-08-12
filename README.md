@@ -4,7 +4,7 @@
 
 SkyData Studio is the post-ingestion data engineering application in the Sky ecosystem. It begins where SkyCommand's ingestion responsibility ends and prepares trusted data for analytical consumption by SkyWeb Analytics, Power BI, and future client-facing applications.
 
-**Current status:** Phases 0 through 6 are complete. **Phase 7.1 through Phase 7.3 are closed green:** dbt quality evidence is TRUSTED at 14/14, the Federal Funds Rate consumer gate is COMPLIANT at 5/5 and 100%, durable incident reconciliation correctly creates no synthetic failure for clean evidence, and the final Phase 7.3 local validation passed 68 tests. **Phase 7.4 is now in progress:** source-controlled reliability objectives and idempotent evidence observations turn point-in-time quality gates into measurable historical SLO posture.
+**Current status:** Phases 0 through 7 are complete. Phase 7 closed with TRUSTED dbt quality evidence, a COMPLIANT 5/5 consumer gate, durable incident reconciliation, and a 30-day/99% quality SLO reporting MEETING at 100% observed compliance; the final Phase 7.4 validation passed 72 tests. **Phase 8.1 is now in progress:** Studio metadata mappings, dbt dependencies, semantic models, and governed metrics are stitched into one federated lineage graph with transitive downstream impact analysis.
 
 ---
 
@@ -224,6 +224,24 @@ Invoke-RestMethod `
 
 The first clean proof should show `MEETING`, 100% observed compliance, a 99% target, one observation, zero blocked observations, and a compliant streak of one. Open **Quality & Lineage → Reliability** for the same evidence in the workbench.
 
+---
+
+## Phase 8.1 quick start
+
+Phase 8.1 composes a read-only lineage graph from existing authorities rather than creating another lineage metadata store. The first proof joins the READY `DFF → FED_FUNDS_RATE_MART` Studio mapping to the dbt source/model DAG and then continues through the semantic model into all governed metrics.
+
+Start Studio PostgreSQL and ensure the current dbt artifacts exist, then inspect the graph:
+
+```powershell
+Invoke-RestMethod `
+  "http://localhost:8100/api/v1/lineage/summary" |
+  ConvertTo-Json -Depth 12
+```
+
+The current Federal Funds Rate proof should report one metadata mapping, 3 dbt business models, 1 semantic model, 4 metrics, 11 total nodes, and 10 directed edges. The default impact radius begins at `DFF` and should reach 10 downstream nodes including all 3 dbt models, the semantic model, and all 4 governed metrics.
+
+Open **Quality & Lineage → Lineage** and select any node to recompute its transitive downstream radius. You can query the same impact directly with `GET /api/v1/lineage/impact?nodeId=...`. Phase 8.1 remains a federated read model: field-level lineage, quality overlays, and report/consumer impact stay in later Phase 8 slices.
+
 ## Validation contract
 
 Run the complete local validation suite before every SkyData Studio development promotion:
@@ -365,8 +383,8 @@ The public roadmap is intentionally compact so GitHub visitors can see progress 
 | Phase 4 | ✅ Complete | Versioned ETL/ELT pipeline workbench, replay-safe local execution, structured run evidence, and idempotent curated-table materialization |
 | Phase 5 | ✅ Complete | Apache Airflow 3 durable batch orchestration, REST API v2 integration, DAG/run/task observability, schedules, backfills, and ingestion-complete triggers |
 | Phase 6 | ✅ Complete | dbt transformation and modelling foundation with tested staging, intermediate, mart, and semantic layers |
-| Phase 7 | 🔄 In Progress | Data quality, reconciliation, blocking policies, incidents, SLOs, and observability |
-| Phase 8 | ⏳ Planned | Asset/field/model/report lineage and downstream impact analysis |
+| Phase 7 | ✅ Complete | Data quality, reconciliation, blocking policies, incidents, SLOs, and observability |
+| Phase 8 | 🔄 In Progress | Asset/field/model/report lineage and downstream impact analysis |
 | Phase 9 | ⏳ Planned | Curated analytical marts, governed metrics, semantic delivery, and SkyWeb consumer contracts |
 | Phase 10 | ⏳ Planned | Power BI semantic models, refresh strategy, reporting inventory, and governed executive delivery |
 | Phase 11 | ⏳ Planned | Security, RBAC, environment promotion, audit evidence, backup, recovery, and retention |
@@ -478,4 +496,4 @@ The repository currently includes:
 - a Phase 7.1 artifact-backed Data Quality surface that joins dbt test definitions to latest run outcomes and computes a consumer-facing trust posture;
 - backend/frontend validation, repository map, and compact handoff tooling.
 
-The active implementation target is **Phase 7.1 — dbt Quality Evidence and Trust Posture Foundation**. Phase 6 is complete: the isolated runtime, physical model chain, artifact-backed catalogue, semantic model, governed metrics, time spine, and 18/18 dbt build proof are green. Phase 7.1 now turns the same dbt artifacts into quality evidence without creating another test metadata authority inside Studio.
+The active implementation target is **Phase 8.1 — Cross-Layer Lineage Graph and Impact Radius Foundation**. Phases 0 through 7 are complete: the Studio now has governed ingestion handoffs, metadata and mappings, replay-safe pipelines, Airflow orchestration, dbt models and semantics, quality gates, durable incidents, and observation-backed reliability history. Phase 8.1 federates those existing dependency authorities into one directed graph so downstream impact can be explained without creating a second lineage store.
