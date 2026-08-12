@@ -13,12 +13,13 @@ def test_platform_summary_exposes_product_boundary() -> None:
     assert payload["theme"] == "Aurora Foundry"
     assert "SkyCommand" in payload["boundary"]
     assert payload["current_phase"] == (
-        "Phase 7.4 — Quality SLO and Reliability History"
+        "Phase 8.1 — Cross-Layer Lineage Graph and Impact Radius Foundation"
     )
     assert {item["code"] for item in payload["capabilities"]} >= {
         "AIRFLOW",
         "DBT",
         "METADATA_REGISTRY",
+        "LINEAGE_IMPACT",
     }
 
 

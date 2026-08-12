@@ -5,6 +5,7 @@ from skydata_studio.api.routes import (
     contracts,
     dbt,
     health,
+    lineage,
     metadata,
     pipeline_runs,
     pipelines,
@@ -22,6 +23,7 @@ api_router.include_router(
 )
 api_router.include_router(platform.router, prefix="/platform", tags=["platform"])
 api_router.include_router(quality.router, prefix="/quality", tags=["data-quality"])
+api_router.include_router(lineage.router, prefix="/lineage", tags=["lineage-impact"])
 api_router.include_router(dbt.router, prefix="/transformations/dbt", tags=["dbt-transformations"])
 api_router.include_router(contracts.router, prefix="/contracts", tags=["contracts"])
 api_router.include_router(metadata.router, prefix="/metadata", tags=["metadata-registry"])

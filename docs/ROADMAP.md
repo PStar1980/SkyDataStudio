@@ -541,7 +541,7 @@ Closure evidence:
 
 ## Phase 7.4 — Quality SLO and Reliability History
 
-**Status:** In progress.
+**Status:** Complete. Idempotent capture, rolling SLO posture, durable observation history, and local validation are green.
 
 Scope:
 
@@ -562,3 +562,37 @@ Acceptance proof:
 - the Reliability workbench presents the SLO target, current contract state, rolling posture, and invocation-level observation history;
 - backend tests prove idempotent capture, clean SLO success, blocking-observation breach, and pending-before-first-capture behavior;
 - local validation remains green with 72 pytest tests plus Ruff, mypy, npm audit, ESLint, and Vite build.
+
+Closure evidence:
+
+- re-running `uv run python .\scripts\bootstrap_metadata.py` reported the existing Studio PostgreSQL metadata schema ready with the additive SLO observation table available;
+- the first reliability capture created one observation for the latest dbt invocation and reported `MEETING`, a 30-day window, 99% target, 100% observed compliance, one compliant observation, zero blocked/degraded/pending observations, and a clean streak of one;
+- repeating capture against the same dbt invocation returned `observation_created=false` and preserved a single observation, proving replay-safe history;
+- the standalone reliability summary returned the same `MEETING` / 100% posture; the PowerShell `ConvertTo-Json -Depth 1` truncation warning was a display-depth warning only and not a service failure;
+- final local validation passed Ruff, mypy across 54 source files, 72 pytest tests, npm audit with zero vulnerabilities, ESLint, and Vite production build.
+
+## Phase 8.1 — Cross-Layer Lineage Graph and Impact Radius Foundation
+
+**Status:** In progress.
+
+Scope:
+
+- compose one read-only lineage graph from existing Studio metadata mappings, dbt model dependencies, dbt semantic models, and governed metrics without creating a duplicate lineage authority;
+- bridge the registered `DFF → FED_FUNDS_RATE_MART` source-to-target mapping to the governed dbt `fed_funds_rate` source seam;
+- preserve dbt source → staging → intermediate → mart edges directly from artifact dependency metadata;
+- connect the mart to the `fed_funds_rate_daily` semantic model and its four governed metrics;
+- expose typed graph evidence through `GET /api/v1/lineage/summary`;
+- compute transitive downstream impact for any selected node through `GET /api/v1/lineage/impact?nodeId=...`;
+- replace the Lineage placeholder with an interactive graph and downstream-impact workbench;
+- keep field-level lineage, quality/incident overlays, Airflow/pipeline execution lineage, and report/Power BI consumers outside this first Phase 8 slice.
+
+Acceptance proof:
+
+- the live lineage API reports `artifact_status=READY`, one READY Studio metadata mapping, 3 dbt business models, 1 semantic model, and 4 governed metrics;
+- the Federal Funds Rate proof composes 11 nodes and 10 directed edges from SkyCommand `DFF` through the Studio curated mart, dbt model DAG, semantic model, and four metrics;
+- the default `DFF` impact radius reaches 10 downstream nodes including all 3 dbt models, 1 semantic model, and 4 metrics;
+- selecting `int_fed_funds_rate_changes` limits impact to the downstream fact model, semantic model, and four metrics rather than reporting upstream nodes;
+- missing dbt artifacts degrade the graph to `PARTIAL` while preserving registered Studio mapping evidence instead of fabricating model lineage;
+- the Lineage workbench renders the federated graph and recomputes downstream impact when a node is selected;
+- local validation remains green with 76 pytest tests plus Ruff, mypy, npm audit, ESLint, and Vite build.
+

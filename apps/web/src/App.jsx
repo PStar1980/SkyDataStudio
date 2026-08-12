@@ -17,6 +17,7 @@ import DataQuality from './pages/DataQuality.jsx';
 import DataContracts from './pages/DataContracts.jsx';
 import QualityIncidents from './pages/QualityIncidents.jsx';
 import QualityReliability from './pages/QualityReliability.jsx';
+import Lineage from './pages/Lineage.jsx';
 import PlaceholderPage from './pages/PlaceholderPage.jsx';
 
 const PAGE_META = {
@@ -79,6 +80,7 @@ function App() {
           <Route path="/quality/contracts" element={<DataContracts />} />
           <Route path="/quality/incidents" element={<QualityIncidents />} />
           <Route path="/quality/reliability" element={<QualityReliability />} />
+          <Route path="/quality/lineage" element={<Lineage />} />
           <Route path="/orchestration/airflow" element={<Airflow />} />
           <Route path="/orchestration/runs" element={<PipelineRuns />} />
           <Route path="/orchestration/backfills" element={<SchedulesBackfills />} />
@@ -99,6 +101,7 @@ function App() {
               '/quality/contracts',
               '/quality/incidents',
               '/quality/reliability',
+              '/quality/lineage',
             ].includes(path))
             .map(([path, [title, subtitle]]) => (
               <Route

@@ -122,7 +122,7 @@ function Sidebar({ mobileOpen, onClose }) {
         <span className="environment-dot" />
         <span>
           <strong>Development</strong>
-          <small>Phase 7.4 quality SLO + reliability</small>
+          <small>Phase 8.1 cross-layer lineage</small>
         </span>
       </div>
     </aside>

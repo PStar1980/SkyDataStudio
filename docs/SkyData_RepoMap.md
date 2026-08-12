@@ -21,6 +21,7 @@ SkyDataStudio/
 │   │       │       ├── contracts.py
 │   │       │       ├── dbt.py
 │   │       │       ├── health.py
+│   │       │       ├── lineage.py
 │   │       │       ├── metadata.py
 │   │       │       ├── pipeline_runs.py
 │   │       │       ├── pipelines.py
@@ -55,6 +56,7 @@ SkyDataStudio/
 │   │       │   ├── assets.py
 │   │       │   ├── dbt.py
 │   │       │   ├── execution.py
+│   │       │   ├── lineage.py
 │   │       │   ├── metadata.py
 │   │       │   ├── pipelines.py
 │   │       │   ├── platform.py
@@ -66,6 +68,7 @@ SkyDataStudio/
 │   │           ├── contract_compatibility.py
 │   │           ├── dbt_quality.py
 │   │           ├── dbt_transformations.py
+│   │           ├── lineage.py
 │   │           ├── metadata_registry.py
 │   │           ├── pipeline_execution.py
 │   │           ├── pipeline_registry.py
@@ -93,6 +96,7 @@ SkyDataStudio/
 │           │   ├── DataContracts.jsx
 │           │   ├── DataModels.jsx
 │           │   ├── DataQuality.jsx
+│           │   ├── Lineage.jsx
 │           │   ├── MetadataRegistry.jsx
 │           │   ├── PipelineRuns.jsx
 │           │   ├── Pipelines.jsx
@@ -159,6 +163,7 @@ SkyDataStudio/
 │   ├── test_contract_compatibility.py
 │   ├── test_dbt_transformations.py
 │   ├── test_health.py
+│   ├── test_lineage.py
 │   ├── test_metadata_registry.py
 │   ├── test_pipeline_registry.py
 │   ├── test_platform.py
