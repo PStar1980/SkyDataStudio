@@ -62,6 +62,25 @@ SkyCommand assets enter the registry as `RAW` assets. Studio-created products ad
 
 Phase 6.3 keeps semantic authorship beside the dbt model that owns the analytical grain and supplies MetricFlow with a dedicated DAY-grain calendar time spine. The first contract flows `dbt_mart.fct_fed_funds_rate_daily → fed_funds_rate_daily semantic model → governed metrics → dbt artifacts → Studio Semantic Layer workbench`. SkyData Studio reads generated evidence; it does not copy dbt semantic definitions into Studio PostgreSQL. This phase establishes portable definitions and observability only, leaving hosted semantic-query execution and downstream BI integrations as later delivery boundaries.
 
+### dbt quality evidence boundary
+
+Phase 7.1 treats dbt test artifacts as the first downstream quality-evidence seam. Test definitions remain in dbt project YAML/SQL and execution remains inside the Dockerized dbt runtime. SkyData Studio joins `manifest.json` definitions to `run_results.json` outcomes and projects the latest trust posture through its API and Data Quality workbench.
+
+```text
+dbt test definitions
+      │ manifest.json
+      ├───────────────┐
+      │               ▼
+dbt build ─────── run_results.json
+                      │
+                      ▼
+             Studio quality evidence
+                      │
+                      └── TRUSTED / DEGRADED / BLOCKED / PENDING
+```
+
+This first quality slice is intentionally observational and non-persistent. Durable incidents, acknowledgements, blocking policies, reconciliation state, and SLO history require Studio-owned runtime evidence and are introduced only in later Phase 7 slices.
+
 ## Product blueprint and mapping boundary
 
 Phase 3.2 adds a design-time contract between registered source assets and intended targets. A mapping is metadata, not execution: it records how a pipeline *should* move and shape data before Phase 4 introduces a runnable pipeline engine.

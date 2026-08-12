@@ -976,3 +976,36 @@ a { color: inherit; }
     grid-template-columns: 1fr;
   }
 }
+
+/* Phase 7.1 — dbt quality evidence and trust posture */
+.quality-intro { display: flex; align-items: flex-end; justify-content: space-between; gap: 1.4rem; }
+.quality-metric-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+.quality-layer-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+.quality-layer-grid article { display: grid; gap: 5px; padding: 14px; border: 1px solid rgba(80,231,207,0.14); border-radius: 11px; background: rgba(3,14,22,0.58); }
+.quality-layer-grid span { color: var(--muted); font-size: 0.66rem; font-weight: 850; letter-spacing: 0.1em; }
+.quality-layer-grid strong { color: var(--mint); font-size: 1.18rem; }
+.quality-layer-grid small { color: var(--subtle); }
+.quality-table-heading { align-items: flex-end; }
+.quality-filter-row { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 6px; }
+.quality-filter { border: 1px solid rgba(111,190,187,0.18); border-radius: 999px; padding: 0.42rem 0.62rem; color: var(--muted); background: rgba(4,17,25,0.7); font-size: 0.62rem; font-weight: 800; cursor: pointer; }
+.quality-filter:hover, .quality-filter.active { border-color: rgba(80,231,207,0.5); color: var(--mint); background: rgba(66,217,198,0.08); }
+.quality-table { width: 100%; min-width: 1120px; border-collapse: collapse; }
+.quality-table th { padding: 0.7rem 0.72rem; color: var(--subtle); font-size: 0.62rem; letter-spacing: 0.08em; text-align: left; text-transform: uppercase; border-bottom: 1px solid rgba(111,190,187,0.15); }
+.quality-table td { padding: 0.75rem 0.72rem; color: var(--soft); font-size: 0.72rem; vertical-align: top; border-bottom: 1px solid rgba(111,190,187,0.08); }
+.quality-table td:first-child { min-width: 280px; }
+.quality-table td strong, .quality-table td small { display: block; }
+.quality-table td strong { color: var(--text); }
+.quality-table td small { max-width: 310px; margin-top: 4px; overflow: hidden; color: var(--muted); font-size: 0.62rem; text-overflow: ellipsis; white-space: nowrap; }
+.quality-layer-pill { display: inline-flex; border: 1px solid rgba(154,131,255,0.25); border-radius: 999px; padding: 0.22rem 0.42rem; color: #d8d0ff; background: rgba(154,131,255,0.07); font-size: 0.58rem; font-weight: 850; letter-spacing: 0.06em; }
+.quality-empty { padding: 2rem !important; color: var(--muted) !important; text-align: center; }
+
+@media (max-width: 1180px) {
+  .quality-metric-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .quality-layer-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 820px) {
+  .quality-intro, .quality-table-heading { align-items: stretch; flex-direction: column; }
+  .quality-filter-row { justify-content: flex-start; }
+  .quality-metric-grid, .quality-layer-grid { grid-template-columns: 1fr; }
+}

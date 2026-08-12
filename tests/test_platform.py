@@ -13,7 +13,7 @@ def test_platform_summary_exposes_product_boundary() -> None:
     assert payload["theme"] == "Aurora Foundry"
     assert "SkyCommand" in payload["boundary"]
     assert payload["current_phase"] == (
-        "Phase 6.3 — dbt Semantic Model and Governed Metric Foundation"
+        "Phase 7.1 — dbt Quality Evidence and Trust Posture Foundation"
     )
     assert {item["code"] for item in payload["capabilities"]} >= {
         "AIRFLOW",
