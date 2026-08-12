@@ -67,7 +67,8 @@ SkyDataStudio/
 │   │           ├── dbt_transformations.py
 │   │           ├── metadata_registry.py
 │   │           ├── pipeline_execution.py
-│   │           └── pipeline_registry.py
+│   │           ├── pipeline_registry.py
+│   │           └── quality_contracts.py
 │   └── web/
 │       ├── eslint.config.js
 │       ├── index.html
@@ -86,6 +87,7 @@ SkyDataStudio/
 │           ├── pages/
 │           │   ├── Airflow.jsx
 │           │   ├── DataAssets.jsx
+│           │   ├── DataContracts.jsx
 │           │   ├── DataModels.jsx
 │           │   ├── DataQuality.jsx
 │           │   ├── MetadataRegistry.jsx
@@ -100,6 +102,9 @@ SkyDataStudio/
 │           └── services/
 │               └── api.js
 ├── contracts/
+│   ├── quality/
+│   │   ├── fed_funds_rate_daily.v1.json
+│   │   └── README.md
 │   └── skycommand/
 │       └── README.md
 ├── docs/
@@ -151,6 +156,7 @@ SkyDataStudio/
 │   ├── test_pipeline_registry.py
 │   ├── test_platform.py
 │   ├── test_quality_contracts.py
+│   ├── test_quality_gate_contracts.py
 │   ├── test_quality.py
 │   ├── test_skycommand_client.py
 │   ├── test_skycommand_contracts.py

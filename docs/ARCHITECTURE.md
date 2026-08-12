@@ -79,7 +79,23 @@ dbt build ─────── run_results.json
                       └── TRUSTED / DEGRADED / BLOCKED / PENDING
 ```
 
-This first quality slice is intentionally observational and non-persistent. Durable incidents, acknowledgements, blocking policies, reconciliation state, and SLO history require Studio-owned runtime evidence and are introduced only in later Phase 7 slices.
+Phase 7.1 is intentionally observational and non-persistent. Phase 7.2 adds policy without adding a second test authority: a small source-controlled contract selects the dbt evidence that a downstream consumer requires.
+
+### Quality contract gate boundary
+
+```text
+contracts/quality/*.json
+        │ stable selectors
+        ▼
+Studio quality-contract evaluator ◀── Phase 7.1 latest dbt evidence
+        │
+        ├── COMPLIANT
+        ├── DEGRADED
+        ├── BLOCKED
+        └── PENDING
+```
+
+The contract is versioned with application code and references target model, quality dimension, test kind, and column instead of dbt-generated test unique IDs. dbt still owns test definitions and execution. SkyCommand still owns its separate ingestion consumer contracts. The `/quality/contracts` workbench presents both boundaries together for visibility without collapsing their ownership. Durable incidents, acknowledgements, remediation ownership, reconciliation state, and SLO history require Studio-owned runtime evidence and remain later Phase 7 slices.
 
 ## Product blueprint and mapping boundary
 

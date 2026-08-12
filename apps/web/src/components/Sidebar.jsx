@@ -120,7 +120,7 @@ function Sidebar({ mobileOpen, onClose }) {
         <span className="environment-dot" />
         <span>
           <strong>Development</strong>
-          <small>Phase 7.1 dbt quality evidence</small>
+          <small>Phase 7.2 quality contract gates</small>
         </span>
       </div>
     </aside>

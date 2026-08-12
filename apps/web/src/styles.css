@@ -1009,3 +1009,41 @@ a { color: inherit; }
   .quality-filter-row { justify-content: flex-start; }
   .quality-metric-grid, .quality-layer-grid { grid-template-columns: 1fr; }
 }
+
+/* Phase 7.2 — quality contract gate and consumer compatibility */
+.contracts-intro { display: flex; align-items: flex-end; justify-content: space-between; gap: 1.4rem; }
+.contracts-metric-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+.contract-definition-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+.contract-definition-grid article { display: grid; gap: 5px; padding: 13px; border: 1px solid rgba(80,231,207,0.14); border-radius: 11px; background: rgba(3,14,22,0.58); }
+.contract-definition-grid span, .contract-rule-grid dt { color: var(--muted); font-size: 0.62rem; font-weight: 850; letter-spacing: 0.09em; text-transform: uppercase; }
+.contract-definition-grid strong { color: var(--mint); font-size: 0.78rem; overflow-wrap: anywhere; }
+.contract-definition-grid small { color: var(--subtle); font-size: 0.64rem; }
+.contract-description { margin: 1rem 0 0; color: var(--soft); font-size: 0.72rem; line-height: 1.55; }
+.contract-rule-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.contract-rule-grid > article { display: grid; gap: 12px; padding: 15px; border: 1px solid rgba(154,131,255,0.18); border-radius: 12px; background: linear-gradient(145deg, rgba(5,17,25,0.88), rgba(17,16,38,0.56)); }
+.contract-rule-grid header, .consumer-contract-grid header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.contract-rule-grid header > div { display: grid; gap: 4px; }
+.contract-rule-grid header span { color: var(--subtle); font-size: 0.58rem; font-weight: 850; letter-spacing: 0.08em; }
+.contract-rule-grid header strong { color: var(--text); font-size: 0.86rem; }
+.contract-rule-grid dl { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin: 0; }
+.contract-rule-grid dl > div { display: grid; gap: 4px; padding: 9px 10px; border-radius: 8px; background: rgba(2,13,21,0.55); }
+.contract-rule-grid dd { margin: 0; color: var(--soft); font-size: 0.68rem; overflow-wrap: anywhere; }
+.contract-rule-grid p { margin: 0; color: var(--muted); font-size: 0.68rem; line-height: 1.5; }
+.consumer-contract-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; }
+.consumer-contract-grid > article { display: grid; gap: 7px; padding: 13px; border: 1px solid rgba(111,190,187,0.13); border-radius: 11px; background: rgba(3,14,22,0.58); }
+.consumer-contract-grid header strong { color: var(--text); font-size: 0.72rem; overflow-wrap: anywhere; }
+.consumer-contract-grid span, .consumer-contract-grid small { color: var(--muted); font-size: 0.62rem; overflow-wrap: anywhere; }
+.consumer-contract-grid p { margin: 0; color: var(--subtle); font-size: 0.64rem; line-height: 1.5; }
+.status-compliant, .status-compatible { color: var(--mint); background: rgba(66,217,198,0.08); }
+.status-block, .status-incompatible { color: #ff9e9e; background: rgba(255,99,99,0.08); }
+
+@media (max-width: 1180px) {
+  .contracts-metric-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .contract-definition-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .consumer-contract-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+@media (max-width: 820px) {
+  .contracts-intro { align-items: stretch; flex-direction: column; }
+  .contracts-metric-grid, .contract-definition-grid, .contract-rule-grid, .consumer-contract-grid { grid-template-columns: 1fr; }
+}

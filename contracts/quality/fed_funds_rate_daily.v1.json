@@ -1,0 +1,52 @@
+{
+  "code": "FED_FUNDS_RATE_DAILY_QUALITY",
+  "version": "1.0.0",
+  "name": "Federal Funds Rate Daily Quality Contract",
+  "description": "Source-controlled consumer gate for the governed Federal Funds Rate daily mart.",
+  "target_name": "fct_fed_funds_rate_daily",
+  "layer": "MART",
+  "enforcement_mode": "BLOCK",
+  "minimum_pass_rate": 1.0,
+  "rules": [
+    {
+      "code": "OBSERVATION_DATE_REQUIRED",
+      "label": "Observation date is present",
+      "quality_dimension": "COMPLETENESS",
+      "test_kind": "GENERIC",
+      "column_name": "observation_date",
+      "required_status": "PASS"
+    },
+    {
+      "code": "RATE_REQUIRED",
+      "label": "Rate is present",
+      "quality_dimension": "COMPLETENESS",
+      "test_kind": "GENERIC",
+      "column_name": "rate",
+      "required_status": "PASS"
+    },
+    {
+      "code": "OBSERVATION_DATE_UNIQUE",
+      "label": "Observation date remains unique",
+      "quality_dimension": "UNIQUENESS",
+      "test_kind": "GENERIC",
+      "column_name": "observation_date",
+      "required_status": "PASS"
+    },
+    {
+      "code": "RATE_DIRECTION_VALID",
+      "label": "Rate direction stays in the governed vocabulary",
+      "quality_dimension": "VALIDITY",
+      "test_kind": "GENERIC",
+      "column_name": "rate_direction",
+      "required_status": "PASS"
+    },
+    {
+      "code": "RATE_REASONABLE",
+      "label": "Federal Funds Rate remains within the business-rule range",
+      "quality_dimension": "BUSINESS_RULE",
+      "test_kind": "SINGULAR",
+      "column_name": null,
+      "required_status": "PASS"
+    }
+  ]
+}
