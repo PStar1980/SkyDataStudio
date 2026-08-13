@@ -154,25 +154,25 @@ def compose_lineage_trust_summary(
     for incident in incidents.incidents:
         target = incident.target_name.lower()
         incidents_by_target[target].append(incident)
-        rule = rule_by_code.get(incident.rule_code)
-        if rule and rule.column_name:
-            incidents_by_field[(target, rule.column_name.lower())].append(incident)
+        incident_rule = rule_by_code.get(incident.rule_code)
+        if incident_rule and incident_rule.column_name:
+            incidents_by_field[(target, incident_rule.column_name.lower())].append(incident)
 
     evidence_ready = quality.artifact_status == "READY" and contract.artifact_status == "READY"
     overlays: list[LineageTrustOverlay] = []
 
     protected_targets = set(checks_by_target) | set(rules_by_target) | set(incidents_by_target)
     for target in sorted(protected_targets):
-        node = asset_by_target.get(target)
-        if node is None:
+        asset_node = asset_by_target.get(target)
+        if asset_node is None:
             continue
         overlays.append(
             _overlay(
-                node_id=node.id,
-                node_label=node.label,
+                node_id=asset_node.id,
+                node_label=asset_node.label,
                 scope="ASSET",
-                layer=node.layer,
-                relation=node.relation,
+                layer=asset_node.layer,
+                relation=asset_node.relation,
                 checks=checks_by_target[target],
                 rules=rules_by_target[target],
                 incidents=incidents_by_target[target],
@@ -182,16 +182,16 @@ def compose_lineage_trust_summary(
 
     protected_fields = set(checks_by_field) | set(rules_by_field) | set(incidents_by_field)
     for target_field in sorted(protected_fields):
-        node = field_by_target.get(target_field)
-        if node is None:
+        field_node = field_by_target.get(target_field)
+        if field_node is None:
             continue
         overlays.append(
             _overlay(
-                node_id=node.id,
-                node_label=node.label,
+                node_id=field_node.id,
+                node_label=field_node.label,
                 scope="FIELD",
-                layer=node.layer,
-                relation=node.relation,
+                layer=field_node.layer,
+                relation=field_node.relation,
                 checks=checks_by_field[target_field],
                 rules=rules_by_field[target_field],
                 incidents=incidents_by_field[target_field],
