@@ -1,8 +1,9 @@
 from typing import Annotated
 
-from fastapi import APIRouter, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.exc import SQLAlchemyError
 
+from skydata_studio.core.config import Settings, get_settings
 from skydata_studio.db.session import SessionDependency
 from skydata_studio.schemas.lineage import (
     FieldLineageImpactSummary,
@@ -10,6 +11,7 @@ from skydata_studio.schemas.lineage import (
     LineageImpactSummary,
     LineageSummary,
     LineageTrustSummary,
+    RuntimeLineageSummary,
 )
 from skydata_studio.services.lineage import (
     field_lineage_impact,
@@ -17,6 +19,7 @@ from skydata_studio.services.lineage import (
     lineage_impact,
     lineage_summary,
 )
+from skydata_studio.services.lineage_runtime import runtime_lineage_summary
 from skydata_studio.services.lineage_trust import lineage_trust_summary
 
 router = APIRouter()
@@ -80,5 +83,16 @@ def field_lineage_field_impact(
 def lineage_trust_overlay(session: SessionDependency) -> LineageTrustSummary:
     try:
         return lineage_trust_summary(session)
+    except (SQLAlchemyError, OSError, ValueError, TypeError) as error:
+        raise _unavailable(error) from error
+
+
+@router.get("/runtime/summary", response_model=RuntimeLineageSummary)
+def lineage_runtime_execution(
+    session: SessionDependency,
+    settings: Annotated[Settings, Depends(get_settings)],
+) -> RuntimeLineageSummary:
+    try:
+        return runtime_lineage_summary(session, settings)
     except (SQLAlchemyError, OSError, ValueError, TypeError) as error:
         raise _unavailable(error) from error
