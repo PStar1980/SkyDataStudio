@@ -1773,3 +1773,175 @@ a { color: inherit; }
     grid-template-columns: 1fr;
   }
 }
+
+.consumer-lineage-panel {
+  overflow: hidden;
+}
+
+.consumer-lineage-heading {
+  align-items: flex-start;
+}
+
+.consumer-lineage-heading p {
+  max-width: 920px;
+  margin: 8px 0 0;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.consumer-lineage-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.consumer-lineage-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin: 18px 0;
+}
+
+.consumer-lineage-metrics > div,
+.consumer-impact-strip > div {
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: rgba(4, 20, 31, 0.72);
+}
+
+.consumer-lineage-metrics span,
+.consumer-impact-strip span,
+.consumer-lineage-group header span,
+.consumer-metric-list span,
+.consumer-report-list span {
+  display: block;
+  color: var(--muted);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.consumer-lineage-metrics strong {
+  display: block;
+  margin-top: 5px;
+  font-size: 1.35rem;
+}
+
+.consumer-lineage-metrics small,
+.consumer-report-list small {
+  display: block;
+  margin-top: 4px;
+  color: var(--muted);
+}
+
+.consumer-lineage-grid {
+  display: grid;
+  grid-template-columns: 1.25fr 0.75fr;
+  gap: 12px;
+}
+
+.consumer-lineage-group {
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: rgba(3, 16, 25, 0.66);
+}
+
+.consumer-lineage-group header {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.consumer-metric-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.consumer-metric-list button,
+.consumer-report-list > div {
+  padding: 12px;
+  text-align: left;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: rgba(6, 24, 37, 0.74);
+  color: var(--text);
+}
+
+.consumer-metric-list button {
+  cursor: pointer;
+}
+
+.consumer-metric-list button.is-selected {
+  border-color: var(--accent);
+  box-shadow: inset 0 0 0 1px rgba(80, 232, 211, 0.24);
+}
+
+.consumer-metric-list strong,
+.consumer-report-list strong {
+  display: block;
+  margin-top: 5px;
+}
+
+.consumer-report-list {
+  display: grid;
+  gap: 8px;
+}
+
+.consumer-impact-strip {
+  display: grid;
+  grid-template-columns: 1.5fr 0.75fr 1fr;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.consumer-impact-strip strong {
+  display: block;
+  margin-top: 5px;
+}
+
+.consumer-lineage-edge-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.consumer-lineage-edge-strip span {
+  padding: 6px 9px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--muted);
+  font-size: 0.72rem;
+}
+
+.consumer-lineage-edge-strip b {
+  margin-right: 6px;
+  color: var(--accent);
+}
+
+@media (max-width: 980px) {
+  .consumer-lineage-metrics,
+  .consumer-lineage-grid,
+  .consumer-impact-strip {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 680px) {
+  .consumer-lineage-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .consumer-lineage-metrics,
+  .consumer-lineage-grid,
+  .consumer-metric-list,
+  .consumer-impact-strip {
+    grid-template-columns: 1fr;
+  }
+}

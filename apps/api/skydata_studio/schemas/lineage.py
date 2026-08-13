@@ -241,3 +241,74 @@ class RuntimeLineageSummary(BaseModel):
     nodes: list[RuntimeLineageNode] = Field(default_factory=list)
     edges: list[RuntimeLineageEdge] = Field(default_factory=list)
 
+
+AnalyticsConsumerType = Literal["REPORT", "APPLICATION"]
+AnalyticsConsumerDeploymentStatus = Literal["DECLARED", "DEPLOYED", "RETIRED"]
+AnalyticsConsumerResolutionStatus = Literal["READY", "PARTIAL", "MISSING"]
+
+
+class AnalyticsConsumerDefinition(BaseModel):
+    code: str
+    version: str
+    name: str
+    description: str
+    consumer_type: AnalyticsConsumerType
+    delivery_system: str
+    deployment_status: AnalyticsConsumerDeploymentStatus
+    semantic_model: str
+    required_metrics: list[str]
+    required_dimensions: list[str] = Field(default_factory=list)
+    owner: str
+
+
+class AnalyticsConsumerMetricBinding(BaseModel):
+    consumer_code: str
+    metric_name: str
+    metric_label: str | None = None
+    metric_unique_id: str | None = None
+    resolved: bool
+    message: str
+
+
+class AnalyticsConsumerNode(BaseModel):
+    id: str
+    label: str
+    node_type: Literal["METRIC", "ANALYTICS_CONSUMER"]
+    system: str
+    status: str
+    metadata: dict[str, object] = Field(default_factory=dict)
+
+
+class AnalyticsConsumerEdge(BaseModel):
+    id: str
+    upstream_id: str
+    downstream_id: str
+    edge_type: Literal["CONSUMED_BY"]
+    label: str
+
+
+class AnalyticsConsumerImpactSummary(BaseModel):
+    selected_metric_name: str | None = None
+    selected_metric_label: str | None = None
+    downstream_consumer_count: int = Field(default=0, ge=0)
+    consumers: list[AnalyticsConsumerNode] = Field(default_factory=list)
+
+
+class AnalyticsConsumerLineageSummary(BaseModel):
+    project_name: str = "skydata_studio"
+    phase: str = "Phase 8.5 — Analytics Consumer Lineage and Impact Closure"
+    consumer_status: AnalyticsConsumerResolutionStatus
+    semantic_artifact_status: Literal["READY", "PENDING", "MISSING"]
+    consumer_contract_count: int = Field(default=0, ge=0)
+    resolved_consumer_count: int = Field(default=0, ge=0)
+    declared_metric_count: int = Field(default=0, ge=0)
+    resolved_metric_count: int = Field(default=0, ge=0)
+    unresolved_metric_count: int = Field(default=0, ge=0)
+    node_count: int = Field(default=0, ge=0)
+    edge_count: int = Field(default=0, ge=0)
+    source_paths: list[str] = Field(default_factory=list)
+    consumers: list[AnalyticsConsumerDefinition] = Field(default_factory=list)
+    metric_bindings: list[AnalyticsConsumerMetricBinding] = Field(default_factory=list)
+    nodes: list[AnalyticsConsumerNode] = Field(default_factory=list)
+    edges: list[AnalyticsConsumerEdge] = Field(default_factory=list)
+    default_impact: AnalyticsConsumerImpactSummary

@@ -519,21 +519,21 @@ The repository currently includes:
 - a completed Phase 8.1 asset/model/semantic/metric lineage graph with transitive impact analysis;
 - a completed Phase 8.2 field-level lineage graph from DFF source fields through dbt derivations to governed metrics;
 - a completed Phase 8.3 trust overlay that projects dbt checks, quality-contract rules, and durable incidents onto exact lineage nodes;
-- a Phase 8.4 runtime-lineage workbench that links the latest Airflow DAG/task execution to its replay-safe Studio pipeline run, structured steps, source asset, and curated target;
+- a completed Phase 8.4 runtime-lineage workbench that links the latest Airflow DAG/task execution to its replay-safe Studio pipeline run, structured steps, source asset, and curated target;
+- a Phase 8.5 analytics-consumer lineage surface that resolves source-controlled report dependencies against governed dbt semantic metrics without claiming downstream deployment;
 - backend/frontend validation, repository map, and compact handoff tooling.
 
-The active implementation target is **Phase 8.4 — Pipeline and Airflow Execution Lineage Foundation**. Phases 0 through 7 are complete; Phase 8.1 established asset-level impact, Phase 8.2 added field-level impact, and Phase 8.3 projected trust evidence onto those nodes. Phase 8.4 now joins the latest Airflow DAG/task proof to the replay-safe Studio pipeline run and its structured materialization steps without reading Airflow metadata tables directly.
+The active implementation target is **Phase 8.5 — Analytics Consumer Lineage and Impact Closure**. Phases 0 through 7 are complete; Phase 8.1 established asset impact, Phase 8.2 added field impact, Phase 8.3 projected trust evidence, and Phase 8.4 joined Airflow/Studio runtime execution to the structural graph. Phase 8.5 now closes the lineage chain at source-controlled analytics consumers while keeping actual analytical delivery and Power BI deployment in their later roadmap phases.
 
 
-## Phase 8.4 quick start
+## Phase 8.5 quick start
 
-Phase 8.4 federates runtime evidence into lineage without moving execution ownership. Airflow remains authoritative for DAG-run and task-instance state; Studio remains authoritative for pipeline-run and step evidence. The runtime graph links the existing `DFF` and `FED_FUNDS_RATE_MART` structural nodes to the latest `AIRFLOW:` Studio run.
+Phase 8.5 resolves declared analytics dependencies against dbt-owned semantic artifacts. The first proof declares a Federal Funds Rate Overview report that requires all four governed Federal Funds Rate metrics. The report targets Power BI but remains `DECLARED`; no Power BI deployment is claimed.
 
 ```powershell
-# Ensure the Airflow proof runtime is available, then start the Studio API/web as usual.
 Invoke-RestMethod `
-  "http://localhost:8100/api/v1/lineage/runtime/summary" |
+  "http://localhost:8100/api/v1/lineage/consumers/summary" |
   ConvertTo-Json -Depth 12
 ```
 
-A fully connected proof reports `runtime_status=READY`, four successful Airflow tasks, four successful Studio steps, and replay-safe materialization evidence for `mart.fed_funds_rate`.
+A complete proof reports one resolved consumer, four resolved metrics, zero unresolved dependencies, 5 nodes, and 4 `CONSUMED_BY` edges.

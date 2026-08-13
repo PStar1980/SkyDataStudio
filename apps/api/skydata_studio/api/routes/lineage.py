@@ -6,6 +6,8 @@ from sqlalchemy.exc import SQLAlchemyError
 from skydata_studio.core.config import Settings, get_settings
 from skydata_studio.db.session import SessionDependency
 from skydata_studio.schemas.lineage import (
+    AnalyticsConsumerImpactSummary,
+    AnalyticsConsumerLineageSummary,
     FieldLineageImpactSummary,
     FieldLineageSummary,
     LineageImpactSummary,
@@ -18,6 +20,10 @@ from skydata_studio.services.lineage import (
     field_lineage_summary,
     lineage_impact,
     lineage_summary,
+)
+from skydata_studio.services.lineage_consumers import (
+    analytics_consumer_impact,
+    analytics_consumer_lineage_summary,
 )
 from skydata_studio.services.lineage_runtime import runtime_lineage_summary
 from skydata_studio.services.lineage_trust import lineage_trust_summary
@@ -95,4 +101,24 @@ def lineage_runtime_execution(
     try:
         return runtime_lineage_summary(session, settings)
     except (SQLAlchemyError, OSError, ValueError, TypeError) as error:
+        raise _unavailable(error) from error
+
+
+@router.get("/consumers/summary", response_model=AnalyticsConsumerLineageSummary)
+def lineage_analytics_consumers(
+    focus_metric_name: Annotated[str | None, Query(alias="focusMetricName")] = None,
+) -> AnalyticsConsumerLineageSummary:
+    try:
+        return analytics_consumer_lineage_summary(focus_metric_name=focus_metric_name)
+    except (OSError, ValueError, TypeError) as error:
+        raise _unavailable(error) from error
+
+
+@router.get("/consumers/impact", response_model=AnalyticsConsumerImpactSummary)
+def lineage_analytics_consumer_impact(
+    metric_name: Annotated[str, Query(alias="metricName", min_length=1)],
+) -> AnalyticsConsumerImpactSummary:
+    try:
+        return analytics_consumer_impact(metric_name)
+    except (OSError, ValueError, TypeError) as error:
         raise _unavailable(error) from error

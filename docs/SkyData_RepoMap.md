@@ -68,6 +68,7 @@ SkyDataStudio/
 │   │           ├── contract_compatibility.py
 │   │           ├── dbt_quality.py
 │   │           ├── dbt_transformations.py
+│   │           ├── lineage_consumers.py
 │   │           ├── lineage_runtime.py
 │   │           ├── lineage_trust.py
 │   │           ├── lineage.py
@@ -89,6 +90,7 @@ SkyDataStudio/
 │           ├── styles.css
 │           ├── components/
 │           │   ├── BrandMark.jsx
+│           │   ├── ConsumerLineagePanel.jsx
 │           │   ├── FieldLineagePanel.jsx
 │           │   ├── LineageTrustPanel.jsx
 │           │   ├── RuntimeLineagePanel.jsx
@@ -116,6 +118,9 @@ SkyDataStudio/
 │           └── services/
 │               └── api.js
 ├── contracts/
+│   ├── analytics/
+│   │   ├── fed_funds_rate_overview.v1.json
+│   │   └── README.md
 │   ├── quality/
 │   │   ├── fed_funds_rate_daily.v1.json
 │   │   └── README.md
@@ -168,6 +173,7 @@ SkyDataStudio/
 │   ├── test_contract_compatibility.py
 │   ├── test_dbt_transformations.py
 │   ├── test_health.py
+│   ├── test_lineage_consumers.py
 │   ├── test_lineage_runtime.py
 │   ├── test_lineage_trust.py
 │   ├── test_lineage.py
