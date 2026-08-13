@@ -248,6 +248,22 @@ The Federal Funds Rate proof should report 2 Studio field mappings, 18 annotated
 
 Open **Quality & Lineage → Lineage** to inspect both the Phase 8.1 asset graph and the Phase 8.2 field graph. Field impact is also available through `GET /api/v1/lineage/fields/impact?fieldId=...`. The field graph remains a read model: Studio-owned field mappings, dbt-owned column annotations, and dbt-owned metric expressions stay at their existing authorities.
 
+---
+
+## Phase 8.3 quick start
+
+Phase 8.3 projects the Phase 7 trust system onto the existing lineage nodes without creating a second lineage or quality authority. dbt checks protect their source/model and column nodes, source-controlled contract selectors protect the mart and governed mart fields, and durable active incidents follow the exact nodes they affect.
+
+With the API running, inspect the trust overlay:
+
+```powershell
+Invoke-RestMethod `
+  "http://localhost:8100/api/v1/lineage/trust/summary" |
+  ConvertTo-Json -Depth 12
+```
+
+The current clean Federal Funds Rate proof should report `READY`, `TRUSTED`, and `COMPLIANT`, with 14/14 quality checks passing, 5/5 contract rules satisfied, 4 protected asset nodes, 9 protected field nodes, and zero active/blocking incidents. Open **Quality & Lineage → Lineage** to inspect the same trust evidence beside the Phase 8.1 asset and Phase 8.2 field graphs.
+
 ## Validation contract
 
 Run the complete local validation suite before every SkyData Studio development promotion:
@@ -499,7 +515,9 @@ The repository currently includes:
 - a completed Phase 6.1 Dockerized dbt/Postgres runtime plus the first governed staging → intermediate → mart model chain with 14 green data tests;
 - a completed Phase 6.2 artifact-backed dbt model catalogue surface for logical model, column, test, build, and dependency evidence;
 - a completed Phase 6.3 model-embedded dbt semantic definition surface with one governed semantic model, one stable entity, four dimensions, four governed metrics, and a DAY-grain MetricFlow time spine;
-- a Phase 7.1 artifact-backed Data Quality surface that joins dbt test definitions to latest run outcomes and computes a consumer-facing trust posture;
+- a completed Phase 7 quality stack covering dbt trust evidence, source-controlled consumer gates, durable incident lifecycle, and observation-backed reliability history;
+- a completed Phase 8.1 asset/model/semantic/metric lineage graph with transitive impact analysis;
+- a completed Phase 8.2 field-level lineage graph from DFF source fields through dbt derivations to governed metrics;
 - backend/frontend validation, repository map, and compact handoff tooling.
 
-The active implementation target is **Phase 8.2 — Field-Level Lineage and Column Impact Foundation**. Phases 0 through 7 are complete and Phase 8.1 established the federated asset/model/semantic/metric graph. Phase 8.2 carries the same ownership model down to individual fields so schema-change impact can be traced from DFF source columns through Studio mappings, dbt derivations, and governed metrics.
+The active implementation target is **Phase 8.3 — Quality and Incident Lineage Overlay Foundation**. Phases 0 through 7 are complete; Phase 8.1 established the federated asset/model/semantic/metric graph and Phase 8.2 carried that graph down to individual fields. Phase 8.3 now projects dbt quality evidence, source-controlled contract rules, and durable incident state onto the exact lineage nodes they protect without creating another authority.

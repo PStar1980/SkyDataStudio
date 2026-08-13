@@ -68,6 +68,7 @@ SkyDataStudio/
 │   │           ├── contract_compatibility.py
 │   │           ├── dbt_quality.py
 │   │           ├── dbt_transformations.py
+│   │           ├── lineage_trust.py
 │   │           ├── lineage.py
 │   │           ├── metadata_registry.py
 │   │           ├── pipeline_execution.py
@@ -88,6 +89,7 @@ SkyDataStudio/
 │           ├── components/
 │           │   ├── BrandMark.jsx
 │           │   ├── FieldLineagePanel.jsx
+│           │   ├── LineageTrustPanel.jsx
 │           │   ├── Sidebar.jsx
 │           │   ├── StatusPill.jsx
 │           │   └── Topbar.jsx
@@ -164,6 +166,7 @@ SkyDataStudio/
 │   ├── test_contract_compatibility.py
 │   ├── test_dbt_transformations.py
 │   ├── test_health.py
+│   ├── test_lineage_trust.py
 │   ├── test_lineage.py
 │   ├── test_metadata_registry.py
 │   ├── test_pipeline_registry.py

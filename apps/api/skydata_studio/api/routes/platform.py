@@ -60,8 +60,8 @@ CAPABILITIES = [
         code="LINEAGE_IMPACT",
         name="Lineage and Impact Analysis",
         description=(
-            "Stitches metadata mappings, dbt dependencies, field lineage, semantic models, "
-            "and metrics into one impact graph."
+            "Stitches mappings, dbt and field dependencies, semantic delivery, "
+            "quality controls, and incidents into one impact graph."
         ),
         status="FOUNDATION",
         phase=8,
@@ -96,7 +96,7 @@ def platform_summary() -> PlatformSummary:
         product="SkyData Studio",
         subtitle="Data Engineering Workbench",
         theme="Aurora Foundry",
-        current_phase="Phase 8.2 — Field-Level Lineage and Column Impact Foundation",
+        current_phase="Phase 8.3 — Quality and Incident Lineage Overlay Foundation",
         boundary=(
             "SkyData Studio starts after SkyCommand ingestion and publishes governed "
             "analytical products for SkyWeb Analytics, Power BI, and future consumers."

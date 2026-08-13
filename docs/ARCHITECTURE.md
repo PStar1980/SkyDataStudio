@@ -164,6 +164,23 @@ DFF.VALUE → FED_FUNDS_RATE_MART.rate → dbt rate fields
 
 Metric dependencies come from dbt metric expressions, not a Studio-owned semantic mapping. The field-lineage service normalizes these authorities into ephemeral field nodes and edges and performs the same downstream breadth-first traversal used by the Phase 8.1 asset graph.
 
+## Phase 8.3 trust-overlay boundary
+
+Phase 8.3 keeps structural lineage and operational trust as separate concerns. No quality status is persisted on lineage nodes. Instead, Studio reads the current Phase 7 authorities and projects their evidence onto the existing Phase 8 node identifiers at request time.
+
+```text
+Phase 8 structural lineage        Phase 7 trust authorities
+asset + field nodes          ◀──  dbt quality checks
+                               ◀──  source-controlled contract rules
+                               ◀──  durable incident lifecycle
+                                      │
+                                      ▼
+                             ephemeral trust overlay
+                       TRUSTED / DEGRADED / BLOCKED / PENDING
+```
+
+Asset-level checks protect the dbt source/model nodes they target. Column checks and column-scoped contract rules protect exact Phase 8.2 field nodes. Contract rules without a column remain asset-level controls. Active incidents inherit the same stable `contract_code + rule_code` policy identity and are projected to the owning asset and, when the rule is column-scoped, the owning field. This makes trust visible in impact analysis without creating new graph edges or copying dbt/contract/incident ownership into a second store.
+
 
 ## Product blueprint and mapping boundary
 

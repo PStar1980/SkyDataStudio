@@ -9,6 +9,7 @@ from skydata_studio.schemas.lineage import (
     FieldLineageSummary,
     LineageImpactSummary,
     LineageSummary,
+    LineageTrustSummary,
 )
 from skydata_studio.services.lineage import (
     field_lineage_impact,
@@ -16,6 +17,7 @@ from skydata_studio.services.lineage import (
     lineage_impact,
     lineage_summary,
 )
+from skydata_studio.services.lineage_trust import lineage_trust_summary
 
 router = APIRouter()
 
@@ -70,5 +72,13 @@ def field_lineage_field_impact(
 ) -> FieldLineageImpactSummary:
     try:
         return field_lineage_impact(session, field_id)
+    except (SQLAlchemyError, OSError, ValueError, TypeError) as error:
+        raise _unavailable(error) from error
+
+
+@router.get("/trust/summary", response_model=LineageTrustSummary)
+def lineage_trust_overlay(session: SessionDependency) -> LineageTrustSummary:
+    try:
+        return lineage_trust_summary(session)
     except (SQLAlchemyError, OSError, ValueError, TypeError) as error:
         raise _unavailable(error) from error

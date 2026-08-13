@@ -5,7 +5,7 @@ const FALLBACK = {
   product: 'SkyData Studio',
   subtitle: 'Data Engineering Workbench',
   theme: 'Aurora Foundry',
-  current_phase: 'Phase 8.2 — Field-Level Lineage and Column Impact Foundation',
+  current_phase: 'Phase 8.3 — Quality and Incident Lineage Overlay Foundation',
   boundary: 'SkyData Studio starts after SkyCommand ingestion and publishes governed analytical products for downstream consumers.',
   capabilities: [],
 };
@@ -41,7 +41,7 @@ function StudioOverview() {
     <div className="page-stack">
       <section className="hero-panel">
         <div>
-          <span className="eyebrow">AURORA FOUNDRY · PHASE 8.2</span>
+          <span className="eyebrow">AURORA FOUNDRY · PHASE 8.3</span>
           <h1>Shape trusted data into analytical products.</h1>
           <p>{summary.boundary}</p>
           <div className="hero-actions">
@@ -61,7 +61,7 @@ function StudioOverview() {
 
       <section className="metric-grid">
         <article className="metric-card"><span>Platform API</span><strong>{apiState}</strong><small>FastAPI contract service</small></article>
-        <article className="metric-card"><span>Current Phase</span><strong>8.2</strong><small>field-level lineage + column impact</small></article>
+        <article className="metric-card"><span>Current Phase</span><strong>8.3</strong><small>quality + incident lineage overlay</small></article>
         <article className="metric-card"><span>Pipeline Proof</span><strong>READY</strong><small>Curated mart materialization proven</small></article>
         <article className="metric-card"><span>Orchestrator</span><strong>Airflow 3</strong><small>Batch and asset workflows</small></article>
       </section>
@@ -96,7 +96,7 @@ function StudioOverview() {
             { code: 'AIRFLOW', name: 'Apache Airflow Orchestration', description: 'DAGs, assets, schedules, retries, and backfills.', status: 'FOUNDATION', phase: 5 },
             { code: 'DBT', name: 'dbt Transformation Layer', description: 'Tested staging, intermediate, mart, and semantic models.', status: 'FOUNDATION', phase: 6 },
             { code: 'QUALITY_LINEAGE', name: 'Data Quality and Reliability', description: 'Trust evidence, contracts, incidents, and reliability history.', status: 'READY', phase: 7 },
-            { code: 'LINEAGE_IMPACT', name: 'Lineage and Impact Analysis', description: 'Federated asset and field lineage from mappings through dbt and metrics.', status: 'FOUNDATION', phase: 8 },
+            { code: 'LINEAGE_IMPACT', name: 'Lineage and Impact Analysis', description: 'Federated asset and field lineage with quality, contract, and incident context.', status: 'FOUNDATION', phase: 8 },
             { code: 'ANALYTICS_DELIVERY', name: 'Analytics Delivery', description: 'Governed products for SkyWeb Analytics and Power BI.', status: 'PLANNED', phase: 9 },
           ]).map((capability) => (
             <article className="capability-card" key={capability.code}>
@@ -111,11 +111,11 @@ function StudioOverview() {
 
       <section className="two-column-grid">
         <article className="panel compact-panel">
-          <div className="panel-heading"><div><span className="eyebrow">CURRENT IMPLEMENTATION</span><h2>field-level lineage and column impact</h2></div><span className="phase-badge">PHASE 8.2</span></div>
+          <div className="panel-heading"><div><span className="eyebrow">CURRENT IMPLEMENTATION</span><h2>quality and incident lineage overlay</h2></div><span className="phase-badge">PHASE 8.3</span></div>
           <ol className="implementation-list">
-            <li><span>01</span><div><strong>Field mapping evidence</strong><small>The registered DFF field maps seed column lineage without duplicating ingestion ownership.</small></div></li>
-            <li><span>02</span><div><strong>dbt column annotations</strong><small>Derived-column lineage lives beside dbt model definitions and is projected from the generated manifest.</small></div></li>
-            <li><span>03</span><div><strong>Metric-level impact</strong><small>Select a field to trace dependent dbt fields and governed business metrics before a schema change lands.</small></div></li>
+            <li><span>01</span><div><strong>Quality evidence overlay</strong><small>dbt tests are projected onto the source, model, and field nodes they protect.</small></div></li>
+            <li><span>02</span><div><strong>Contract-aware lineage</strong><small>Source-controlled consumer rules appear beside the exact mart assets and columns they govern.</small></div></li>
+            <li><span>03</span><div><strong>Incident impact context</strong><small>Durable warning and blocking incidents follow affected lineage nodes without creating duplicate ownership.</small></div></li>
           </ol>
         </article>
         <article className="panel compact-panel">
