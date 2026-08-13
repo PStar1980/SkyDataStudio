@@ -32,6 +32,7 @@ class DbtTransformationSummary(BaseModel):
 class DbtModelColumnSummary(BaseModel):
     name: str
     description: str | None = None
+    lineage_inputs: list[str] = Field(default_factory=list)
 
 
 class DbtModelDependencySummary(BaseModel):

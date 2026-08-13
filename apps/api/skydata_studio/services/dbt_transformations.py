@@ -261,12 +261,26 @@ def dbt_model_catalogue(target_dir: Path | None = None) -> DbtModelCatalogueSumm
         if isinstance(columns_payload, dict):
             for column_name, column_payload in columns_payload.items():
                 description = None
+                lineage_inputs: list[str] = []
                 if isinstance(column_payload, dict):
                     raw_description = column_payload.get("description")
                     if isinstance(raw_description, str) and raw_description.strip():
                         description = raw_description
+                    raw_meta = column_payload.get("meta")
+                    if isinstance(raw_meta, dict):
+                        raw_lineage_inputs = raw_meta.get("lineage_inputs")
+                        if isinstance(raw_lineage_inputs, list):
+                            lineage_inputs = [
+                                str(item)
+                                for item in raw_lineage_inputs
+                                if isinstance(item, str) and item.strip()
+                            ]
                 columns.append(
-                    DbtModelColumnSummary(name=str(column_name), description=description)
+                    DbtModelColumnSummary(
+                        name=str(column_name),
+                        description=description,
+                        lineage_inputs=lineage_inputs,
+                    )
                 )
 
         test_count = 0
@@ -538,12 +552,31 @@ def dbt_semantic_layer(target_dir: Path | None = None) -> DbtSemanticLayerSummar
         metric_type = str(metric.get("type") or "simple").upper()
         if metric_type not in {"SIMPLE", "RATIO", "CUMULATIVE", "DERIVED", "CONVERSION"}:
             metric_type = "SIMPLE"
-        aggregation_value = metric.get("agg", measure.get("agg"))
-        expression_value = metric.get("expr", measure.get("expr"))
+        raw_type_params = metric.get("type_params")
+        type_params = raw_type_params if isinstance(raw_type_params, dict) else {}
+        raw_aggregation_params = type_params.get("metric_aggregation_params")
+        aggregation_params = (
+            raw_aggregation_params if isinstance(raw_aggregation_params, dict) else {}
+        )
+        aggregation_value = metric.get(
+            "agg",
+            measure.get("agg", aggregation_params.get("agg")),
+        )
+        expression_value = metric.get(
+            "expr",
+            measure.get("expr", type_params.get("expr")),
+        )
         time_dimension_value = metric.get(
             "agg_time_dimension",
-            measure.get("agg_time_dimension", default_time_dimension),
+            measure.get(
+                "agg_time_dimension",
+                aggregation_params.get("agg_time_dimension", default_time_dimension),
+            ),
         )
+        if semantic_name is None:
+            raw_semantic_name = aggregation_params.get("semantic_model")
+            if isinstance(raw_semantic_name, str) and raw_semantic_name:
+                semantic_name = raw_semantic_name
         aggregation = (
             str(aggregation_value) if isinstance(aggregation_value, str) else None
         )

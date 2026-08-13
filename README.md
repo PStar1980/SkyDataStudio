@@ -4,7 +4,7 @@
 
 SkyData Studio is the post-ingestion data engineering application in the Sky ecosystem. It begins where SkyCommand's ingestion responsibility ends and prepares trusted data for analytical consumption by SkyWeb Analytics, Power BI, and future client-facing applications.
 
-**Current status:** Phases 0 through 7 are complete. Phase 7 closed with TRUSTED dbt quality evidence, a COMPLIANT 5/5 consumer gate, durable incident reconciliation, and a 30-day/99% quality SLO reporting MEETING at 100% observed compliance; the final Phase 7.4 validation passed 72 tests. **Phase 8.1 is now in progress:** Studio metadata mappings, dbt dependencies, semantic models, and governed metrics are stitched into one federated lineage graph with transitive downstream impact analysis.
+**Current status:** Phases 0 through 7 and Phase 8.1 are complete. Phase 8.1 closed with a READY 11-node/10-edge federated graph, a DFF impact radius reaching all 10 downstream nodes, and final validation passing 76 tests. **Phase 8.2 is now in progress:** source-to-target field mappings, dbt column annotations, and governed metric expressions are stitched into a field-level impact graph without creating a second lineage authority.
 
 ---
 
@@ -226,21 +226,27 @@ The first clean proof should show `MEETING`, 100% observed compliance, a 99% tar
 
 ---
 
-## Phase 8.1 quick start
+## Phase 8.2 quick start
 
-Phase 8.1 composes a read-only lineage graph from existing authorities rather than creating another lineage metadata store. The first proof joins the READY `DFF → FED_FUNDS_RATE_MART` Studio mapping to the dbt source/model DAG and then continues through the semantic model into all governed metrics.
+Phase 8.2 preserves the Phase 8.1 asset graph and adds field-level lineage without asking the Studio API to guess arbitrary SQL. The two registered Studio field mappings remain the source-to-target authority, while dbt model columns declare their upstream inputs beside the model definitions in `schema.yml`; `dbt build` carries those annotations into `manifest.json`. Governed metric expressions then bind mart fields to business measures.
 
-Start Studio PostgreSQL and ensure the current dbt artifacts exist, then inspect the graph:
+Regenerate the dbt artifacts after overlaying the Phase 8.2 model annotations:
+
+```powershell
+.\scripts\dbt.ps1 build
+```
+
+Inspect the field graph:
 
 ```powershell
 Invoke-RestMethod `
-  "http://localhost:8100/api/v1/lineage/summary" |
+  "http://localhost:8100/api/v1/lineage/fields/summary" |
   ConvertTo-Json -Depth 12
 ```
 
-The current Federal Funds Rate proof should report one metadata mapping, 3 dbt business models, 1 semantic model, 4 metrics, 11 total nodes, and 10 directed edges. The default impact radius begins at `DFF` and should reach 10 downstream nodes including all 3 dbt models, the semantic model, and all 4 governed metrics.
+The Federal Funds Rate proof should report 2 Studio field mappings, 18 annotated dbt business-model columns, 4 metric bindings, 28 field/metric nodes, and 27 directed edges. Selecting `DFF.value` should reach 15 downstream nodes and exactly the average, minimum, and maximum Federal Funds Rate metrics while leaving the observation-count metric outside that radius.
 
-Open **Quality & Lineage → Lineage** and select any node to recompute its transitive downstream radius. You can query the same impact directly with `GET /api/v1/lineage/impact?nodeId=...`. Phase 8.1 remains a federated read model: field-level lineage, quality overlays, and report/consumer impact stay in later Phase 8 slices.
+Open **Quality & Lineage → Lineage** to inspect both the Phase 8.1 asset graph and the Phase 8.2 field graph. Field impact is also available through `GET /api/v1/lineage/fields/impact?fieldId=...`. The field graph remains a read model: Studio-owned field mappings, dbt-owned column annotations, and dbt-owned metric expressions stay at their existing authorities.
 
 ## Validation contract
 
@@ -496,4 +502,4 @@ The repository currently includes:
 - a Phase 7.1 artifact-backed Data Quality surface that joins dbt test definitions to latest run outcomes and computes a consumer-facing trust posture;
 - backend/frontend validation, repository map, and compact handoff tooling.
 
-The active implementation target is **Phase 8.1 — Cross-Layer Lineage Graph and Impact Radius Foundation**. Phases 0 through 7 are complete: the Studio now has governed ingestion handoffs, metadata and mappings, replay-safe pipelines, Airflow orchestration, dbt models and semantics, quality gates, durable incidents, and observation-backed reliability history. Phase 8.1 federates those existing dependency authorities into one directed graph so downstream impact can be explained without creating a second lineage store.
+The active implementation target is **Phase 8.2 — Field-Level Lineage and Column Impact Foundation**. Phases 0 through 7 are complete and Phase 8.1 established the federated asset/model/semantic/metric graph. Phase 8.2 carries the same ownership model down to individual fields so schema-change impact can be traced from DFF source columns through Studio mappings, dbt derivations, and governed metrics.

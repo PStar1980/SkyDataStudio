@@ -87,6 +87,7 @@ SkyDataStudio/
 │           ├── styles.css
 │           ├── components/
 │           │   ├── BrandMark.jsx
+│           │   ├── FieldLineagePanel.jsx
 │           │   ├── Sidebar.jsx
 │           │   ├── StatusPill.jsx
 │           │   └── Topbar.jsx

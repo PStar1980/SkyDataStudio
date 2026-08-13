@@ -19,11 +19,17 @@ models:
     columns:
       - name: observation_key
         description: Stable one-row-per-day semantic entity key derived from the observation date.
+        meta:
+          lineage_inputs:
+            - model:int_fed_funds_rate_changes.observation_date
         entity:
           name: fed_funds_observation
           type: primary
       - name: observation_date
         description: "Grain and business key: one row per observation date."
+        meta:
+          lineage_inputs:
+            - model:int_fed_funds_rate_changes.observation_date
         granularity: day
         dimension:
           type: time
@@ -32,19 +38,47 @@ models:
           - unique
       - name: observation_month
         description: Calendar month containing the daily observation.
+        meta:
+          lineage_inputs:
+            - model:int_fed_funds_rate_changes.observation_month
         granularity: month
         dimension:
           type: time
       - name: observation_year
         description: Calendar year containing the daily observation.
+        meta:
+          lineage_inputs:
+            - model:int_fed_funds_rate_changes.observation_year
         dimension:
           type: categorical
       - name: rate
         description: Federal Funds Effective Rate for the observation date.
+        meta:
+          lineage_inputs:
+            - model:int_fed_funds_rate_changes.rate
         data_tests:
           - not_null
+      - name: previous_rate
+        description: Prior available Federal Funds Effective Rate carried into the fact model.
+        meta:
+          lineage_inputs:
+            - model:int_fed_funds_rate_changes.previous_rate
+      - name: rate_change
+        description: Change from the prior available rate in percentage points.
+        meta:
+          lineage_inputs:
+            - model:int_fed_funds_rate_changes.rate_change
+      - name: rate_change_bps
+        description: Change from the prior available rate expressed in basis points.
+        meta:
+          lineage_inputs:
+            - model:int_fed_funds_rate_changes.rate_change_bps
       - name: rate_direction
         description: Direction of movement compared with the prior available observation.
+        meta:
+          lineage_inputs:
+            - model:int_fed_funds_rate_changes.rate
+            - model:int_fed_funds_rate_changes.previous_rate
         dimension:
           type: categorical
         data_tests:

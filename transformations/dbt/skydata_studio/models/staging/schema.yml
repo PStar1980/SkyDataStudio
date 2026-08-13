@@ -6,10 +6,16 @@ models:
     columns:
       - name: observation_date
         description: Unique observation date.
+        meta:
+          lineage_inputs:
+            - source:fed_funds_rate.observation_date
         data_tests:
           - not_null
           - unique
       - name: rate
         description: Federal Funds Effective Rate normalized to NUMERIC(10,4).
+        meta:
+          lineage_inputs:
+            - source:fed_funds_rate.rate
         data_tests:
           - not_null

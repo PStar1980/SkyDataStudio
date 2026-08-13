@@ -122,7 +122,7 @@ function Sidebar({ mobileOpen, onClose }) {
         <span className="environment-dot" />
         <span>
           <strong>Development</strong>
-          <small>Phase 8.1 cross-layer lineage</small>
+          <small>Phase 8.2 field-level lineage</small>
         </span>
       </div>
     </aside>
