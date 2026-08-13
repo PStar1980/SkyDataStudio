@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import FieldLineagePanel from '../components/FieldLineagePanel.jsx';
 import LineageTrustPanel from '../components/LineageTrustPanel.jsx';
+import RuntimeLineagePanel from '../components/RuntimeLineagePanel.jsx';
 import StatusPill from '../components/StatusPill.jsx';
 import { getJson } from '../services/api.js';
 
@@ -120,11 +121,11 @@ function Lineage() {
     <div className="page-stack lineage-page">
       <section className="workspace-intro lineage-intro">
         <div>
-          <span className="eyebrow">PHASE 8.3 · QUALITY + INCIDENT LINEAGE OVERLAY</span>
+          <span className="eyebrow">PHASE 8.4 · PIPELINE + AIRFLOW EXECUTION LINEAGE</span>
           <h1>Lineage & Impact</h1>
           <p>
-            Preserve asset and field impact from Phases 8.1 and 8.2, then project dbt quality, contract,
-            and incident evidence onto the exact lineage nodes those controls protect.
+            Preserve asset, field, and trust evidence from Phases 8.1–8.3, then connect the latest Airflow
+            and Studio execution proof to the same source and curated target nodes.
           </p>
         </div>
         <button className="primary-button" type="button" onClick={load} disabled={loading}>
@@ -219,19 +220,21 @@ function Lineage() {
 
       <LineageTrustPanel />
 
+      <RuntimeLineagePanel />
+
       <section className="two-column-grid">
         <article className="panel compact-panel">
-          <div className="panel-heading"><div><span className="eyebrow">ACCEPTANCE CONTRACT</span><h2>What Phase 8.3 proves</h2></div><span className="phase-badge">8.3</span></div>
+          <div className="panel-heading"><div><span className="eyebrow">ACCEPTANCE CONTRACT</span><h2>What Phase 8.4 proves</h2></div><span className="phase-badge">8.4</span></div>
           <ol className="implementation-list">
-            <li><span>01</span><div><strong>Trust follows ownership</strong><small>dbt checks, contract rules, and incident records remain at their existing authorities while lineage projects their evidence.</small></div></li>
-            <li><span>02</span><div><strong>Assets and fields share one trust view</strong><small>Source/model checks protect asset nodes while column checks and contract selectors protect exact field nodes.</small></div></li>
-            <li><span>03</span><div><strong>Incidents become impact context</strong><small>Active warning or blocking incidents surface on the nodes they affect without becoming new lineage edges.</small></div></li>
+            <li><span>01</span><div><strong>Airflow execution is linked, not copied</strong><small>The latest DAG run and task instances remain Airflow-owned while Studio reads them through REST API v2.</small></div></li>
+            <li><span>02</span><div><strong>Replay-safe Studio evidence is preserved</strong><small>The AIRFLOW run key resolves to the same durable Studio pipeline run and its structured step results.</small></div></li>
+            <li><span>03</span><div><strong>Runtime lands on structural lineage</strong><small>The execution chain starts at DFF and terminates at the same curated FED_FUNDS_RATE_MART node used by design lineage.</small></div></li>
           </ol>
         </article>
         <article className="panel compact-panel">
           <div className="panel-heading"><div><span className="eyebrow">BOUNDARY</span><h2>Read the graph; do not rewrite it</h2></div><span className="rule-mark">⌁</span></div>
           <p className="rule-copy">
-            Phase 8.3 remains a federated read model. Studio does not infer arbitrary SQL or persist a second lineage or quality authority; mappings, dbt artifacts, contracts, and incident records stay at their existing owners. Runtime execution and report-consumer lineage remain later Phase 8 slices.
+            Phase 8.4 remains a federated runtime read model. Airflow continues to own DAG and task execution, Studio continues to own pipeline-run and step evidence, and structural lineage keeps its existing metadata/dbt authorities. Report and Power BI consumer lineage remain later delivery slices.
           </p>
           <div className="rule-footer"><span>Federated evidence</span><span>Directed impact</span><span>No duplicate authority</span></div>
         </article>

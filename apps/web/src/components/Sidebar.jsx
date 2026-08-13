@@ -122,7 +122,7 @@ function Sidebar({ mobileOpen, onClose }) {
         <span className="environment-dot" />
         <span>
           <strong>Development</strong>
-          <small>Phase 8.3 trust overlay</small>
+          <small>Phase 8.4 execution lineage</small>
         </span>
       </div>
     </aside>

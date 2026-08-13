@@ -174,3 +174,70 @@ class LineageTrustSummary(BaseModel):
     protected_asset_count: int = Field(ge=0)
     protected_field_count: int = Field(ge=0)
     overlays: list[LineageTrustOverlay]
+
+
+RuntimeLineageNodeType = Literal[
+    "STRUCTURAL_ASSET",
+    "PIPELINE_DEFINITION",
+    "AIRFLOW_DAG",
+    "AIRFLOW_DAG_RUN",
+    "AIRFLOW_TASK",
+    "STUDIO_PIPELINE_RUN",
+    "STUDIO_STEP_RUN",
+]
+RuntimeLineageEdgeType = Literal[
+    "READS_FROM",
+    "ORCHESTRATED_BY",
+    "EXECUTION",
+    "TASK_FLOW",
+    "CALLS_STUDIO",
+    "STEP_FLOW",
+    "MATERIALIZES",
+]
+
+
+class RuntimeLineageNode(BaseModel):
+    id: str
+    label: str
+    node_type: RuntimeLineageNodeType
+    system: str
+    status: str
+    relation: str | None = None
+    metadata: dict[str, object] = Field(default_factory=dict)
+
+
+class RuntimeLineageEdge(BaseModel):
+    id: str
+    upstream_id: str
+    downstream_id: str
+    edge_type: RuntimeLineageEdgeType
+    label: str
+
+
+class RuntimeLineageSummary(BaseModel):
+    project_name: str = "skydata_studio"
+    phase: str = "Phase 8.4 — Pipeline and Airflow Execution Lineage Foundation"
+    runtime_status: Literal["READY", "PARTIAL", "MISSING"]
+    airflow_connection_status: Literal["CONNECTED", "UNAVAILABLE", "UNKNOWN"]
+    pipeline_code: str
+    dag_id: str
+    dag_run_id: str | None = None
+    studio_run_id: str | None = None
+    studio_run_key: str | None = None
+    airflow_dag_run_status: str | None = None
+    studio_run_status: str | None = None
+    airflow_task_count: int = Field(default=0, ge=0)
+    successful_airflow_task_count: int = Field(default=0, ge=0)
+    studio_step_count: int = Field(default=0, ge=0)
+    succeeded_studio_step_count: int = Field(default=0, ge=0)
+    replay_count: int = Field(default=0, ge=0)
+    materialization_executed: bool = False
+    data_mutation_applied: bool = False
+    target_relation: str | None = None
+    target_row_count: int | None = Field(default=None, ge=0)
+    airflow_error: str | None = None
+    node_count: int = Field(default=0, ge=0)
+    edge_count: int = Field(default=0, ge=0)
+    nodes: list[RuntimeLineageNode] = Field(default_factory=list)
+    edges: list[RuntimeLineageEdge] = Field(default_factory=list)
+

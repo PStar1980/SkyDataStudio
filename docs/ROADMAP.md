@@ -637,7 +637,7 @@ Closure evidence:
 
 ## Phase 8.3 — Quality and Incident Lineage Overlay Foundation
 
-**Status:** In progress.
+**Status:** Complete. Live trust-overlay proof and final local validation are green.
 
 Scope:
 
@@ -658,4 +658,37 @@ Acceptance proof:
 - the current clean incident register contributes zero active and zero blocking incidents without fabricating trust failures;
 - synthetic lifecycle tests prove a blocking incident marks the owning mart asset and exact contract field `BLOCKED` while unrelated fields remain untouched;
 - local validation remains green with 84 pytest tests plus Ruff, mypy, npm audit, ESLint, and Vite build.
+
+Closure evidence:
+
+- `GET /api/v1/lineage/trust/summary` returned `READY / TRUSTED / COMPLIANT`, 14/14 passing dbt checks, 5/5 satisfied contract rules, 4 protected assets, 9 protected fields, and zero active or blocking incidents;
+- the Lineage workbench rendered the trust overlay over the existing Phase 8.1 and 8.2 structural graphs without adding persisted trust state;
+- the mypy trust-overlay cleanup changed local variable naming only and preserved runtime behavior;
+- final local validation passed Ruff, mypy across 58 source files, 84 pytest tests, npm audit with zero vulnerabilities, ESLint, and Vite production build.
+
+## Phase 8.4 — Pipeline and Airflow Execution Lineage Foundation
+
+**Status:** In progress.
+
+Scope:
+
+- preserve the Phase 8.1 asset graph, Phase 8.2 field graph, and Phase 8.3 trust overlay while adding a separate runtime-lineage read model;
+- use the latest replay-safe Studio `AIRFLOW:` pipeline run as the durable join key back to the owning Airflow DAG run;
+- read Airflow DAG-run and task-instance state through REST API v2 only, never through the Airflow metadata database;
+- project the Airflow DAG, DAG run, four Airflow tasks, Studio pipeline run, and four Studio step runs into one execution graph;
+- anchor that runtime graph to the same `DFF` source and `FED_FUNDS_RATE_MART` curated target nodes already used by structural lineage;
+- expose `GET /api/v1/lineage/runtime/summary` with execution counts, replay evidence, materialization evidence, and directed runtime edges;
+- extend the Lineage workbench with a refreshable runtime execution surface;
+- degrade to `PARTIAL` when Airflow is temporarily unavailable while retaining persisted Studio run and step evidence;
+- keep report/Power BI consumer lineage outside this runtime foundation.
+
+Acceptance proof:
+
+- with the Phase 5 Airflow services running, the live runtime endpoint reports `runtime_status=READY` and `airflow_connection_status=CONNECTED`;
+- the latest linked DAG run resolves from the persisted `AIRFLOW:<dag_run_id>` Studio run key rather than by timestamp guessing;
+- the proof exposes 4 successful Airflow tasks and 4 successful Studio pipeline steps, with the Airflow `execute_studio_pipeline` task linked to the single replay-safe Studio run;
+- the execution graph begins at the structural `DFF` source node and terminates at the structural `FED_FUNDS_RATE_MART` target node;
+- materialization evidence preserves `materialization_executed=true`, target relation `mart.fed_funds_rate`, target row count, mutation posture, and replay count;
+- a synthetic unavailable-Airflow test returns `PARTIAL` while retaining Studio execution evidence;
+- local validation remains green with 88 pytest tests plus Ruff, mypy, npm audit, ESLint, and Vite build.
 

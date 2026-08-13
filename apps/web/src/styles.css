@@ -1602,3 +1602,174 @@ a { color: inherit; }
     text-align: left;
   }
 }
+
+/* Phase 8.4 — pipeline + Airflow execution lineage */
+.runtime-lineage-panel {
+  display: grid;
+  gap: 16px;
+}
+
+.runtime-lineage-heading {
+  align-items: flex-start;
+}
+
+.runtime-lineage-heading p {
+  max-width: 900px;
+  margin: 8px 0 0;
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.runtime-lineage-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.runtime-lineage-metrics {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.runtime-lineage-metrics > div,
+.runtime-lineage-contract > div {
+  display: grid;
+  gap: 4px;
+  padding: 12px 13px;
+  background: rgba(4, 17, 27, 0.54);
+  border: 1px solid rgba(116, 171, 186, 0.14);
+  border-radius: 10px;
+}
+
+.runtime-lineage-metrics span,
+.runtime-lineage-contract span,
+.runtime-lineage-group header span,
+.runtime-lineage-list span {
+  color: var(--text-muted);
+  font-size: 8px;
+  font-weight: 850;
+  letter-spacing: 0.1em;
+}
+
+.runtime-lineage-metrics strong {
+  color: var(--accent-bright);
+  font-size: 17px;
+}
+
+.runtime-lineage-metrics small,
+.runtime-lineage-list small {
+  color: var(--text-muted);
+  font-size: 9px;
+}
+
+.runtime-lineage-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.runtime-lineage-group {
+  display: grid;
+  gap: 10px;
+  padding: 13px;
+  background: rgba(4, 17, 27, 0.5);
+  border: 1px solid rgba(116, 171, 186, 0.13);
+  border-radius: 11px;
+}
+
+.runtime-lineage-group header {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.runtime-lineage-group header > div {
+  display: grid;
+  gap: 3px;
+}
+
+.runtime-lineage-group header b {
+  color: var(--accent-bright);
+}
+
+.runtime-lineage-list {
+  display: grid;
+  gap: 7px;
+}
+
+.runtime-lineage-scroll {
+  max-height: 300px;
+  overflow: auto;
+}
+
+.runtime-lineage-list > div {
+  display: grid;
+  gap: 3px;
+  padding: 10px 11px;
+  background: rgba(8, 26, 37, 0.82);
+  border: 1px solid rgba(84, 211, 198, 0.12);
+  border-radius: 8px;
+}
+
+.runtime-lineage-list strong {
+  color: var(--text-primary);
+  font-size: 11px;
+  overflow-wrap: anywhere;
+}
+
+.runtime-lineage-edge-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(116, 171, 186, 0.12);
+}
+
+.runtime-lineage-edge-strip span {
+  display: inline-flex;
+  gap: 6px;
+  padding: 6px 9px;
+  border: 1px solid rgba(116, 171, 186, 0.14);
+  border-radius: 999px;
+  color: var(--text-muted);
+  font-size: 9px;
+}
+
+.runtime-lineage-edge-strip b {
+  color: var(--accent-bright);
+}
+
+.runtime-lineage-contract {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.runtime-lineage-contract strong {
+  color: var(--text-primary);
+  font-size: 11px;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 1180px) {
+  .runtime-lineage-metrics,
+  .runtime-lineage-grid,
+  .runtime-lineage-contract {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 720px) {
+  .runtime-lineage-actions {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .runtime-lineage-metrics,
+  .runtime-lineage-grid,
+  .runtime-lineage-contract {
+    grid-template-columns: 1fr;
+  }
+}

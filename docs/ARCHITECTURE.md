@@ -271,3 +271,11 @@ Replay reuse remains intentionally different from a forced physical rerun. `REUS
 `quality_slo_observation` is Studio-owned operational evidence, not copied dbt metadata. Each row is keyed by quality-contract identity plus dbt invocation identity and records contract status, artifact/trust posture, pass rate, and active incident counts at capture time. The unique observation key makes repeated reconciliation safe: the same dbt invocation cannot be counted twice for the same contract version.
 
 The first reliability SLO is defined beside the quality contract rather than in application code: `window_days=30` and `minimum_compliance_rate=0.99`. The `/quality/reliability` workbench reports `MEETING`, `AT_RISK`, `BREACHED`, or `PENDING` from captured observations. This is explicitly an observation-based reliability measure; scheduled capture cadence and notification routing remain later operational integrations.
+
+## Phase 8.4 runtime-lineage boundary
+
+Phase 8.4 federates execution evidence without changing ownership. The structural asset and field graphs remain metadata/dbt read models, and the trust overlay remains a Phase 7 projection. Runtime lineage reads the latest persisted Studio pipeline run whose replay key is `AIRFLOW:<dag_run_id>`, resolves that exact DAG run through Airflow REST API v2, and joins the two control planes at request time.
+
+The runtime graph intentionally has no new persistence table. Airflow remains authoritative for DAG runs and task instances; Studio remains authoritative for pipeline runs, replay counts, step results, and materialization evidence. The existing structural `DFF` and `FED_FUNDS_RATE_MART` node identifiers anchor the beginning and end of the execution chain so design lineage and runtime lineage share the same asset seam without duplicating ownership.
+
+If Airflow is unavailable, the endpoint degrades to `PARTIAL` and preserves the durable Studio run/step branch. Studio never reads the Airflow metadata database directly.
