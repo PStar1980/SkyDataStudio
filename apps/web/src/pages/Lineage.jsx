@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import FieldLineagePanel from '../components/FieldLineagePanel.jsx';
 import LineageTrustPanel from '../components/LineageTrustPanel.jsx';
 import RuntimeLineagePanel from '../components/RuntimeLineagePanel.jsx';
+import ConsumerLineagePanel from '../components/ConsumerLineagePanel.jsx';
 import StatusPill from '../components/StatusPill.jsx';
 import { getJson } from '../services/api.js';
 
@@ -121,11 +122,11 @@ function Lineage() {
     <div className="page-stack lineage-page">
       <section className="workspace-intro lineage-intro">
         <div>
-          <span className="eyebrow">PHASE 8.4 · PIPELINE + AIRFLOW EXECUTION LINEAGE</span>
+          <span className="eyebrow">PHASE 8.5 · ANALYTICS CONSUMER LINEAGE + IMPACT CLOSURE</span>
           <h1>Lineage & Impact</h1>
           <p>
-            Preserve asset, field, and trust evidence from Phases 8.1–8.3, then connect the latest Airflow
-            and Studio execution proof to the same source and curated target nodes.
+            Preserve structural, field, trust, and runtime evidence from Phases 8.1–8.4, then terminate the
+            graph at source-controlled analytics consumers that declare exactly which governed metrics they use.
           </p>
         </div>
         <button className="primary-button" type="button" onClick={load} disabled={loading}>
@@ -222,19 +223,21 @@ function Lineage() {
 
       <RuntimeLineagePanel />
 
+      <ConsumerLineagePanel />
+
       <section className="two-column-grid">
         <article className="panel compact-panel">
-          <div className="panel-heading"><div><span className="eyebrow">ACCEPTANCE CONTRACT</span><h2>What Phase 8.4 proves</h2></div><span className="phase-badge">8.4</span></div>
+          <div className="panel-heading"><div><span className="eyebrow">ACCEPTANCE CONTRACT</span><h2>What Phase 8.5 proves</h2></div><span className="phase-badge">8.5</span></div>
           <ol className="implementation-list">
-            <li><span>01</span><div><strong>Airflow execution is linked, not copied</strong><small>The latest DAG run and task instances remain Airflow-owned while Studio reads them through REST API v2.</small></div></li>
-            <li><span>02</span><div><strong>Replay-safe Studio evidence is preserved</strong><small>The AIRFLOW run key resolves to the same durable Studio pipeline run and its structured step results.</small></div></li>
-            <li><span>03</span><div><strong>Runtime lands on structural lineage</strong><small>The execution chain starts at DFF and terminates at the same curated FED_FUNDS_RATE_MART node used by design lineage.</small></div></li>
+            <li><span>01</span><div><strong>Consumers declare dependencies</strong><small>Reports name the semantic model, governed metrics, and dimensions they require in source control.</small></div></li>
+            <li><span>02</span><div><strong>Metric impact reaches the consumer boundary</strong><small>Selecting a governed metric reveals which declared analytics consumers depend on it.</small></div></li>
+            <li><span>03</span><div><strong>Power BI deployment is not fabricated</strong><small>The consumer can target Power BI while remaining DECLARED until later delivery phases provision real service resources.</small></div></li>
           </ol>
         </article>
         <article className="panel compact-panel">
           <div className="panel-heading"><div><span className="eyebrow">BOUNDARY</span><h2>Read the graph; do not rewrite it</h2></div><span className="rule-mark">⌁</span></div>
           <p className="rule-copy">
-            Phase 8.4 remains a federated runtime read model. Airflow continues to own DAG and task execution, Studio continues to own pipeline-run and step evidence, and structural lineage keeps its existing metadata/dbt authorities. Report and Power BI consumer lineage remain later delivery slices.
+            Phase 8.5 closes the lineage chain at declared consumers without taking ownership from dbt semantic metadata or pretending that a report has already been deployed. Actual analytical delivery remains Phase 9, while Power BI service provisioning and refresh/deployment evidence remain Phase 10.
           </p>
           <div className="rule-footer"><span>Federated evidence</span><span>Directed impact</span><span>No duplicate authority</span></div>
         </article>

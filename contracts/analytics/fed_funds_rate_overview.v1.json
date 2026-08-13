@@ -1,0 +1,23 @@
+{
+  "code": "FED_FUNDS_RATE_OVERVIEW",
+  "version": "1.0.0",
+  "name": "Federal Funds Rate Overview",
+  "description": "Source-controlled analytics consumer declaration for the governed Federal Funds Rate semantic model.",
+  "consumer_type": "REPORT",
+  "delivery_system": "POWER_BI",
+  "deployment_status": "DECLARED",
+  "semantic_model": "fed_funds_rate_daily",
+  "required_metrics": [
+    "average_federal_funds_rate",
+    "federal_funds_observation_count",
+    "maximum_federal_funds_rate",
+    "minimum_federal_funds_rate"
+  ],
+  "required_dimensions": [
+    "observation_date",
+    "observation_month",
+    "observation_year",
+    "rate_direction"
+  ],
+  "owner": "SkyData Studio"
+}

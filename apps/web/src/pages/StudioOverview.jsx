@@ -5,7 +5,7 @@ const FALLBACK = {
   product: 'SkyData Studio',
   subtitle: 'Data Engineering Workbench',
   theme: 'Aurora Foundry',
-  current_phase: 'Phase 8.4 — Pipeline and Airflow Execution Lineage Foundation',
+  current_phase: 'Phase 8.5 — Analytics Consumer Lineage and Impact Closure',
   boundary: 'SkyData Studio starts after SkyCommand ingestion and publishes governed analytical products for downstream consumers.',
   capabilities: [],
 };
@@ -41,7 +41,7 @@ function StudioOverview() {
     <div className="page-stack">
       <section className="hero-panel">
         <div>
-          <span className="eyebrow">AURORA FOUNDRY · PHASE 8.4</span>
+          <span className="eyebrow">AURORA FOUNDRY · PHASE 8.5</span>
           <h1>Shape trusted data into analytical products.</h1>
           <p>{summary.boundary}</p>
           <div className="hero-actions">
@@ -61,7 +61,7 @@ function StudioOverview() {
 
       <section className="metric-grid">
         <article className="metric-card"><span>Platform API</span><strong>{apiState}</strong><small>FastAPI contract service</small></article>
-        <article className="metric-card"><span>Current Phase</span><strong>8.4</strong><small>pipeline + Airflow execution lineage</small></article>
+        <article className="metric-card"><span>Current Phase</span><strong>8.5</strong><small>analytics consumer lineage closure</small></article>
         <article className="metric-card"><span>Pipeline Proof</span><strong>READY</strong><small>Curated mart materialization proven</small></article>
         <article className="metric-card"><span>Orchestrator</span><strong>Airflow 3</strong><small>Batch and asset workflows</small></article>
       </section>
@@ -111,7 +111,7 @@ function StudioOverview() {
 
       <section className="two-column-grid">
         <article className="panel compact-panel">
-          <div className="panel-heading"><div><span className="eyebrow">CURRENT IMPLEMENTATION</span><h2>pipeline and Airflow execution lineage</h2></div><span className="phase-badge">PHASE 8.4</span></div>
+          <div className="panel-heading"><div><span className="eyebrow">CURRENT IMPLEMENTATION</span><h2>analytics consumer lineage and impact closure</h2></div><span className="phase-badge">PHASE 8.5</span></div>
           <ol className="implementation-list">
             <li><span>01</span><div><strong>Airflow control-plane evidence</strong><small>The latest linked DAG run and task instances stay Airflow-owned and are read through REST API v2.</small></div></li>
             <li><span>02</span><div><strong>Replay-safe Studio execution</strong><small>The AIRFLOW run key resolves to one durable pipeline run with four structured Studio step results.</small></div></li>

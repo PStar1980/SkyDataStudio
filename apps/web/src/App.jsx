@@ -35,7 +35,7 @@ const PAGE_META = {
   '/quality/contracts': ['Contracts', 'Quality gates and consumer compatibility'],
   '/quality/incidents': ['Quality Incidents', 'Durable failures, ownership, and remediation history'],
   '/quality/reliability': ['Reliability', 'Quality SLO, observation history, and consumer-readiness posture'],
-  '/quality/lineage': ['Lineage', 'Asset, field, trust, and change impact'],
+  '/quality/lineage': ['Lineage', 'Asset, field, trust, runtime, and consumer impact'],
   '/delivery/marts': ['Analytical Marts', 'Curated consumer-ready facts and dimensions'],
   '/delivery/semantic': ['Semantic Layer', 'Governed metrics and business definitions'],
   '/delivery/reports': ['Reports', 'Reporting inventory and refresh evidence'],

@@ -122,7 +122,7 @@ function Sidebar({ mobileOpen, onClose }) {
         <span className="environment-dot" />
         <span>
           <strong>Development</strong>
-          <small>Phase 8.4 execution lineage</small>
+          <small>Phase 8.5 consumer lineage</small>
         </span>
       </div>
     </aside>

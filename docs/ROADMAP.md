@@ -668,7 +668,7 @@ Closure evidence:
 
 ## Phase 8.4 — Pipeline and Airflow Execution Lineage Foundation
 
-**Status:** In progress.
+**Status:** Complete. Live Airflow/Studio execution linkage and final local validation are green.
 
 Scope:
 
@@ -691,4 +691,38 @@ Acceptance proof:
 - materialization evidence preserves `materialization_executed=true`, target relation `mart.fed_funds_rate`, target row count, mutation posture, and replay count;
 - a synthetic unavailable-Airflow test returns `PARTIAL` while retaining Studio execution evidence;
 - local validation remains green with 88 pytest tests plus Ruff, mypy, npm audit, ESLint, and Vite build.
+
+Closure evidence:
+
+- `GET /api/v1/lineage/runtime/summary` returned `runtime_status=READY` and `airflow_connection_status=CONNECTED` for DAG run `scheduled__2026-08-13T00:00:00+00:00`;
+- the linked Airflow execution reported 4/4 successful tasks and resolved exactly to Studio run key `AIRFLOW:scheduled__2026-08-13T00:00:00+00:00` with 4/4 successful Studio steps;
+- materialization evidence reported `materialization_executed=true`, `data_mutation_applied=true`, target `mart.fed_funds_rate`, 26,340 target rows, and replay count 0;
+- the runtime graph returned 14 nodes and 13 directed edges from the structural DFF source through Airflow and Studio execution to the curated target;
+- the Lineage workbench rendered the runtime proof over the existing structural, field, and trust surfaces;
+- final local validation passed Ruff, mypy across 59 source files, 88 pytest tests, npm audit with zero vulnerabilities, ESLint, and Vite production build.
+
+## Phase 8.5 — Analytics Consumer Lineage and Impact Closure
+
+**Status:** In progress. Consumer-contract resolution and metric-to-report impact are the active proof.
+
+Scope:
+
+- preserve the Phase 8.1 asset graph, Phase 8.2 field graph, Phase 8.3 trust overlay, and Phase 8.4 runtime graph without modifying their persisted authorities;
+- add source-controlled analytics-consumer declarations that name the semantic model, governed metrics, and dimensions a downstream report requires;
+- resolve those declarations against generated dbt semantic artifacts rather than introducing a second semantic metadata store;
+- expose `GET /api/v1/lineage/consumers/summary` and `GET /api/v1/lineage/consumers/impact?metricName=...`;
+- extend the Lineage workbench with governed metric → analytics consumer dependency evidence and metric-level downstream impact;
+- declare the first Federal Funds Rate Overview report as a Power BI target with deployment status `DECLARED`, explicitly avoiding any claim that Power BI resources have already been provisioned;
+- leave actual analytical product publication for Phase 9 and live Power BI workspace/report/refresh/deployment integration for Phase 10.
+
+Acceptance proof:
+
+- the consumer-lineage endpoint reports `consumer_status=READY` against READY dbt semantic artifacts;
+- one source-controlled analytics consumer resolves to the `fed_funds_rate_daily` semantic model;
+- all four declared governed metrics resolve with zero unresolved metric dependencies;
+- the proof graph contains 5 nodes and 4 directed `CONSUMED_BY` edges: four governed metrics feeding one declared report consumer;
+- selecting `average_federal_funds_rate` reports exactly one downstream consumer, `Federal Funds Rate Overview`;
+- the declaration remains `deployment_status=DECLARED`, proving lineage without fabricating Power BI deployment state;
+- the Lineage workbench renders the consumer dependency surface alongside the four completed Phase 8 evidence layers;
+- local validation remains green with 92 pytest tests plus Ruff, mypy, npm audit, ESLint, and Vite build.
 

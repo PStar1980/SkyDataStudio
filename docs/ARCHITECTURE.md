@@ -279,3 +279,9 @@ Phase 8.4 federates execution evidence without changing ownership. The structura
 The runtime graph intentionally has no new persistence table. Airflow remains authoritative for DAG runs and task instances; Studio remains authoritative for pipeline runs, replay counts, step results, and materialization evidence. The existing structural `DFF` and `FED_FUNDS_RATE_MART` node identifiers anchor the beginning and end of the execution chain so design lineage and runtime lineage share the same asset seam without duplicating ownership.
 
 If Airflow is unavailable, the endpoint degrades to `PARTIAL` and preserves the durable Studio run/step branch. Studio never reads the Airflow metadata database directly.
+
+## Phase 8.5 analytics-consumer lineage boundary
+
+Phase 8.5 closes the lineage chain at source-controlled analytics-consumer declarations. The declaration names the dbt semantic model, governed metrics, and dimensions that a report or application requires. Studio resolves those names against the generated dbt semantic artifacts at request time and emits metric → consumer edges without creating another semantic or reporting metadata authority.
+
+The first proof declares a `Federal Funds Rate Overview` report that targets Power BI but has deployment status `DECLARED`. That status is intentional: Phase 8.5 proves downstream dependency and change-impact lineage only. It does not claim that a Power BI workspace, semantic model, report, refresh schedule, or deployment exists. Analytical product delivery remains Phase 9, while live Power BI service integration remains Phase 10.
