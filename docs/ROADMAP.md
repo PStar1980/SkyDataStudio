@@ -605,7 +605,7 @@ Closure evidence:
 
 ## Phase 8.2 — Field-Level Lineage and Column Impact Foundation
 
-**Status:** In progress.
+**Status:** Complete. Field graph proof, metric impact separation, and final local validation are green.
 
 Scope:
 
@@ -626,4 +626,36 @@ Acceptance proof:
 - selecting `DFF.observation_date` reaches the observation-key path and observation-count metric without falsely reporting rate metrics;
 - the Phase 8.1 asset graph remains READY at 11 nodes / 10 edges;
 - local validation remains green with 80 pytest tests plus Ruff, mypy, npm audit, ESLint, and Vite build.
+
+Closure evidence:
+
+- a fresh dbt build completed `PASS=18 WARN=0 ERROR=0 SKIP=0` with 4 models, 14 data tests, 4 metrics, and 1 semantic model;
+- `GET /api/v1/lineage/fields/summary` returned `artifact_status=READY`, 2 field mappings, 18 annotated dbt columns, 4 metric bindings, 28 nodes, and 27 edges;
+- the existing Phase 8.1 graph remained READY at 11 nodes and 10 edges;
+- the mypy upstream-ID cleanup changed local variable naming only and preserved the field graph;
+- final local validation passed Ruff, mypy across 57 source files, 80 pytest tests, npm audit with zero vulnerabilities, ESLint, and Vite production build.
+
+## Phase 8.3 — Quality and Incident Lineage Overlay Foundation
+
+**Status:** In progress.
+
+Scope:
+
+- preserve the Phase 8.1 asset graph and Phase 8.2 field graph without adding trust state to the persisted lineage model;
+- project the latest dbt quality checks onto the dbt source/model assets and exact fields they protect;
+- project the source-controlled Federal Funds Rate quality-contract selectors onto the mart asset and governed mart fields;
+- project durable active quality incidents onto their affected asset and field nodes while keeping incident lifecycle ownership in the Phase 7 incident tables;
+- expose a typed `GET /api/v1/lineage/trust/summary` read model with asset/field trust posture, check counts, contract coverage, and incident counts;
+- extend the Lineage workbench with an explicit trust overlay that can be refreshed independently from structural lineage;
+- keep Airflow/pipeline execution lineage and report/Power BI consumers outside this trust-overlay foundation.
+
+Acceptance proof:
+
+- with the current clean dbt evidence, the trust overlay reports `artifact_status=READY`, `evidence_trust_posture=TRUSTED`, and `contract_status=COMPLIANT`;
+- all 14 dbt quality checks remain represented, with 14 passing and the 5 required quality-contract rules satisfied;
+- exactly 4 structural asset nodes are quality-protected: the governed dbt source plus staging, intermediate, and mart models;
+- exactly 9 field nodes receive direct quality evidence across source, staging, intermediate, and mart layers;
+- the current clean incident register contributes zero active and zero blocking incidents without fabricating trust failures;
+- synthetic lifecycle tests prove a blocking incident marks the owning mart asset and exact contract field `BLOCKED` while unrelated fields remain untouched;
+- local validation remains green with 84 pytest tests plus Ruff, mypy, npm audit, ESLint, and Vite build.
 

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import FieldLineagePanel from '../components/FieldLineagePanel.jsx';
+import LineageTrustPanel from '../components/LineageTrustPanel.jsx';
 import StatusPill from '../components/StatusPill.jsx';
 import { getJson } from '../services/api.js';
 
@@ -119,11 +120,11 @@ function Lineage() {
     <div className="page-stack lineage-page">
       <section className="workspace-intro lineage-intro">
         <div>
-          <span className="eyebrow">PHASE 8.2 · FIELD-LEVEL LINEAGE + COLUMN IMPACT</span>
+          <span className="eyebrow">PHASE 8.3 · QUALITY + INCIDENT LINEAGE OVERLAY</span>
           <h1>Lineage & Impact</h1>
           <p>
-            Keep the federated asset graph from Phase 8.1, then trace field-level impact from registered
-            mappings through dbt derivations and into governed metrics before a schema change lands.
+            Preserve asset and field impact from Phases 8.1 and 8.2, then project dbt quality, contract,
+            and incident evidence onto the exact lineage nodes those controls protect.
           </p>
         </div>
         <button className="primary-button" type="button" onClick={load} disabled={loading}>
@@ -216,19 +217,21 @@ function Lineage() {
 
       <FieldLineagePanel />
 
+      <LineageTrustPanel />
+
       <section className="two-column-grid">
         <article className="panel compact-panel">
-          <div className="panel-heading"><div><span className="eyebrow">ACCEPTANCE CONTRACT</span><h2>What Phase 8.2 proves</h2></div><span className="phase-badge">8.2</span></div>
+          <div className="panel-heading"><div><span className="eyebrow">ACCEPTANCE CONTRACT</span><h2>What Phase 8.3 proves</h2></div><span className="phase-badge">8.3</span></div>
           <ol className="implementation-list">
-            <li><span>01</span><div><strong>Field mappings stay authoritative</strong><small>Studio reuses the two registered source-to-target field maps rather than reconstructing ingestion semantics.</small></div></li>
-            <li><span>02</span><div><strong>dbt owns derived columns</strong><small>Column lineage declarations live beside dbt models and are carried through the generated manifest.</small></div></li>
-            <li><span>03</span><div><strong>Metrics become field consumers</strong><small>Metric expressions connect mart fields to business measures so field-level downstream impact is explicit.</small></div></li>
+            <li><span>01</span><div><strong>Trust follows ownership</strong><small>dbt checks, contract rules, and incident records remain at their existing authorities while lineage projects their evidence.</small></div></li>
+            <li><span>02</span><div><strong>Assets and fields share one trust view</strong><small>Source/model checks protect asset nodes while column checks and contract selectors protect exact field nodes.</small></div></li>
+            <li><span>03</span><div><strong>Incidents become impact context</strong><small>Active warning or blocking incidents surface on the nodes they affect without becoming new lineage edges.</small></div></li>
           </ol>
         </article>
         <article className="panel compact-panel">
           <div className="panel-heading"><div><span className="eyebrow">BOUNDARY</span><h2>Read the graph; do not rewrite it</h2></div><span className="rule-mark">⌁</span></div>
           <p className="rule-copy">
-            Phase 8.2 remains a federated read model. Studio does not infer arbitrary SQL or persist a second lineage store; mapping fields, dbt column annotations, and metric expressions stay at their existing authorities. Quality overlays and consumer/report lineage remain later Phase 8 slices.
+            Phase 8.3 remains a federated read model. Studio does not infer arbitrary SQL or persist a second lineage or quality authority; mappings, dbt artifacts, contracts, and incident records stay at their existing owners. Runtime execution and report-consumer lineage remain later Phase 8 slices.
           </p>
           <div className="rule-footer"><span>Federated evidence</span><span>Directed impact</span><span>No duplicate authority</span></div>
         </article>

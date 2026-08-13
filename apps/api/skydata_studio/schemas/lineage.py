@@ -137,3 +137,40 @@ class FieldLineageSummary(BaseModel):
     nodes: list[FieldLineageNode]
     edges: list[FieldLineageEdge]
     default_impact: FieldLineageImpactSummary
+
+LineageTrustStatus = Literal["TRUSTED", "DEGRADED", "BLOCKED", "PENDING"]
+
+
+class LineageTrustOverlay(BaseModel):
+    node_id: str
+    node_label: str
+    scope: Literal["ASSET", "FIELD"]
+    layer: str
+    relation: str | None = None
+    quality_status: LineageTrustStatus
+    check_count: int = Field(ge=0)
+    passed_check_count: int = Field(ge=0)
+    warning_check_count: int = Field(ge=0)
+    failed_check_count: int = Field(ge=0)
+    contract_rule_count: int = Field(ge=0)
+    satisfied_contract_rule_count: int = Field(ge=0)
+    active_incident_count: int = Field(ge=0)
+    blocking_incident_count: int = Field(ge=0)
+    quality_dimensions: list[str]
+
+
+class LineageTrustSummary(BaseModel):
+    project_name: str = "skydata_studio"
+    phase: str = "Phase 8.3 — Quality and Incident Lineage Overlay Foundation"
+    artifact_status: Literal["READY", "PARTIAL", "MISSING"]
+    evidence_trust_posture: Literal["TRUSTED", "DEGRADED", "BLOCKED", "PENDING"]
+    contract_status: Literal["COMPLIANT", "DEGRADED", "BLOCKED", "PENDING"]
+    check_count: int = Field(ge=0)
+    passed_check_count: int = Field(ge=0)
+    required_contract_rule_count: int = Field(ge=0)
+    satisfied_contract_rule_count: int = Field(ge=0)
+    active_incident_count: int = Field(ge=0)
+    blocking_incident_count: int = Field(ge=0)
+    protected_asset_count: int = Field(ge=0)
+    protected_field_count: int = Field(ge=0)
+    overlays: list[LineageTrustOverlay]
