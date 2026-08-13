@@ -5,9 +5,42 @@ models:
     description: Reusable Federal Funds Rate model with prior-day and change attributes.
     columns:
       - name: observation_date
+        description: Observation date preserved from the staged daily grain.
+        meta:
+          lineage_inputs:
+            - model:stg_fed_funds_rate.observation_date
         data_tests:
           - not_null
           - unique
+      - name: observation_month
+        description: Calendar month derived from the observation date.
+        meta:
+          lineage_inputs:
+            - model:stg_fed_funds_rate.observation_date
+      - name: observation_year
+        description: Calendar year derived from the observation date.
+        meta:
+          lineage_inputs:
+            - model:stg_fed_funds_rate.observation_date
       - name: rate
+        description: Federal Funds Effective Rate preserved from staging.
+        meta:
+          lineage_inputs:
+            - model:stg_fed_funds_rate.rate
         data_tests:
           - not_null
+      - name: previous_rate
+        description: Prior available Federal Funds Effective Rate calculated with a window lag.
+        meta:
+          lineage_inputs:
+            - model:stg_fed_funds_rate.rate
+      - name: rate_change
+        description: Change from the prior available rate in percentage points.
+        meta:
+          lineage_inputs:
+            - model:stg_fed_funds_rate.rate
+      - name: rate_change_bps
+        description: Change from the prior available rate expressed in basis points.
+        meta:
+          lineage_inputs:
+            - model:stg_fed_funds_rate.rate

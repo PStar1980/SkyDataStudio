@@ -4,8 +4,18 @@ from fastapi import APIRouter, HTTPException, Query, status
 from sqlalchemy.exc import SQLAlchemyError
 
 from skydata_studio.db.session import SessionDependency
-from skydata_studio.schemas.lineage import LineageImpactSummary, LineageSummary
-from skydata_studio.services.lineage import lineage_impact, lineage_summary
+from skydata_studio.schemas.lineage import (
+    FieldLineageImpactSummary,
+    FieldLineageSummary,
+    LineageImpactSummary,
+    LineageSummary,
+)
+from skydata_studio.services.lineage import (
+    field_lineage_impact,
+    field_lineage_summary,
+    lineage_impact,
+    lineage_summary,
+)
 
 router = APIRouter()
 
@@ -38,5 +48,27 @@ def lineage_node_impact(
 ) -> LineageImpactSummary:
     try:
         return lineage_impact(session, node_id)
+    except (SQLAlchemyError, OSError, ValueError, TypeError) as error:
+        raise _unavailable(error) from error
+
+
+@router.get("/fields/summary", response_model=FieldLineageSummary)
+def field_lineage_graph(
+    session: SessionDependency,
+    focus_field_id: Annotated[str | None, Query(alias="focusFieldId")] = None,
+) -> FieldLineageSummary:
+    try:
+        return field_lineage_summary(session, focus_field_id=focus_field_id)
+    except (SQLAlchemyError, OSError, ValueError, TypeError) as error:
+        raise _unavailable(error) from error
+
+
+@router.get("/fields/impact", response_model=FieldLineageImpactSummary)
+def field_lineage_field_impact(
+    session: SessionDependency,
+    field_id: Annotated[str, Query(alias="fieldId", min_length=1)],
+) -> FieldLineageImpactSummary:
+    try:
+        return field_lineage_impact(session, field_id)
     except (SQLAlchemyError, OSError, ValueError, TypeError) as error:
         raise _unavailable(error) from error

@@ -147,7 +147,22 @@ DFF → FED_FUNDS_RATE_MART    →   fed_funds_rate source    →   fed_funds_ra
 
 The bridge from the Studio curated asset to the dbt source is a read-time seam. Metadata mappings remain Studio-owned; dbt `manifest.json` remains the transformation dependency authority; semantic definitions remain dbt-owned. The lineage service normalizes those identifiers into directed nodes and edges and uses a downstream breadth-first traversal for impact radius. No graph rows are persisted in Phase 8.1.
 
-This first slice answers asset/model/semantic/metric impact. Field mappings, quality/incident overlays, pipeline/Airflow execution impact, and report/Power BI consumers remain later Phase 8 boundaries.
+This first slice answers asset/model/semantic/metric impact. Quality/incident overlays, pipeline/Airflow execution impact, and report/Power BI consumers remain later Phase 8 boundaries.
+
+## Phase 8.2 field-level lineage boundary
+
+Phase 8.2 carries the same federated ownership model down to columns. Studio does not parse arbitrary SQL or create a new column-lineage table. The source-to-curated field seam comes from existing `metadata_field_mapping` rows, while dbt model columns declare their upstream fields beside the model definitions through `meta.lineage_inputs`. `dbt build` carries those annotations into `manifest.json`, so Studio reads the generated artifact it already trusts for model metadata.
+
+```text
+DFF.OBSERVATION_DATE → FED_FUNDS_RATE_MART.observation_date → dbt date fields
+                                                           └→ observation_key → count metric
+
+DFF.VALUE → FED_FUNDS_RATE_MART.rate → dbt rate fields
+                                          ├→ previous/change/direction fields
+                                          └→ average/minimum/maximum metrics
+```
+
+Metric dependencies come from dbt metric expressions, not a Studio-owned semantic mapping. The field-lineage service normalizes these authorities into ephemeral field nodes and edges and performs the same downstream breadth-first traversal used by the Phase 8.1 asset graph.
 
 
 ## Product blueprint and mapping boundary

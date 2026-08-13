@@ -573,7 +573,7 @@ Closure evidence:
 
 ## Phase 8.1 — Cross-Layer Lineage Graph and Impact Radius Foundation
 
-**Status:** In progress.
+**Status:** Complete. Live graph proof, transitive impact evidence, and final local validation are green.
 
 Scope:
 
@@ -595,4 +595,35 @@ Acceptance proof:
 - missing dbt artifacts degrade the graph to `PARTIAL` while preserving registered Studio mapping evidence instead of fabricating model lineage;
 - the Lineage workbench renders the federated graph and recomputes downstream impact when a node is selected;
 - local validation remains green with 76 pytest tests plus Ruff, mypy, npm audit, ESLint, and Vite build.
+
+Closure evidence:
+
+- `GET /api/v1/lineage/summary` returned `artifact_status=READY`, 1 metadata mapping, 3 dbt models, 1 semantic model, 4 metrics, 11 nodes, and 10 edges;
+- the default DFF impact radius returned 10 downstream nodes, 3 affected dbt models, 1 semantic model, and 4 governed metrics;
+- the Phase 8.1 Ruff line-length cleanup changed formatting only;
+- final local validation passed Ruff, mypy across 57 source files, 76 pytest tests, npm audit with zero vulnerabilities, ESLint, and Vite production build.
+
+## Phase 8.2 — Field-Level Lineage and Column Impact Foundation
+
+**Status:** In progress.
+
+Scope:
+
+- preserve the Phase 8.1 asset/model/semantic/metric graph and add a separate field-level read model rather than persisting a second lineage authority;
+- use existing Studio field-mapping rows as the source-to-curated field authority for `OBSERVATION_DATE → OBSERVATION_DATE` and `VALUE → RATE`;
+- declare dbt derived-column inputs beside model definitions through column `meta.lineage_inputs`, then read those declarations from generated `manifest.json`;
+- expand intermediate and mart column documentation so every field in the proof has an explicit lineage declaration;
+- bind final mart fields to governed metrics through dbt metric expressions rather than introducing a Studio-owned semantic dependency table;
+- expose `GET /api/v1/lineage/fields/summary` and `GET /api/v1/lineage/fields/impact?fieldId=...`;
+- extend the Lineage workbench with grouped field nodes and transitive field-impact evidence;
+- keep quality overlays, Airflow runtime lineage, and report/Power BI consumers outside this field-level foundation.
+
+Acceptance proof:
+
+- a fresh `dbt build` remains green and regenerates manifest column annotations while retaining 4 models, 14 data tests, 4 metrics, and 1 semantic model;
+- the field lineage API reports `artifact_status=READY`, 2 Studio field mappings, 18 annotated dbt business-model columns, 4 metric bindings, 28 nodes, and 27 directed edges;
+- selecting `DFF.value` reaches 15 downstream nodes including rate-derived columns and exactly 3 rate metrics;
+- selecting `DFF.observation_date` reaches the observation-key path and observation-count metric without falsely reporting rate metrics;
+- the Phase 8.1 asset graph remains READY at 11 nodes / 10 edges;
+- local validation remains green with 80 pytest tests plus Ruff, mypy, npm audit, ESLint, and Vite build.
 
