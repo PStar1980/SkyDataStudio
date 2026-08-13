@@ -530,7 +530,10 @@ def compose_field_lineage_summary(
 
     for source_name, unique_id in source_unique_ids.items():
         canonical = _canonical_name(source_name)
-        for (target_canonical, field_name), upstream_id in target_fields_by_canonical.items():
+        for (
+            target_canonical,
+            field_name,
+        ), published_upstream_id in target_fields_by_canonical.items():
             if target_canonical != canonical:
                 continue
             parent_id = _dbt_node_id(unique_id)
@@ -553,8 +556,8 @@ def compose_field_lineage_summary(
             )
             add_edge(
                 FieldLineageEdge(
-                    id=f"field-publish:{upstream_id}:{node_id}",
-                    upstream_id=upstream_id,
+                    id=f"field-publish:{published_upstream_id}:{node_id}",
+                    upstream_id=published_upstream_id,
                     downstream_id=node_id,
                     edge_type="PUBLISHES_AS",
                     label="curated field → dbt source field",
@@ -604,22 +607,24 @@ def compose_field_lineage_summary(
                 if parsed is None:
                     continue
                 kind, parent_name, field_name = parsed
-                upstream_id: str | None = None
+                lineage_upstream_id: str | None = None
                 if kind == "source":
                     source_name = parent_name.split(".")[-1]
-                    upstream_id = source_field_ids.get((source_name, field_name.lower()))
+                    lineage_upstream_id = source_field_ids.get(
+                        (source_name, field_name.lower())
+                    )
                 else:
                     upstream_model = model_by_name.get(parent_name)
                     if upstream_model is not None:
-                        upstream_id = model_field_ids.get(
+                        lineage_upstream_id = model_field_ids.get(
                             (upstream_model.name, field_name.lower())
                         )
-                if upstream_id is None:
+                if lineage_upstream_id is None:
                     continue
                 add_edge(
                     FieldLineageEdge(
-                        id=f"field-derive:{upstream_id}:{downstream_id}",
-                        upstream_id=upstream_id,
+                        id=f"field-derive:{lineage_upstream_id}:{downstream_id}",
+                        upstream_id=lineage_upstream_id,
                         downstream_id=downstream_id,
                         edge_type="DERIVES",
                         label="dbt column lineage",
@@ -640,8 +645,10 @@ def compose_field_lineage_summary(
         mart_model = model_by_relation.get(semantic_model.relation.lower())
         if mart_model is None:
             continue
-        upstream_id = model_field_ids.get((mart_model.name, metric.expression.lower()))
-        if upstream_id is None:
+        metric_upstream_id = model_field_ids.get(
+            (mart_model.name, metric.expression.lower())
+        )
+        if metric_upstream_id is None:
             continue
         metric_binding_count += 1
         metric_parent_id = _metric_node_id(metric.unique_id)
@@ -667,8 +674,8 @@ def compose_field_lineage_summary(
         )
         add_edge(
             FieldLineageEdge(
-                id=f"field-metric:{upstream_id}:{metric_id}",
-                upstream_id=upstream_id,
+                id=f"field-metric:{metric_upstream_id}:{metric_id}",
+                upstream_id=metric_upstream_id,
                 downstream_id=metric_id,
                 edge_type="FEEDS_METRIC",
                 label=f"{metric.aggregation or metric.metric_type}({metric.expression})",
