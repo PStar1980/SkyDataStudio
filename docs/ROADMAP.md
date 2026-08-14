@@ -703,7 +703,7 @@ Closure evidence:
 
 ## Phase 8.5 — Analytics Consumer Lineage and Impact Closure
 
-**Status:** In progress. Consumer-contract resolution and metric-to-report impact are the active proof.
+**Status:** Complete. Consumer-contract resolution and metric-to-report impact are proven.
 
 Scope:
 
@@ -724,5 +724,40 @@ Acceptance proof:
 - selecting `average_federal_funds_rate` reports exactly one downstream consumer, `Federal Funds Rate Overview`;
 - the declaration remains `deployment_status=DECLARED`, proving lineage without fabricating Power BI deployment state;
 - the Lineage workbench renders the consumer dependency surface alongside the four completed Phase 8 evidence layers;
-- local validation remains green with 92 pytest tests plus Ruff, mypy, npm audit, ESLint, and Vite build.
+- local validation remains green with 92 pytest tests plus Ruff, mypy, ESLint, and Vite build. The same `npm ci` run surfaced one high-severity dependency advisory, which remains a separate dependency-security follow-up rather than being treated as clean audit evidence.
+
+Closure evidence:
+
+- `GET /api/v1/lineage/consumers/summary` returned `consumer_status=READY` and `semantic_artifact_status=READY`;
+- one `FED_FUNDS_RATE_OVERVIEW` consumer resolved against all four declared governed metrics with zero unresolved metrics;
+- the graph contained exactly 5 nodes and 4 `CONSUMED_BY` edges;
+- metric impact for `average_federal_funds_rate` resolved exactly one downstream consumer, `Federal Funds Rate Overview`, with Power BI delivery status `DECLARED`;
+- the Lineage workbench rendered consumers 1/1, metrics 4/4, semantic READY, and the declaration-only delivery boundary;
+- final local validation passed Ruff, mypy across 60 source files, 92 pytest tests, ESLint, and Vite production build; `npm ci` surfaced one high-severity dependency advisory for explicit follow-up.
+
+## Phase 9.1 — Analytical Mart Publication Readiness and Freshness Gate
+
+**Status:** In progress. The first governed analytical product and publication-readiness gate are the active proof.
+
+Scope:
+
+- introduce a source-controlled analytical-product contract for the Federal Funds Rate daily product;
+- preserve dbt as transformation authority, Phase 7 as quality-policy authority, and Phase 8.5 as consumer-dependency authority;
+- read physical row-count and latest-date evidence from `mart.fed_funds_rate` and `dbt_mart.fct_fed_funds_rate_daily`;
+- compose six publication gates: physical relations, dbt model build, freshness alignment, quality contract, semantic product, and declared consumers;
+- expose `GET /api/v1/analytics/products/summary`;
+- replace the Analytical Marts placeholder with a workbench that makes stale-vs-ready publication state explicit;
+- never execute dbt silently from the API or UI; a stale mart instructs the operator to run the existing dbt build command explicitly;
+- preserve Power BI as declaration-only downstream intent until live service provisioning is introduced later.
+
+Acceptance proof:
+
+- before a fresh dbt build, a curated source that has advanced beyond the analytical mart reports `product_status=STALE`, `freshness_status=STALE`, and a non-zero row-count/date delta;
+- after `./scripts/dbt.ps1 build`, source and mart evidence align and `FRESHNESS_ALIGNMENT` passes;
+- dbt mart build evidence is READY, the Federal Funds Rate quality contract is COMPLIANT, all four governed metrics resolve, and the declared report consumer resolves;
+- all six publication gates pass and the analytical product reports `product_status=READY`;
+- the Analytical Marts workbench renders source/mart evidence, row/date alignment, publication gates, and the explicit refresh boundary;
+- local validation remains green with 96 pytest tests plus Ruff, mypy, ESLint, and Vite build;
+- dependency-security follow-up remains explicit until the high-severity npm advisory surfaced during Phase 8.5 validation is identified and cleared.
+
 

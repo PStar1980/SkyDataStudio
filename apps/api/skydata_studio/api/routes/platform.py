@@ -63,14 +63,14 @@ CAPABILITIES = [
             "Stitches mappings, dbt and field dependencies, semantic delivery, "
             "quality controls, incidents, and runtime execution into one impact graph."
         ),
-        status="FOUNDATION",
+        status="READY",
         phase=8,
     ),
     Capability(
         code="ANALYTICS_DELIVERY",
         name="Analytics Delivery",
         description="Publishes curated products to SkyWeb Analytics and Power BI.",
-        status="PLANNED",
+        status="FOUNDATION",
         phase=9,
     ),
 ]
@@ -84,8 +84,8 @@ ROADMAP = [
     RoadmapPhase(number=5, name="Apache Airflow Integration", status="COMPLETE"),
     RoadmapPhase(number=6, name="dbt Transformation and Modelling", status="COMPLETE"),
     RoadmapPhase(number=7, name="Data Quality and Observability", status="COMPLETE"),
-    RoadmapPhase(number=8, name="Lineage and Impact Analysis", status="IN_PROGRESS"),
-    RoadmapPhase(number=9, name="Analytical Marts and Semantic Delivery", status="PLANNED"),
+    RoadmapPhase(number=8, name="Lineage and Impact Analysis", status="COMPLETE"),
+    RoadmapPhase(number=9, name="Analytical Marts and Semantic Delivery", status="IN_PROGRESS"),
     RoadmapPhase(number=10, name="Power BI Integration", status="PLANNED"),
 ]
 
@@ -96,7 +96,9 @@ def platform_summary() -> PlatformSummary:
         product="SkyData Studio",
         subtitle="Data Engineering Workbench",
         theme="Aurora Foundry",
-        current_phase="Phase 8.5 — Analytics Consumer Lineage and Impact Closure",
+        current_phase=(
+            "Phase 9.1 — Analytical Mart Publication Readiness and Freshness Gate"
+        ),
         boundary=(
             "SkyData Studio starts after SkyCommand ingestion and publishes governed "
             "analytical products for SkyWeb Analytics, Power BI, and future consumers."

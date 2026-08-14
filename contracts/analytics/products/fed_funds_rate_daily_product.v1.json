@@ -1,0 +1,30 @@
+{
+  "code": "FED_FUNDS_RATE_DAILY_PRODUCT",
+  "version": "1.0.0",
+  "name": "Federal Funds Rate Daily Analytical Product",
+  "description": "Governed daily Federal Funds Rate analytical product published from Studio-curated data through dbt, semantic, quality, and consumer readiness gates.",
+  "owner": "SkyData Studio",
+  "domain": "Macroeconomics",
+  "source_relation": "mart.fed_funds_rate",
+  "mart_relation": "dbt_mart.fct_fed_funds_rate_daily",
+  "freshness_column": "observation_date",
+  "row_alignment": "EXACT",
+  "semantic_model": "fed_funds_rate_daily",
+  "quality_contract_code": "FED_FUNDS_RATE_DAILY_QUALITY",
+  "required_metrics": [
+    "average_federal_funds_rate",
+    "federal_funds_observation_count",
+    "maximum_federal_funds_rate",
+    "minimum_federal_funds_rate"
+  ],
+  "required_dimensions": [
+    "observation_date",
+    "observation_month",
+    "observation_year",
+    "rate_direction"
+  ],
+  "consumer_codes": [
+    "FED_FUNDS_RATE_OVERVIEW"
+  ],
+  "publication_mode": "GATED"
+}

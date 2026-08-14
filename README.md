@@ -4,7 +4,7 @@
 
 SkyData Studio is the post-ingestion data engineering application in the Sky ecosystem. It begins where SkyCommand's ingestion responsibility ends and prepares trusted data for analytical consumption by SkyWeb Analytics, Power BI, and future client-facing applications.
 
-**Current status:** Phases 0 through 7 and Phase 8.1 are complete. Phase 8.1 closed with a READY 11-node/10-edge federated graph, a DFF impact radius reaching all 10 downstream nodes, and final validation passing 76 tests. **Phase 8.2 is now in progress:** source-to-target field mappings, dbt column annotations, and governed metric expressions are stitched into a field-level impact graph without creating a second lineage authority.
+**Current status:** Phases 0 through 8 are complete. Phase 8 closed with source-controlled analytics-consumer lineage resolving one declared report against all four governed Federal Funds Rate metrics, with a 5-node/4-edge consumer graph and metric-level downstream impact. **Phase 9.1 is now in progress:** analytical mart publication readiness composes physical relation evidence, dbt build state, source-to-mart freshness, quality policy, semantic resolution, and declared consumers into one explicit delivery gate.
 
 ---
 
@@ -406,8 +406,8 @@ The public roadmap is intentionally compact so GitHub visitors can see progress 
 | Phase 5 | ✅ Complete | Apache Airflow 3 durable batch orchestration, REST API v2 integration, DAG/run/task observability, schedules, backfills, and ingestion-complete triggers |
 | Phase 6 | ✅ Complete | dbt transformation and modelling foundation with tested staging, intermediate, mart, and semantic layers |
 | Phase 7 | ✅ Complete | Data quality, reconciliation, blocking policies, incidents, SLOs, and observability |
-| Phase 8 | 🔄 In Progress | Asset/field/model/report lineage and downstream impact analysis |
-| Phase 9 | ⏳ Planned | Curated analytical marts, governed metrics, semantic delivery, and SkyWeb consumer contracts |
+| Phase 8 | ✅ Complete | Asset/field/model/report lineage, trust/runtime overlays, and downstream impact analysis |
+| Phase 9 | 🔄 In Progress | Curated analytical marts, publication readiness, governed semantic delivery, and downstream consumer products |
 | Phase 10 | ⏳ Planned | Power BI semantic models, refresh strategy, reporting inventory, and governed executive delivery |
 | Phase 11 | ⏳ Planned | Security, RBAC, environment promotion, audit evidence, backup, recovery, and retention |
 | Phase 12 | ⏳ Planned | AI-assisted mapping, SQL, tests, documentation, and explain-before-apply engineering workflows |
@@ -520,11 +520,11 @@ The repository currently includes:
 - a completed Phase 8.2 field-level lineage graph from DFF source fields through dbt derivations to governed metrics;
 - a completed Phase 8.3 trust overlay that projects dbt checks, quality-contract rules, and durable incidents onto exact lineage nodes;
 - a completed Phase 8.4 runtime-lineage workbench that links the latest Airflow DAG/task execution to its replay-safe Studio pipeline run, structured steps, source asset, and curated target;
-- a Phase 8.5 analytics-consumer lineage surface that resolves source-controlled report dependencies against governed dbt semantic metrics without claiming downstream deployment;
+- a completed Phase 8.5 analytics-consumer lineage surface that resolves source-controlled report dependencies against governed dbt semantic metrics without claiming downstream deployment;
+- an active Phase 9.1 analytical-product gate that compares the curated source with its dbt mart and composes freshness, quality, semantic, and consumer evidence before publication;
 - backend/frontend validation, repository map, and compact handoff tooling.
 
-The active implementation target is **Phase 8.5 — Analytics Consumer Lineage and Impact Closure**. Phases 0 through 7 are complete; Phase 8.1 established asset impact, Phase 8.2 added field impact, Phase 8.3 projected trust evidence, and Phase 8.4 joined Airflow/Studio runtime execution to the structural graph. Phase 8.5 now closes the lineage chain at source-controlled analytics consumers while keeping actual analytical delivery and Power BI deployment in their later roadmap phases.
-
+The active implementation target is **Phase 9.1 — Analytical Mart Publication Readiness and Freshness Gate**. Phases 0 through 8 are complete. Phase 9.1 converts the proven Federal Funds Rate mart into a governed analytical product whose publication state becomes READY only when physical source/mart evidence, dbt build status, freshness alignment, quality policy, semantic definitions, and declared consumers all resolve together.
 
 ## Phase 8.5 quick start
 
@@ -537,3 +537,29 @@ Invoke-RestMethod `
 ```
 
 A complete proof reports one resolved consumer, four resolved metrics, zero unresolved dependencies, 5 nodes, and 4 `CONSUMED_BY` edges.
+
+Phase 8.5 closure evidence:
+
+- `GET /api/v1/lineage/consumers/summary` returned `READY` against `READY` semantic artifacts with 1/1 consumer contracts resolved, 4/4 governed metrics resolved, zero unresolved metrics, and a 5-node/4-edge consumer graph;
+- `average_federal_funds_rate` reported exactly one downstream consumer, `Federal Funds Rate Overview`, targeting Power BI with deployment status `DECLARED`;
+- the Lineage workbench rendered consumers 1/1, metrics 4/4, semantic READY, and the explicit declaration-only delivery boundary;
+- local code/test/build validation passed Ruff, mypy across 60 source files, 92 pytest tests, ESLint, and Vite production build;
+- `npm ci` also surfaced one high-severity dependency advisory. The feature phase is functionally closed, but dependency-security maintenance remains an explicit follow-up rather than being misreported as a clean audit.
+
+## Phase 9.1 quick start
+
+Phase 9.1 introduces the first source-controlled analytical-product contract at `contracts/analytics/products/fed_funds_rate_daily_product.v1.json`. Studio reads the curated source relation, the dbt mart, generated dbt artifacts, the Phase 7 quality contract, and the Phase 8.5 consumer declaration at request time. It does not execute dbt automatically.
+
+```powershell
+Invoke-RestMethod `
+  "http://localhost:8100/api/v1/analytics/products/summary" |
+  ConvertTo-Json -Depth 12
+```
+
+If ingestion has advanced `mart.fed_funds_rate` since the latest dbt build, the correct first result is `product_status=STALE` with the source row/date evidence ahead of `dbt_mart.fct_fed_funds_rate_daily`. Refresh the transformation explicitly:
+
+```powershell
+.\scripts\dbt.ps1 build
+```
+
+Then refresh the endpoint or **Analytics Delivery → Analytical Marts**. Publication becomes `READY` only after all six gates pass: physical relations, dbt build evidence, freshness alignment, quality contract, semantic product resolution, and declared-consumer resolution.
