@@ -13,6 +13,7 @@ import SchedulesBackfills from './pages/SchedulesBackfills.jsx';
 import Transformations from './pages/Transformations.jsx';
 import DataModels from './pages/DataModels.jsx';
 import SemanticLayer from './pages/SemanticLayer.jsx';
+import AnalyticalMarts from './pages/AnalyticalMarts.jsx';
 import DataQuality from './pages/DataQuality.jsx';
 import DataContracts from './pages/DataContracts.jsx';
 import QualityIncidents from './pages/QualityIncidents.jsx';
@@ -75,6 +76,7 @@ function App() {
           <Route path="/workspace/pipelines" element={<Pipelines />} />
           <Route path="/workspace/transformations" element={<Transformations />} />
           <Route path="/workspace/models" element={<DataModels />} />
+          <Route path="/delivery/marts" element={<AnalyticalMarts />} />
           <Route path="/delivery/semantic" element={<SemanticLayer />} />
           <Route path="/quality/checks" element={<DataQuality />} />
           <Route path="/quality/contracts" element={<DataContracts />} />
@@ -96,6 +98,7 @@ function App() {
               '/orchestration/airflow',
               '/orchestration/runs',
               '/orchestration/backfills',
+              '/delivery/marts',
               '/delivery/semantic',
               '/quality/checks',
               '/quality/contracts',

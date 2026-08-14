@@ -285,3 +285,22 @@ If Airflow is unavailable, the endpoint degrades to `PARTIAL` and preserves the 
 Phase 8.5 closes the lineage chain at source-controlled analytics-consumer declarations. The declaration names the dbt semantic model, governed metrics, and dimensions that a report or application requires. Studio resolves those names against the generated dbt semantic artifacts at request time and emits metric → consumer edges without creating another semantic or reporting metadata authority.
 
 The first proof declares a `Federal Funds Rate Overview` report that targets Power BI but has deployment status `DECLARED`. That status is intentional: Phase 8.5 proves downstream dependency and change-impact lineage only. It does not claim that a Power BI workspace, semantic model, report, refresh schedule, or deployment exists. Analytical product delivery remains Phase 9, while live Power BI service integration remains Phase 10.
+
+## Phase 9.1 analytical-product publication boundary
+
+Phase 9.1 turns the proven Federal Funds Rate mart into a governed analytical product without moving execution ownership into the Studio API. The analytical-product contract names its curated source relation, dbt mart relation, freshness column, quality contract, semantic model, governed metrics, and declared consumers. Studio composes those existing authorities into one publication-readiness read model.
+
+```text
+mart.fed_funds_rate ── physical freshness ──┐
+                                            │
+dbt_mart.fct_fed_funds_rate_daily ──────────┤
+                                            │
+dbt build artifacts ────────────────────────┤
+quality contract ────────────────────────────┤── publication gate
+semantic model + metrics ───────────────────┤
+declared analytics consumers ───────────────┘
+```
+
+Freshness is deliberately a blocking gate. A dbt model can remain structurally healthy while becoming stale after a newer Studio pipeline materialization advances the curated source. In that state the product reports `STALE`; Studio does not invoke dbt on the user's behalf. The operator runs the existing dbt build explicitly, after which source/mart row counts and latest freshness values can align and publication can become `READY`.
+
+No new database table is required for this proof. Product policy is source-controlled under `contracts/analytics/products/`; physical evidence is queried from Studio PostgreSQL; dbt artifacts, quality policy, semantic definitions, and consumer declarations remain owned by their existing layers.

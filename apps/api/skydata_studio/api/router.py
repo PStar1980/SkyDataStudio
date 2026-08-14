@@ -2,6 +2,7 @@ from fastapi import APIRouter
 
 from skydata_studio.api.routes import (
     airflow,
+    analytics,
     contracts,
     dbt,
     health,
@@ -16,6 +17,7 @@ from skydata_studio.api.routes import (
 
 api_router = APIRouter()
 api_router.include_router(health.router, prefix="/health", tags=["health"])
+api_router.include_router(analytics.router, prefix="/analytics", tags=["analytics-delivery"])
 api_router.include_router(
     airflow.router,
     prefix="/integrations/airflow",

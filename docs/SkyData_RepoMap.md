@@ -18,6 +18,7 @@ SkyDataStudio/
 │   │       │   └── routes/
 │   │       │       ├── __init__.py
 │   │       │       ├── airflow.py
+│   │       │       ├── analytics.py
 │   │       │       ├── contracts.py
 │   │       │       ├── dbt.py
 │   │       │       ├── health.py
@@ -53,6 +54,7 @@ SkyDataStudio/
 │   │       ├── schemas/
 │   │       │   ├── __init__.py
 │   │       │   ├── airflow.py
+│   │       │   ├── analytics.py
 │   │       │   ├── assets.py
 │   │       │   ├── dbt.py
 │   │       │   ├── execution.py
@@ -63,6 +65,7 @@ SkyDataStudio/
 │   │       │   └── quality.py
 │   │       └── services/
 │   │           ├── __init__.py
+│   │           ├── analytics_products.py
 │   │           ├── asset_detail.py
 │   │           ├── asset_workspace.py
 │   │           ├── contract_compatibility.py
@@ -99,6 +102,7 @@ SkyDataStudio/
 │           │   └── Topbar.jsx
 │           ├── pages/
 │           │   ├── Airflow.jsx
+│           │   ├── AnalyticalMarts.jsx
 │           │   ├── DataAssets.jsx
 │           │   ├── DataContracts.jsx
 │           │   ├── DataModels.jsx
@@ -120,7 +124,10 @@ SkyDataStudio/
 ├── contracts/
 │   ├── analytics/
 │   │   ├── fed_funds_rate_overview.v1.json
-│   │   └── README.md
+│   │   ├── README.md
+│   │   └── products/
+│   │       ├── fed_funds_rate_daily_product.v1.json
+│   │       └── README.md
 │   ├── quality/
 │   │   ├── fed_funds_rate_daily.v1.json
 │   │   └── README.md
@@ -167,6 +174,7 @@ SkyDataStudio/
 │   ├── conftest.py
 │   ├── test_airflow_api.py
 │   ├── test_airflow_client.py
+│   ├── test_analytics_products.py
 │   ├── test_asset_detail.py
 │   ├── test_asset_workspace_api.py
 │   ├── test_asset_workspace.py
