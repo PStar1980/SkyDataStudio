@@ -151,6 +151,7 @@ def main() -> int:
         run(pytest_command(uv))
 
         sync_frontend_dependencies(npm)
+        run([npm, "audit", "--audit-level=high"], cwd=WEB_ROOT)
         run([npm, "run", "lint"], cwd=WEB_ROOT)
         run([npm, "run", "build"], cwd=WEB_ROOT)
     except (RuntimeError, subprocess.CalledProcessError) as error:
